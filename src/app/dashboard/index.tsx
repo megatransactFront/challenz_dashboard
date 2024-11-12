@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Clock, Trophy, Target, DollarSign, BarChart } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { FC } from 'react';
+import { LucideIcon } from 'lucide-react';
 
 // Mock data - replace with actual API endpoints
 const mockUserData = [
@@ -30,10 +32,17 @@ const mockTopPosts = [
   // ... add more posts
 ];
 
+interface StatCardProps {
+  title: string;
+  // Allow value to be string or number since those are most common for stats
+  value: string | number;
+  icon: LucideIcon;
+}
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('overview');
 
-  const StatCard = ({ title, value, icon: Icon }) => (
+  const StatCard: FC<StatCardProps> = ({ title, value, icon: Icon }) => (
     <Card className="bg-white">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
@@ -44,6 +53,7 @@ export default function Dashboard() {
       </CardContent>
     </Card>
   );
+  
 
   const OverviewTab = () => (
     <div className="space-y-6">
