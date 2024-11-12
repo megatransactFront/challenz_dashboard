@@ -7,7 +7,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 
 // Mock data - replace with actual API endpoints
 const mockUserData = [
-  { month: 'March', totalUsers: 8000, newUsers: 2000 },
+  { month: 'Jan', totalUsers: 8000, newUsers: 2000 },
   { month: 'Feb', totalUsers: 7000, newUsers: 1500 },
   // ... add more months
 ];
