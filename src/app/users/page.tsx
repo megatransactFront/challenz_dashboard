@@ -106,7 +106,7 @@ const challengeData = [
 
 const ChallengeUploads = () => {
   return (
-    <div className="p-8">
+    <div className="p-8 ml">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-8">
         <div>
