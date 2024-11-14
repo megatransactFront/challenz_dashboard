@@ -4,7 +4,7 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Award, Crown, Coins, Wallet, ChevronLeft, ChevronRight, Search, Download, Filter } from 'lucide-react';
+import { Award, Crown, Coins, Wallet, ChevronLeft, ChevronRight, Download, Filter } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { 
   Table,
@@ -85,7 +85,7 @@ export default function ChallenzPage() {
                 <TableHead>CREATOR</TableHead>
                 <TableHead>DATE POSTED</TableHead>
                 <TableHead>VIEWS</TableHead>
-                <TableHead>USER'S JOINED</TableHead>
+                <TableHead>USERS JOINED</TableHead>
                 <TableHead>LIKES</TableHead>
                 <TableHead>COMMENTS</TableHead>
                 <TableHead>SPONSORED</TableHead>
