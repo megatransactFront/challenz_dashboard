@@ -32,7 +32,7 @@ export default function ChallenzPage() {
   const [activeTab, setActiveTab] = useState('challenges');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+//   const itemsPerPage = 10;
 
   const StatCard = ({ title, value, icon: Icon }) => (
     <Card>
