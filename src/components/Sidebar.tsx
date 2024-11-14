@@ -52,8 +52,9 @@ const Sidebar = () => {
     return menuItem?.path === path;
   };
 
-  const isSubItemActive = (path: string) => pathname === path;
 
+  const isSubItemActive = (path: string) => pathname === path;
+  
   const MenuItem = ({ item }) => {
     const Icon = item.icon;
     const isItemActive = isActive(item.path);

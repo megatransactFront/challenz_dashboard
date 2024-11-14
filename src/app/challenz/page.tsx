@@ -14,6 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { LucideIcon } from 'lucide-react';
+
 
 // Mock data
 const mockChallenges = [
@@ -34,7 +36,15 @@ export default function ChallenzPage() {
   const [currentPage, setCurrentPage] = useState(1);
 //   const itemsPerPage = 10;
 
-  const StatCard = ({ title, value, icon: Icon }) => (
+
+interface StatCardProps {
+    title: string;
+    value: string | number;
+    icon: LucideIcon;
+  }
+  
+  // Use the interface with the component
+  const StatCard = ({ title, value, icon: Icon }: StatCardProps) => (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-gray-600">{title}</CardTitle>
@@ -45,7 +55,6 @@ export default function ChallenzPage() {
       </CardContent>
     </Card>
   );
-
   const filteredData = useMemo(() => {
     return mockChallenges.filter(item =>
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
