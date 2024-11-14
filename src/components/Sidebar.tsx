@@ -4,6 +4,7 @@ import React from 'react';
 import { Settings, Users, BarChart3, Award, Activity } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from "@/lib/utils";
+import { LucideIcon } from 'lucide-react';
 
 const menuItems = [
   {
@@ -55,7 +56,26 @@ const Sidebar = () => {
 
   const isSubItemActive = (path: string) => pathname === path;
   
-  const MenuItem = ({ item }) => {
+  interface SubItem {
+    path: string;
+    title: string;
+    icon?: LucideIcon;
+  }
+  
+  interface MenuItemData {
+    path: string;
+    title: string;
+    icon: LucideIcon;
+    subItems?: SubItem[];
+  }
+  
+  interface MenuItemProps {
+    item: MenuItemData;
+    expandedItem?: string;
+    isActive: (path: string) => boolean;
+  }
+  
+  const MenuItem = ({ item, expandedItem, isActive }: MenuItemProps) => {
     const Icon = item.icon;
     const isItemActive = isActive(item.path);
     const hasSubItems = item.subItems && item.subItems.length > 0;
