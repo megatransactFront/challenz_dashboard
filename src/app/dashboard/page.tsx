@@ -5,7 +5,7 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import  OverviewPage  from './overviews/page';
 import  RevenuePage  from './revenues/page';
-import  EngagementPage  from './engagements/page';
+// import  EngagementPage  from './engagements/page';
 
 export default function Dashboard() {
   const pathname = usePathname();
@@ -16,8 +16,8 @@ export default function Dashboard() {
         return { title: 'Overview Dashboard', description: 'View your overview metrics' };
       case '/dashboard/revenues':
         return { title: 'Revenue Analytics', description: 'Track your revenue metrics' };
-      case '/dashboard/engagement':
-        return { title: 'Engagement Metrics', description: 'Monitor user engagement' };
+      // case '/dashboard/engagement':
+      //   return { title: 'Engagement Metrics', description: 'Monitor user engagement' };
       case '/dashboard/performance':
         return { title: 'Content Performance', description: 'Analyze content metrics' };
       default:
@@ -31,8 +31,8 @@ export default function Dashboard() {
         return <OverviewPage />;
       case '/dashboard/revenues':
         return <RevenuePage />;
-      case '/dashboard/engagements':
-        return <EngagementPage />;
+      // case '/dashboard/engagements':
+      //   return <EngagementPage />;
       // case '/dashboard/performance':
       //   return <ContentPerformancePage />;
       default:
