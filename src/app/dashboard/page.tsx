@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import  OverviewTab  from './overviews/page';
+import  OverviewPage  from './overviews/page';
 import  RevenuePage  from './revenues/page';
 import  EngagementPage  from './engagements/page';
 
@@ -27,8 +27,8 @@ export default function Dashboard() {
 
   const renderContent = () => {
     switch (pathname) {
-      case '/dashboard':
-        return <OverviewTab />
+      case '/dashboard/overviews':
+        return <OverviewPage />;
       case '/dashboard/revenues':
         return <RevenuePage />;
       case '/dashboard/engagements':
@@ -36,7 +36,7 @@ export default function Dashboard() {
       // case '/dashboard/performance':
       //   return <ContentPerformancePage />;
       default:
-        return <OverviewTab />;
+        return <OverviewPage />;
     }
   };
 

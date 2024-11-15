@@ -47,7 +47,7 @@ const menuItems: MenuItemType[] = [
     icon: BarChart3,
     path: '/dashboard',
     subItems: [
-      { title: 'Overview', path: '/dashboard' },
+      { title: 'Overview', path: '/dashboard/overviews' },
       { title: 'Revenues', path: '/dashboard/revenues' },
       { title: 'Engagement', path: '/dashboard/engagements' },
       { title: 'Content Performance', path: '/dashboard/reports' },

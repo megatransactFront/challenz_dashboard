@@ -1,4 +1,5 @@
-// app/dashboard/components/overview/page.tsx
+"use client"
+
 import React from 'react';
 import { Users, Trophy, DollarSign } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -10,7 +11,8 @@ const mockUserData = [
   { month: 'Feb', totalUsers: 7000, newUsers: 1500 },
 ];
 
-export const OverviewTab = () => {
+// Remove the named export and only use default export
+export default function Page() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -32,6 +34,4 @@ export const OverviewTab = () => {
       </Card>
     </div>
   );
-};
-
-export default OverviewTab;
+}
