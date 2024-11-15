@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import  OverviewTab  from './components/overview/page';
+import  OverviewTab  from './overviews/page';
 import  RevenuePage  from './revenues/page';
 import  EngagementPage  from './engagements/page';
 
