@@ -4,8 +4,8 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import { OverviewTab } from './components/overview/page';
-import { RevenuePage } from './revenues/page';
-import { EngagementPage } from './engagements/page';
+import  RevenuePage  from './revenues/page';
+import  EngagementPage  from './engagements/page';
 
 export default function Dashboard() {
   const pathname = usePathname();
