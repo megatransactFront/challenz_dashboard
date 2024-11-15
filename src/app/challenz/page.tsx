@@ -55,6 +55,8 @@ interface StatCardProps {
       </CardContent>
     </Card>
   );
+
+  
   const filteredData = useMemo(() => {
     return mockChallenges.filter(item =>
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
