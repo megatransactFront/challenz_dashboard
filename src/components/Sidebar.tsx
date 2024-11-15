@@ -1,15 +1,44 @@
 // Sidebar.tsx
 "use client"
 
-import React, { useState } from 'react';
-import { Settings, BarChart3, } from 'lucide-react';
+import React from 'react';
+import { Settings, Users, BarChart3, Layout } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { MenuItem as MenuItemType, MenuItemProps, ExpandedItems } from './types';
+import { MenuItem as MenuItemType, MenuItemProps } from './types';
 
-const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate, isExpanded, onToggleExpand }) => {
+const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate }) => {
   const isActive = pathname.startsWith(item.path);
   const Icon = item.icon;
 
+  return (
+    <div className="space-y-1">
+      <div
+        onClick={() => onNavigate(item.path)}
+        className={`flex items-center py-2 px-2 rounded cursor-pointer transition-colors duration-200
+          ${isActive ? 'text-white bg-white/10' : 'text-white/80 hover:bg-teal-600'}`}
+      >
+        <div className="flex items-center gap-2">
+          <Icon size={20} />
+          <span>{item.title}</span>
+        </div>
+      </div>
+      
+      {item.subItems && (
+        <div className="ml-6 space-y-1">
+          {item.subItems.map((subItem) => (
+            <div
+              key={subItem.path}
+              onClick={() => onNavigate(subItem.path)}
+              className={`flex items-center py-1 px-2 rounded cursor-pointer transition-colors duration-200
+                ${pathname === subItem.path ? 'text-white bg-white/10' : 'text-white/70 hover:bg-teal-600'}`}
+            >
+              <span className="text-sm">{subItem.title}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const menuItems: MenuItemType[] = [
@@ -24,7 +53,26 @@ const menuItems: MenuItemType[] = [
       { title: 'Content Performance', path: '/dashboard/reports' },
     ]
   },
-  // ... rest of the menuItems
+  {
+    title: 'Challenz',
+    icon: Layout,
+    path: '/challenz',
+    subItems: [
+      { title: 'Active', path: '/challenz/active' },
+      { title: 'Completed', path: '/challenz/completed' },
+      { title: 'Statistics', path: '/challenz/statistics' },
+    ]
+  },
+  {
+    title: 'Users',
+    icon: Users,
+    path: '/users',
+    subItems: [
+      { title: 'All Users', path: '/users' },
+      { title: 'New Users', path: '/users/new' },
+      { title: 'User Groups', path: '/users/groups' },
+    ]
+  }
 ];
 
 const otherMenuItems: MenuItemType[] = [
@@ -43,22 +91,9 @@ const otherMenuItems: MenuItemType[] = [
 const Sidebar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const [expandedItems, setExpandedItems] = useState<ExpandedItems>(new Set());
 
   const handleNavigation = (path: string): void => {
     router.push(path);
-  };
-
-  const toggleExpand = (itemTitle: string): void => {
-    setExpandedItems((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemTitle)) {
-        newSet.delete(itemTitle);
-      } else {
-        newSet.add(itemTitle);
-      }
-      return newSet;
-    });
   };
 
   return (
@@ -84,8 +119,6 @@ const Sidebar: React.FC = () => {
               item={item}
               pathname={pathname}
               onNavigate={handleNavigation}
-              isExpanded={expandedItems.has(item.title)}
-              onToggleExpand={toggleExpand}
             />
           ))}
         </div>
@@ -99,8 +132,6 @@ const Sidebar: React.FC = () => {
               item={item}
               pathname={pathname}
               onNavigate={handleNavigation}
-              isExpanded={expandedItems.has(item.title)}
-              onToggleExpand={toggleExpand}
             />
           ))}
         </div>
