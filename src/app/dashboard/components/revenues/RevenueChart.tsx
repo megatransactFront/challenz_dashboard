@@ -1,13 +1,11 @@
+"use client"
+
 import React from 'react';
-import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RevenueData } from './types';
+import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import type { RevenueChartProps } from './types';
 
-interface RevenueChartProps {
-  data: RevenueData[];
-}
-
-export const RevenueChart: React.FC<RevenueChartProps> = ({ data }) => (
+export const RevenueChart: React.FC<RevenueChartProps> = ({ data = [] }) => (
   <Card>
     <CardHeader>
       <CardTitle>Revenue Overview</CardTitle>
@@ -60,3 +58,5 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ data }) => (
     </CardContent>
   </Card>
 );
+
+export default RevenueChart;

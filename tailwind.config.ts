@@ -9,6 +9,11 @@ export default {
   ],
   theme: {
   	extend: {
+		fontFamily: {
+			manrope: ['var(--font-manrope)'], // if using variable font
+			// or simply
+			// manrope: ['Manrope', 'sans-serif'],
+		  },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

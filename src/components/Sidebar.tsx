@@ -15,7 +15,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate }) => {
       <div
         onClick={() => onNavigate(item.path)}
         className={`flex items-center py-2 px-2 rounded cursor-pointer transition-colors duration-200
-          ${isActive ? 'text-white bg-white/10' : 'text-white/80 hover:bg-teal-600'}`}
+          ${isActive ? 'text-white bg-white/10' : 'text-white/80 hover:bg-[#E45664]'}`}
       >
         <div className="flex items-center gap-2">
           <Icon size={20} />
@@ -30,7 +30,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate }) => {
               key={subItem.path}
               onClick={() => onNavigate(subItem.path)}
               className={`flex items-center py-1 px-2 rounded cursor-pointer transition-colors duration-200
-                ${pathname === subItem.path ? 'text-white bg-white/10' : 'text-white/70 hover:bg-teal-600'}`}
+                ${pathname === subItem.path ? 'text-white bg-white/10' : 'text-white/70 hover:bg-[#E45664]'}`}
             >
               <span className="text-sm">{subItem.title}</span>
             </div>
@@ -97,12 +97,12 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-64 bg-teal-700 p-4 flex flex-col overflow-y-auto">
+    <div className="h-screen w-64 p-4 flex flex-col overflow-y-auto" style={{ backgroundColor: '#1F5C71' }}>
       {/* Profile Section */}
       <div className="flex items-center gap-2 mb-8">
         <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
           <img
-            src="/api/placeholder/40/40"
+            src="https://xsgames.co/randomusers/avatar.php?g=male"
             alt="Profile"
             className="w-full h-full object-cover"
           />
