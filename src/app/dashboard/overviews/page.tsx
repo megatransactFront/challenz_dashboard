@@ -7,12 +7,12 @@ import { StatCard } from '../components/shared/StatCard';
 import { UserChart } from '../components/overview/UserChart';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Types matching your API responses
-interface Stats {
-  totalRegistrations: { value: number; label: string };
-  newUsers: { value: number; label: string };
-  totalChallenges: { value: number; label: string };
-  totalRevenue: { value: number; label: string };
+// Types for our API responses
+interface DashboardMetrics {
+  totalRegistrations: { value: number; label: string; formatted: string };
+  newUsers: { value: number; label: string; formatted: string };
+  totalChallenges: { value: number; label: string; formatted: string };
+  totalRevenue: { value: number; label: string; formatted: string };
 }
 
 interface UserData {
@@ -22,30 +22,32 @@ interface UserData {
 }
 
 export default function Page() {
-  const [stats, setStats] = useState<Stats | null>(null);
+  // State management
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [userData, setUserData] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Fetch both metrics and user data simultaneously
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
-        const [statsRes, userDataRes] = await Promise.all([
+        const [metricsRes, userDataRes] = await Promise.all([
           fetch('/api/dashboard/stats'),
           fetch('/api/dashboard/users')
         ]);
 
-        if (!statsRes.ok || !userDataRes.ok) {
+        if (!metricsRes.ok || !userDataRes.ok) {
           throw new Error('Failed to fetch dashboard data');
         }
 
-        const [statsData, userData] = await Promise.all([
-          statsRes.json(),
+        const [metricsData, userData] = await Promise.all([
+          metricsRes.json(),
           userDataRes.json()
         ]);
 
-        setStats(statsData);
+        setMetrics(metricsData);
         setUserData(userData);
         setError(null);
       } catch (err) {
@@ -57,8 +59,9 @@ export default function Page() {
     };
 
     fetchDashboardData();
-  }, []);
+  }, []); // Empty dependency array means this runs once on component mount
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -67,6 +70,7 @@ export default function Page() {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <Alert variant="destructive">
@@ -75,39 +79,32 @@ export default function Page() {
     );
   }
 
-  if (!stats) {
+  // No data state
+  if (!metrics) {
     return null;
   }
-
-  // Format values for display
-  const formatValue = (value: number, label: string) => {
-    if (label === 'USD') {
-      return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-    return `${value.toLocaleString()}${label ? ` ${label}` : ''}`;
-  };
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard 
           title="Total Registrations" 
-          value={formatValue(stats.totalRegistrations.value, stats.totalRegistrations.label)} 
+          value={metrics.totalRegistrations.formatted} 
           icon={Users} 
         />
         <StatCard 
           title="New Users" 
-          value={formatValue(stats.newUsers.value, stats.newUsers.label)} 
+          value={metrics.newUsers.formatted} 
           icon={Users} 
         />
         <StatCard 
           title="Total Challenges" 
-          value={formatValue(stats.totalChallenges.value, stats.totalChallenges.label)} 
+          value={metrics.totalChallenges.formatted} 
           icon={Trophy} 
         />
         <StatCard 
           title="Total Revenue" 
-          value={formatValue(stats.totalRevenue.value, stats.totalRevenue.label)} 
+          value={metrics.totalRevenue.formatted} 
           icon={DollarSign} 
         />
       </div>
