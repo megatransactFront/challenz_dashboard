@@ -7,6 +7,7 @@ export const metadata: Metadata = {
 };
 
 import Sidebar from "@/components/Sidebar"
+import { Navbar } from "@/components/Navbar";
 
 export default function RootLayout({
   children,
@@ -19,7 +20,7 @@ export default function RootLayout({
         <div className="flex">
           <Sidebar />
           <div className="flex-1 ml">
-            
+            <Navbar/>
             {children}
           </div>
         </div>

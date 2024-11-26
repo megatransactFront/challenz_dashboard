@@ -43,12 +43,11 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate }) => {
 
 const menuItems: MenuItemType[] = [
   {
-    title: 'Summary',
+    title: 'Overview',
     icon: BarChart3,
     path: '/dashboard',
     subItems: [
-      { title: 'Overview', path: '/dashboard/overviews' },
-      { title: 'Revenues', path: '/dashboard/revenues' },
+      { title: 'Revenues', path: '/dashboard/overviews' },
       { title: 'Engagement', path: '/dashboard/engagements' },
       { title: 'Content Performance', path: '/dashboard/reports' },
     ]

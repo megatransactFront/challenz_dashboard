@@ -1,51 +1,39 @@
-// app/dashboard/page.tsx
-"use client"
+"use client";
 
-import React from 'react';
-import { usePathname } from 'next/navigation';
-import  OverviewPage  from './overviews/page';
-import  RevenuePage  from './revenues/page';
-import  EngagementPage  from './engagements/page';
-import { Search, Bell, Settings } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-
+import React from "react";
+import { usePathname } from "next/navigation";
+import OverviewPage from "./overviews/page";
+import RevenuePage from "./revenues/page";
+import EngagementPage from "./engagements/page";
 
 export default function Dashboard() {
   const pathname = usePathname();
 
+  // Determine page title and description dynamically
   const getPageTitle = () => {
     switch (pathname) {
-      case '/dashboard':
-        return { title: 'Overview Dashboard', description: 'View your overview metrics' };
-      case '/dashboard/revenues':
-        return { title: 'Revenue Analytics', description: 'Track your revenue metrics' };
-      case '/dashboard/engagement':
-        return { title: 'Engagement Metrics', description: 'Monitor user engagement' };
-      case '/dashboard/performance':
-        return { title: 'Content Performance', description: 'Analyze content metrics' };
+      case "/dashboard":
+      case "/dashboard/overviews":
+        return { title: "Overview Dashboard", description: "View your overview metrics" };
+      case "/dashboard/revenues":
+        return { title: "Revenue Analytics", description: "Track your revenue metrics" };
+      case "/dashboard/engagements":
+        return { title: "Engagement Metrics", description: "Monitor user engagement" };
       default:
-        return { title: 'Overview Dashboard', description: 'View your overview metrics' };
+        return { title: "Overview Dashboard", description: "View your overview metrics" };
     }
   };
 
+  // Render the appropriate content based on the route
   const renderContent = () => {
     switch (pathname) {
-      case '/dashboard/overviews':
+      case "/dashboard":
+      case "/dashboard/overviews":
         return <OverviewPage />;
-      case '/dashboard/revenues':
+      case "/dashboard/revenues":
         return <RevenuePage />;
-      case '/dashboard/engagements':
+      case "/dashboard/engagements":
         return <EngagementPage />;
-      // case '/dashboard/performance':
-      //   return <ContentPerformancePage />;
       default:
         return <OverviewPage />;
     }
@@ -55,103 +43,18 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 px-8 py-4">
-        {/* Left side - Breadcrumb */}
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-semibold">Master Dashboard</h1>
-          <span className="text-gray-400">/</span>
-          <span className="text-gray-500">Administrator</span>
-        </div>
-        
-        {/* Right side - Search & Icons */}
-        <div className="flex items-center gap-6">
-          {/* Search */}
-          <div className="relative">
-            <input 
-              type="text" 
-              placeholder="Search Overview" 
-              className="rounded-lg border border-gray-200 py-2 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <Search 
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" 
-              size={18} 
-            />
-          </div>
-          
-          {/* Notifications Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="relative focus:outline-none">
-              <Bell className="text-gray-600 hover:text-gray-800" size={20} />
-              <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-80" align="end">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {/* Example notifications */}
-              <div className="max-h-[450px] overflow-y-auto">
-                {[1, 2, 3].map((_, i) => (
-                  <DropdownMenuItem key={i} className="flex flex-col items-start gap-1 p-4">
-                    <div className="flex w-full items-center justify-between">
-                      <span className="font-medium">New Update Available</span>
-                      <span className="text-xs text-gray-400">2h ago</span>
-                    </div>
-                    <p className="text-sm text-gray-500">
-                      A new software update is available for download.
-                    </p>
-                  </DropdownMenuItem>
-                ))}
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-center text-sm text-blue-500 hover:text-blue-600">
-                View All Notifications
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          {/* Settings Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger className="focus:outline-none">
-              <Settings className="text-gray-600 hover:text-gray-800" size={20} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <div className="flex items-center gap-2">
-                  Profile Settings
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <div className="flex items-center gap-2">
-                  Preferences
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <div className="flex items-center gap-2">
-                  Help & Support
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-500 hover:text-red-600">
-                <div className="flex items-center gap-2">
-                  Sign Out
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-  
+
+
       {/* Main Content */}
       <div className="p-8">
+        {/* Page Title and Description */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold">{title}</h1>
           <p className="text-gray-500">{description}</p>
         </div>
-        <div className="py-4">
-          {renderContent()}
-        </div>
+
+        {/* Dynamic Page Content */}
+        <div className="py-4">{renderContent()}</div>
       </div>
     </div>
   );
