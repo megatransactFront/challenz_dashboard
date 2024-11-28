@@ -25,7 +25,7 @@ function formatValue(value: number, label: string): string {
 function getRawStats() {
   return {
     totalRegistrations: {
-      value: 1221325,
+      value: 12215,
       label: "Users"
     },
     newUsers: {

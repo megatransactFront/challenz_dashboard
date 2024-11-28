@@ -7,25 +7,17 @@ export interface RevenueData {
   profit: number;
 }
 
+export interface StatCardData {
+  title: string;
+  value: string;
+  icon: LucideIcon;
+}
+
 export interface Transaction {
   id: string;
   date: string;
   user: string;
+  type: 'subscription' | 'one-time' | 'refund';
   amount: number;
-  type: 'subscription' | 'in-app-purchase' | 'advertisement';
   status: 'completed' | 'pending' | 'failed';
-}
-
-export interface RevenueStat {
-  title: string;
-  value: string | number;
-  icon: LucideIcon;
-}
-
-export interface RevenueChartProps {
-  data: RevenueData[];
-}
-
-export interface TransactionTableProps {
-  transactions: Transaction[];
 }

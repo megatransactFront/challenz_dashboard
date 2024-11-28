@@ -1,29 +1,121 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Loader2, DollarSign, TrendingUp, CreditCard, ArrowUpRight } from 'lucide-react';
 import { RevenueStats } from "../components/revenues/RevenueStats";
 import { RevenueChart } from "../components/revenues/RevenueChart";
 import { TransactionTable } from "../components/revenues/TransactionTable";
-import type { RevenueData } from "../components/revenues/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Mock data
-const mockRevenueData: RevenueData[] = [
-  { month: "Jan", revenue: 45000, expenses: 28000, profit: 17000 },
-  { month: "Feb", revenue: 52000, expenses: 32000, profit: 20000 },
-  { month: "Mar", revenue: 49000, expenses: 30000, profit: 19000 },
-  { month: "Apr", revenue: 58000, expenses: 35000, profit: 23000 },
-  { month: "May", revenue: 55000, expenses: 34000, profit: 21000 },
-  { month: "Jun", revenue: 62000, expenses: 37000, profit: 25000 },
-];
+// Types for API responses
+interface RevenueData {
+  month: string;
+  revenue: number;
+  expenses: number;
+  profit: number;
+}
+
+interface StatCardData {
+  title: string;
+  value: string;
+  icon: string;  // Changed to string to match API response
+}
+
+interface Transaction {
+  id: string;
+  date: string;
+  user: string;
+  type: 'subscription' | 'one-time' | 'refund';
+  amount: number;
+  status: 'completed' | 'pending' | 'failed';
+}
+
+interface RevenueApiResponse {
+  chartData: RevenueData[];
+  statsData: StatCardData[];
+  transactions: Transaction[];
+}
+
+// Icon mapping
+const iconMap = {
+  DollarSign,
+  TrendingUp,
+  CreditCard,
+  ArrowUpRight
+};
 
 export default function RevenuePage() {
-  return (
-    <div className="space-y-6">
-      <RevenueStats />
-      <div className="grid gap-6 grid-cols-1">
-        <RevenueChart data={mockRevenueData} />
+  const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
+  const [statsData, setStatsData] = useState<StatCardData[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/revenues');
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch revenue data');
+        }
+
+        const data: RevenueApiResponse = await response.json();
+        
+        // Map the icon strings to actual icon components
+        const processedStatsData = data.statsData.map(stat => ({
+          ...stat,
+          icon: iconMap[stat.icon as keyof typeof iconMap]
+        }));
+
+        setRevenueData(data.chartData);
+        setStatsData(processedStatsData);
+        setTransactions(data.transactions);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('Error fetching revenue data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
       </div>
-      <TransactionTable transactions={[]} />
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
+
+  return (
+    <div className="min-h-full bg-gray-50/30 pb-12">
+  {/* Max width wrapper */}
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    {/* Content container with top padding */}
+    <div className="pt-8">
+      {/* Grid layout for dashboard components */}
+      <div className="space-y-8">
+        <RevenueStats stats={statsData} />
+        <div className="grid gap-6 grid-cols-1">
+          <RevenueChart data={revenueData} />
+        </div>
+        <TransactionTable transactions={transactions} />
+      </div>
     </div>
+  </div>
+</div>
   );
 }

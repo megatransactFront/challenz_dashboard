@@ -1,73 +1,79 @@
-// app/dashboard/components/revenue/TransactionTable.tsx
-"use client"
-
+// TransactionTable.tsx
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Transaction } from './types';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import type { Transaction } from './types';
 
 interface TransactionTableProps {
-  transactions?: Transaction[]; // Make it optional
+  transactions: Transaction[];
 }
 
-export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions = [] }) => { // Provide default empty array
+export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions }) => {
+  const getStatusColor = (status: Transaction['status']) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'failed':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Recent Transactions</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="relative overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-              <tr>
-                <th className="px-6 py-3">Date</th>
-                <th className="px-6 py-3">User</th>
-                <th className="px-6 py-3">Type</th>
-                <th className="px-6 py-3">Amount</th>
-                <th className="px-6 py-3">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.length > 0 ? (
-                transactions.map((transaction) => (
-                  <tr key={transaction.id} className="bg-white border-b">
-                    <td className="px-6 py-4">
-                      {new Date(transaction.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4">{transaction.user}</td>
-                    <td className="px-6 py-4 capitalize">
-                      {transaction.type.replace('-', ' ')}
-                    </td>
-                    <td className="px-6 py-4">
-                      {new Intl.NumberFormat('en-US', {
-                        style: 'currency',
-                        currency: 'USD'
-                      }).format(transaction.amount)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium
-                        ${transaction.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                          transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                          'bg-red-100 text-red-800'}`}
-                      >
-                        {transaction.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                    No transactions found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Customer</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {transactions.map((transaction) => (
+            <TableRow key={transaction.id}>
+              <TableCell>{formatDate(transaction.date)}</TableCell>
+              <TableCell>{transaction.description}</TableCell>
+              <TableCell>{transaction.customer}</TableCell>
+              <TableCell className={transaction.type === 'debit' ? 'text-red-600' : 'text-green-600'}>
+                {formatCurrency(transaction.amount)}
+              </TableCell>
+              <TableCell>
+                <Badge variant="secondary" className={getStatusColor(transaction.status)}>
+                  {transaction.status}
+                </Badge>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
-
-export default TransactionTable;
