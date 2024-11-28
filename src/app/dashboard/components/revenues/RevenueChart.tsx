@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import type { RevenueChartProps } from './types';
+import type { RevenueChartProps } from '@/app/types/revenues';
 
 export const RevenueChart: React.FC<RevenueChartProps> = ({ data = [] }) => (
   <Card>
