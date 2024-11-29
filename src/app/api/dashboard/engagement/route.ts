@@ -17,33 +17,38 @@ const mockEngagementData: EngagementData[] = Array.from({ length: 7 }, (_, i) =>
   };
 }).reverse();
 
+import { Users, Clock, Target, TrendingUp } from 'lucide-react';
+
 const mockStatsData: StatCardData2[] = [
   {
     title: "Daily Active Users",
     value: "8,21249",
     change: "+12.3%",
-    trend: "up"
+    trend: "up",
+    icon: Users
   },
   {
     title: "Avg. Session Duration",
     value: "12m 30s",
     change: "+5.2%",
-    trend: "up"
+    trend: "up",
+    icon: Clock
   },
   {
     title: "Engagement Rate",
     value: "68.7%",
     change: "-2.1%",
-    trend: "down"
+    trend: "down",
+    icon: Target
   },
   {
     title: "Growth Rate",
     value: "+12.3%",
     change: "+1.5%",
-    trend: "up"
+    trend: "up",
+    icon: TrendingUp
   }
 ];
-
 const mockActivityLogs: Activity[] = [
   {
     id: '1',
