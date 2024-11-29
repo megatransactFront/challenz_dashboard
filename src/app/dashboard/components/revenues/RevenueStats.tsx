@@ -2,14 +2,16 @@ import React from 'react';
 import { LucideIcon } from 'lucide-react';
 import { StatCard } from '../shared/StatCard';
 
-interface StatCardData {
+interface StatCardData2 {
   title: string;
   value: string;
   icon: LucideIcon;
+  change: string;
+  trend: 'up' | 'down' | 'neutral';
 }
 
 interface RevenueStatsProps {
-  stats: StatCardData[];
+  stats: StatCardData2[];
 }
 
 export const RevenueStats: React.FC<RevenueStatsProps> = ({ stats }) => (
@@ -20,6 +22,8 @@ export const RevenueStats: React.FC<RevenueStatsProps> = ({ stats }) => (
         title={stat.title}
         value={stat.value}
         icon={stat.icon}
+        change={stat.change}
+        trend={stat.trend}
       />
     ))}
   </div>
