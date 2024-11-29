@@ -1,4 +1,4 @@
-import { LucideIcon } from "lucide-react";
+
 
 // types/revenue.ts
 export interface RevenueData {
@@ -23,10 +23,4 @@ export interface RevenueData {
   
   export interface TransactionTableProps {
     transactions: Transaction[];
-  }
-  
-  export interface StatCardData {
-    title: string;
-    value: string;
-    icon: LucideIcon;  // You might want to make this more specific with LucideIcon
   }

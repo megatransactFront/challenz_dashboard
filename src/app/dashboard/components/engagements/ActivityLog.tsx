@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Share2, Heart, Send, UserPlus } from 'lucide-react';
-import { Activity } from '@/app/types';
+import { Activity } from '@/app/types/engagement';  // Updated import path
 
 interface ActivityLogProps {
   activities: Activity[];
