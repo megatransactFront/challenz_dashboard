@@ -18,7 +18,7 @@ export interface EngagementData {
     engagement: number;
   }
   
-  export interface StatCardData {
+  export interface StatCardData2 {
     title: string;
     value: string;
     change: string;  // Fixed spelling

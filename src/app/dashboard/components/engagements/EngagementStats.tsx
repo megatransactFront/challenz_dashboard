@@ -3,10 +3,10 @@
 import React from 'react';
 import { Users, Clock, Target, TrendingUp, LucideIcon } from 'lucide-react';
 import { StatCard } from '../shared/StatCard';
-import { StatCardData } from '@/app/types/engagement';
+import { StatCardData2 } from '@/app/types/engagement';
 
 interface EngagementStatsProps {
-  stats: StatCardData[];
+  stats: StatCardData2[];
 }
 
 

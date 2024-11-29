@@ -7,19 +7,19 @@ import  EngagementStats  from '../components/engagements/EngagementStats';
 import { EngagementChart } from '../components/engagements/EngagementChart';
 import { ActivityLog } from '../components/engagements/ActivityLog';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Activity, EngagementData, StatCardData } from '@/app/types/engagement';
+import { Activity, EngagementData, StatCardData2 } from '@/app/types/engagement';
 
 // API response type
 interface EngagementApiResponse {
   chartData: EngagementData[];
-  statsData: StatCardData[];
+  statsData: StatCardData2[];
   activities: Activity[];
 }
 
 // Initial state values
 const initialState = {
   engagementData: [] as EngagementData[],
-  statsData: [] as StatCardData[],
+  statsData: [] as StatCardData2[],
   activities: [] as Activity[],
   isLoading: true,
   error: null as string | null

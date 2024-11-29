@@ -1,6 +1,6 @@
 // app/api/dashboard/engagement/route.ts
 import { NextResponse } from 'next/server';
-import { EngagementData, Activity, StatCardData } from '@/app/types/engagement';
+import { EngagementData, Activity, StatCardData2 } from '@/app/types/engagement';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
@@ -17,7 +17,7 @@ const mockEngagementData: EngagementData[] = Array.from({ length: 7 }, (_, i) =>
   };
 }).reverse();
 
-const mockStatsData: StatCardData[] = [
+const mockStatsData: StatCardData2[] = [
   {
     title: "Daily Active Users",
     value: "8,21249",
