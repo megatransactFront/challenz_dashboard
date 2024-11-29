@@ -1,15 +1,13 @@
-"use client"
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Share2, Heart, Send, UserPlus } from 'lucide-react';
-import { ActivityLog as ActivityLogType } from './types';
+import { Activity } from '@/app/types';
 
 interface ActivityLogProps {
-  activities?: ActivityLogType[];
+  activities: Activity[];
 }
 
-const getActivityIcon = (type: string) => {
+const getActivityIcon = (type: Activity['type']) => {
   switch (type) {
     case 'comment':
       return <MessageSquare className="w-4 h-4 text-blue-500" />;
@@ -26,7 +24,7 @@ const getActivityIcon = (type: string) => {
   }
 };
 
-export const ActivityLog: React.FC<ActivityLogProps> = ({ activities = [] }) => (
+export const ActivityLog: React.FC<ActivityLogProps> = ({ activities }) => (
   <Card>
     <CardHeader>
       <CardTitle>Recent Activity</CardTitle>
@@ -49,7 +47,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({ activities = [] }) => 
                   <span className="font-medium">{activity.target}</span>
                 </p>
                 <p className="text-xs text-gray-500">
-                  {new Date(activity.timestamp).toLocaleTimeString()}
+                  {new Date(activity.date).toLocaleTimeString()}
                 </p>
               </div>
             </div>

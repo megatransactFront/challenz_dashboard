@@ -1,15 +1,14 @@
-"use client"
-
+// components/engagements/EngagementChart.tsx
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { EngagementData } from './types';
+import { EngagementData } from '@/app/types/engagement';  // 
 
 interface EngagementChartProps {
   data: EngagementData[];
 }
 
-export const EngagementChart: React.FC<EngagementChartProps> = ({ data = [] }) => (
+export const EngagementChart: React.FC<EngagementChartProps> = ({ data }) => (
   <Card>
     <CardHeader>
       <CardTitle>Daily Engagement Metrics</CardTitle>
@@ -20,7 +19,7 @@ export const EngagementChart: React.FC<EngagementChartProps> = ({ data = [] }) =
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
-              dataKey="hour" 
+              dataKey="date" 
               interval={2}
             />
             <YAxis yAxisId="left" />

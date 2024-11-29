@@ -29,25 +29,18 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch both metrics and user data simultaneously
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
-        const [metricsRes, userDataRes] = await Promise.all([
-          fetch('/api/dashboard/stats'),
-          fetch('/api/dashboard/users')
-        ]);
-
-        if (!metricsRes.ok || !userDataRes.ok) {
+        const response = await fetch('/api/dashboard/overview');
+  
+        if (!response.ok) {
           throw new Error('Failed to fetch dashboard data');
         }
-
-        const [metricsData, userData] = await Promise.all([
-          metricsRes.json(),
-          userDataRes.json()
-        ]);
-
-        setMetrics(metricsData);
+  
+        const { stats, userData } = await response.json();
+  
+        setMetrics(stats);
         setUserData(userData);
         setError(null);
       } catch (err) {
@@ -57,10 +50,9 @@ export default function Page() {
         setIsLoading(false);
       }
     };
-
+  
     fetchDashboardData();
-  }, []); // Empty dependency array means this runs once on component mount
-
+  }, []); // Em
   // Loading state
   if (isLoading) {
     return (
@@ -87,26 +79,34 @@ export default function Page() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard 
-          title="Total Registrations" 
-          value={metrics.totalRegistrations.formatted} 
-          icon={Users} 
-        />
-        <StatCard 
-          title="New Users" 
-          value={metrics.newUsers.formatted} 
-          icon={Users} 
-        />
-        <StatCard 
-          title="Total Challenges" 
-          value={metrics.totalChallenges.formatted} 
-          icon={Trophy} 
-        />
-        <StatCard 
-          title="Total Revenue" 
-          value={metrics.totalRevenue.formatted} 
-          icon={DollarSign} 
-        />
+            <StatCard 
+        title="Total Registrations" 
+        value={metrics.totalRegistrations.formatted} 
+        icon={Users} 
+        change="+12.3% from last month"
+        trend="up"
+      />
+      <StatCard 
+        title="New Users" 
+        value={metrics.newUsers.formatted} 
+        icon={Users} 
+        change="-5.2% from last week"
+        trend="down"
+      />
+      <StatCard 
+        title="Total Challenges" 
+        value={metrics.totalChallenges.formatted} 
+        icon={Trophy} 
+        change="+8.7% this month"
+        trend="up"
+      />
+      <StatCard 
+        title="Total Revenue" 
+        value={metrics.totalRevenue.formatted} 
+        icon={DollarSign} 
+        change="+15.3% from last month"
+        trend="up"
+      />
       </div>
 
       <Card>

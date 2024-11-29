@@ -1,30 +1,38 @@
 "use client"
 
 import React from 'react';
-import { Users, Clock, Target, TrendingUp } from 'lucide-react';
+import { Users, Clock, Target, TrendingUp, LucideIcon } from 'lucide-react';
 import { StatCard } from '../shared/StatCard';
+import { StatCardData } from '@/app/types/engagement';
 
-export const EngagementStats = () => (
+interface EngagementStatsProps {
+  stats: StatCardData[];
+}
+
+
+const iconMap: Record<string, LucideIcon> = {
+  "Daily Active Users": Users,
+  "Avg. Session Duration": Clock,
+  "Engagement Rate": Target,
+  "Growth Rate": TrendingUp
+};
+
+const EngagementStats: React.FC<EngagementStatsProps> = ({ stats }) => (
   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-    <StatCard 
-      title="Daily Active Users" 
-      value="8,249" 
-      icon={Users} 
-    />
-    <StatCard 
-      title="Avg. Session Duration" 
-      value="12m 30s" 
-      icon={Clock} 
-    />
-    <StatCard 
-      title="Engagement Rate" 
-      value="68.7%" 
-      icon={Target} 
-    />
-    <StatCard 
-      title="Growth Rate" 
-      value="+12.3%" 
-      icon={TrendingUp} 
-    />
+    {stats.map((stat, index) => {
+      const IconComponent = iconMap[stat.title];
+      return (
+        <StatCard 
+          key={index}
+          title={stat.title}
+          value={stat.value}
+          icon={IconComponent}
+          change={stat.change}    // Added this
+          trend={stat.trend}      // Added this
+        />
+      );
+    })}
   </div>
 );
+
+export default EngagementStats;  // Changed to default export

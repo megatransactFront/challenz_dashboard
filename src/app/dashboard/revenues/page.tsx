@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Loader2, DollarSign, TrendingUp, CreditCard, ArrowUpRight } from 'lucide-react';
+import { 
+  Loader2, 
+  DollarSign, 
+  TrendingUp, 
+  CreditCard, 
+  ArrowUpRight,
+  LucideIcon 
+} from 'lucide-react';
 import { RevenueStats } from "../components/revenues/RevenueStats";
 import { RevenueChart } from "../components/revenues/RevenueChart";
 import { TransactionTable } from "../components/revenues/TransactionTable";
@@ -15,10 +22,22 @@ interface RevenueData {
   profit: number;
 }
 
+// API response type for stats
 interface StatCardData {
   title: string;
   value: string;
-  icon: string;  // Changed to string to match API response
+  icon: string;
+  change: string;
+  trend: 'up' | 'down' | 'neutral';
+}
+
+// Processed type with Lucide icon
+interface ProcessedStatCardData {
+  title: string;
+  value: string;
+  icon: LucideIcon;
+  change: string;
+  trend: 'up' | 'down' | 'neutral';
 }
 
 interface Transaction {
@@ -36,8 +55,8 @@ interface RevenueApiResponse {
   transactions: Transaction[];
 }
 
-// Icon mapping
-const iconMap = {
+// Icon mapping with proper typing
+const iconMap: Record<string, LucideIcon> = {
   DollarSign,
   TrendingUp,
   CreditCard,
@@ -46,7 +65,7 @@ const iconMap = {
 
 export default function RevenuePage() {
   const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
-  const [statsData, setStatsData] = useState<StatCardData[]>([]);
+  const [statsData, setStatsData] = useState<ProcessedStatCardData[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +74,7 @@ export default function RevenuePage() {
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/revenues');
+        const response = await fetch('/api/dashboard/revenues');
 
         if (!response.ok) {
           throw new Error('Failed to fetch revenue data');
@@ -63,11 +82,17 @@ export default function RevenuePage() {
 
         const data: RevenueApiResponse = await response.json();
         
-        // Map the icon strings to actual icon components
-        const processedStatsData = data.statsData.map(stat => ({
-          ...stat,
-          icon: iconMap[stat.icon as keyof typeof iconMap]
-        }));
+        // Process the stats data with proper typing
+        const processedStatsData: ProcessedStatCardData[] = data.statsData.map(stat => {
+          const IconComponent = iconMap[stat.icon as keyof typeof iconMap];
+          if (!IconComponent) {
+            console.warn(`Icon not found for: ${stat.icon}`);
+          }
+          return {
+            ...stat,
+            icon: IconComponent || DollarSign // Fallback to DollarSign if icon not found
+          };
+        });
 
         setRevenueData(data.chartData);
         setStatsData(processedStatsData);
@@ -102,20 +127,17 @@ export default function RevenuePage() {
 
   return (
     <div className="min-h-full bg-gray-50/30 pb-12">
-  {/* Max width wrapper */}
-  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    {/* Content container with top padding */}
-    <div className="pt-8">
-      {/* Grid layout for dashboard components */}
-      <div className="space-y-8">
-        <RevenueStats stats={statsData} />
-        <div className="grid gap-6 grid-cols-1">
-          <RevenueChart data={revenueData} />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="pt-8">
+          <div className="space-y-8">
+            <RevenueStats stats={statsData} />
+            <div className="grid gap-6 grid-cols-1">
+              <RevenueChart data={revenueData} />
+            </div>
+            <TransactionTable transactions={transactions} />
+          </div>
         </div>
-        <TransactionTable transactions={transactions} />
       </div>
     </div>
-  </div>
-</div>
   );
 }

@@ -1,14 +1,26 @@
+// app/types/engagement.ts
 export interface EngagementData {
-    hour: string;
-    activeUsers: number;
-    engagement: number;
-  }
-  
-  export interface ActivityLog {
-    id: string;
-    user: string;
-    action: string;
-    target: string;
-    timestamp: string;
-    type: 'comment' | 'like' | 'share' | 'post' | 'follow';
-  }
+  date: string;
+  activeUsers: number;
+  sessionDuration: number;
+  bounceRate: number;
+  engagement: number;
+}
+
+export interface StatCardData {
+  title: string;
+  value: string;
+  change: string;
+  trend: 'up' | 'down' | 'neutral';
+  icon?: React.ElementType;
+}
+
+export interface Activity {
+  id: string;
+  user: string;
+  action: string;
+  target: string;
+  date: string;
+  type: 'comment' | 'share' | 'like' | 'post' | 'follow';
+  status: 'completed' | 'pending' | 'failed';
+}

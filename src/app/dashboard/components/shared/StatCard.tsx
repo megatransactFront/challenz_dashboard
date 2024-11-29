@@ -8,7 +8,7 @@ interface StatCardProps {
   icon: LucideIcon;
 }
 
-export function StatCard({ title, value, icon: Icon }: StatCardProps) {
+export function StatCard({ title, value, icon, change, trend: Icon }: StatCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
