@@ -82,9 +82,9 @@ const otherMenuItems: MenuItemType[] = [
   {
     title: "Settings",
     icon: Settings,
-    path: "/settings",
+    path: "/other/settings",
     subItems: [
-      { title: "Profile", path: "/settings/profile" },
+      { title: "Profile", path: "/other/profile" },
       { title: "Notifications", path: "/settings/notifications" },
       { title: "Security", path: "/settings/security" },
     ],

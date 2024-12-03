@@ -78,7 +78,7 @@ export default function Page() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <StatCard 
         title="Total Registrations" 
         value={metrics.totalRegistrations.formatted} 
@@ -100,13 +100,7 @@ export default function Page() {
         change="+8.7% this month"
         trend="up"
       />
-      <StatCard 
-        title="Total Revenue" 
-        value={metrics.totalRevenue.formatted} 
-        icon={DollarSign} 
-        change="+15.3% from last month"
-        trend="up"
-      />
+      
       </div>
 
       <Card>
