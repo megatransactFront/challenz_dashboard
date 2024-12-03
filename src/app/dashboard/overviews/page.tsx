@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { Users, Trophy, DollarSign, Loader2 } from 'lucide-react';
+import { Users, Trophy, Loader2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { StatCard } from '../components/shared/StatCard';
 import { UserChart } from '../components/overview/UserChart';
