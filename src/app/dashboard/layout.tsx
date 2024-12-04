@@ -11,6 +11,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
 
+  // Updated paths to match actual route structure
   const pageDetails = {
     "/dashboard": {
       title: "Overview Dashboard",
@@ -40,7 +41,6 @@ export default function DashboardLayout({
           <p className="text-gray-500">{currentPageDetails.description}</p>
         </div>
 
-        {/* Page Content */}
         {children}
       </div>
     </div>

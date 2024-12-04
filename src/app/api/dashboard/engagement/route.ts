@@ -35,14 +35,14 @@ const mockStatsData: StatCardData2[] = [
     icon: Clock
   },
   {
-    title: "Engagement Rate",
+    title: "New Challenges",
     value: "68.7%",
     change: "-2.1%",
     trend: "down",
     icon: Target
   },
   {
-    title: "Growth Rate",
+    title: "Challenges Participated",
     value: "+12.3%",
     change: "+1.5%",
     trend: "up",

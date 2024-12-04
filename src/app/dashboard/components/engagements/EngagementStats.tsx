@@ -13,8 +13,8 @@ interface EngagementStatsProps {
 const iconMap: Record<string, LucideIcon> = {
   "Daily Active Users": Users,
   "Avg. Session Duration": Clock,
-  "Engagement Rate": Target,
-  "Growth Rate": TrendingUp
+  "New Challenges": Target,
+  "Challenges Participated": TrendingUp
 };
 
 const EngagementStats: React.FC<EngagementStatsProps> = ({ stats }) => (

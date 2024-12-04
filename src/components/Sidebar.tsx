@@ -53,7 +53,7 @@ const menuItems: MenuItemType[] = [
     subItems: [
       { title: "Revenues", path: "/dashboard/revenues" },
       { title: "Engagement", path: "/dashboard/engagements" },
-      { title: "Content Performance", path: "/dashboard/reports" },
+      { title: "Content Performance", path: "/dashboard/content-performance" },
     ],
   },
   {
