@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react';
-import { Users, Clock, Target, TrendingUp, LucideIcon } from 'lucide-react';
+import { Users, Clock, Target, TrendingUp, LucideIcon, TrendingUpDown} from 'lucide-react';
 import { StatCard } from '../shared/StatCard';
 import { StatCardData2 } from '@/app/types/engagement';
 
@@ -14,7 +14,9 @@ const iconMap: Record<string, LucideIcon> = {
   "Daily Active Users": Users,
   "Avg. Session Duration": Clock,
   "New Challenges": Target,
-  "Challenges Participated": TrendingUp
+  "Challenges Participated": TrendingUp,
+  "Best Time To Post": Clock,
+  "Hot Categories": TrendingUpDown
 };
 
 const EngagementStats: React.FC<EngagementStatsProps> = ({ stats }) => (

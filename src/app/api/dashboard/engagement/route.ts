@@ -17,7 +17,7 @@ const mockEngagementData: EngagementData[] = Array.from({ length: 7 }, (_, i) =>
   };
 }).reverse();
 
-import { Users, Clock, Target, TrendingUp } from 'lucide-react';
+import { Users, Clock, Target, TrendingUp, TrendingUpDown } from 'lucide-react';
 
 const mockStatsData: StatCardData2[] = [
   {
@@ -47,7 +47,23 @@ const mockStatsData: StatCardData2[] = [
     change: "+1.5%",
     trend: "up",
     icon: TrendingUp
+  },
+  {
+    title: "Best Time To Post",
+    value: "7pm - 9pm",
+    change: "+1.5%",
+    trend: "up",
+    icon: Clock
+  },
+  {
+    title: "Hot Categories",
+    value: "Entertainment",
+    change: "+1.5%",
+    trend: "up",
+    icon: TrendingUpDown
   }
+
+
 ];
 const mockActivityLogs: Activity[] = [
   {
