@@ -80,7 +80,7 @@ export default function ChallengePage() {
                     <th className="text-left py-4 px-4 font-semibold hidden lg:table-cell">VIEWS</th>
                     <th className="text-left py-4 px-4 font-semibold hidden lg:table-cell">USERS JOINED</th>
                     <th className="text-left py-4 px-4 font-semibold hidden xl:table-cell">LIKES</th>
-                    <th className="text-left py-4 px-4 font-semibold hidden xl:table-cell text-center">COMMENTS</th>
+                    <th className="text-left py-4 px-4 font-semibold hidden xl:table-cell">COMMENTS</th>
                     <th className="text-left py-4 px-4 font-semibold">SPONSORED</th>
                   </tr>
                 </thead>
