@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { Navbar } from "@/components/Navbar";
+import { UserProvider } from '@auth0/nextjs-auth0/client';
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -14,6 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
+    <UserProvider>
     <html lang="en">
       <body className="min-h-screen bg-background">
         <div className="relative flex min-h-screen max-h-screen overflow-hidden">
@@ -27,5 +29,6 @@ export default function RootLayout({
         </div>
       </body>
     </html>
+    </UserProvider>
   );
 }
