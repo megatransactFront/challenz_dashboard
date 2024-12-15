@@ -2,7 +2,7 @@
 'use client'
 
 import React from 'react'
-import { ArrowLeft, MessageSquare } from 'lucide-react'
+import { ArrowLeft} from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { getChallengeById, getChallengeComments } from '@/app/types/challenges'
