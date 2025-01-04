@@ -1,8 +1,15 @@
 import React from 'react';
-import { Play, Heart, MessageCircle, Share2, Users } from 'lucide-react';
+import { Play, Heart, MessageCircle, Share2, Users, LucideIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
-const KPIMetric = ({ icon: Icon, label, value }) => {
+// Define interface for KPIMetric props
+interface KPIMetricProps {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}
+
+const KPIMetric: React.FC<KPIMetricProps> = ({ icon: Icon, label, value }) => {
   return (
     <Card className="p-6">
       <div className="flex flex-col space-y-2">
@@ -18,15 +25,22 @@ const KPIMetric = ({ icon: Icon, label, value }) => {
   );
 };
 
-const KPIDashboard = () => {
-  const engagementMetrics = [
+// Define interface for metrics
+interface Metric {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}
+
+const KPIDashboard: React.FC = () => {
+  const engagementMetrics: Metric[] = [
     { icon: Play, label: 'Total Posts', value: '120 Posts' },
     { icon: Heart, label: 'Total Likes', value: '300 Likes' },
     { icon: MessageCircle, label: 'Total Comments', value: '50 Comments' },
     { icon: Share2, label: 'Total Shares', value: '12 Shares' }
   ];
 
-  const followerMetrics = [
+  const followerMetrics: Metric[] = [
     { icon: Users, label: 'Total Followers', value: '2,500' },
     { icon: Users, label: 'New Followers (Week)', value: '350 (Week)' },
     { icon: Users, label: 'New Followers (Month)', value: '500 (Month)' },
@@ -45,14 +59,12 @@ const KPIDashboard = () => {
         </div>
         <h2 className="text-xl font-semibold mb-6">James Thoi Key Performance Indicators</h2>
       </div>
-
       <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {engagementMetrics.map((metric, index) => (
             <KPIMetric key={index} {...metric} />
           ))}
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {followerMetrics.map((metric, index) => (
             <KPIMetric key={index} {...metric} />
