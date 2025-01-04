@@ -1,118 +1,173 @@
-// app/api/dashboard/route.ts
-import { NextResponse } from 'next/server';
+// app/api/overview/route.ts
+import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+const supabase = createClient(
+ process.env.NEXT_PUBLIC_SUPABASE_URL!,
+ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
 
 type Stat = {
-  value: number;
-  label: string;
-  formatted?: string;
-};
+ value: number
+ label: string
+ formatted?: string
+}
 
 type Stats = {
-  totalRegistrations: Stat;
-  newUsers: Stat;
-  totalChallenges: Stat;
-  totalRevenue: Stat;
-};
+ totalRegistrations: Stat
+ newUsers: Stat
+ activeUsers: Stat 
+ totalRevenue: Stat
+}
 
 type UserData = {
-  month: string;
-  totalUsers: number;
-  newUsers: number;
-};
+ month: string
+ totalUsers: number
+ newUsers: number
+}
 
 type DashboardResponse = {
-  stats: Stats;
-  userData: UserData[];
-};
+ stats: Stats
+ userData: UserData[]
+}
 
 function formatValue(value: number, label: string): string {
-  try {
-    if (typeof value !== 'number') {
-      throw new Error('Invalid value type');
-    }
-    if (label === 'USD') {
-      return `$${value.toLocaleString(undefined, { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2 
-      })}`;
-    }
-    return `${value.toLocaleString()}${label ? ` ${label}` : ''}`;
-  } catch {
-    return '0'; // Fallback value
-  }
+ try {
+   if (typeof value !== 'number') {
+     throw new Error('Invalid value type')
+   }
+   if (label === 'USD') {
+     return `$${value.toLocaleString(undefined, {
+       minimumFractionDigits: 2,
+       maximumFractionDigits: 2
+     })}`
+   }
+   return `${value.toLocaleString()}${label ? ` ${label}` : ''}`
+ } catch {
+   return '0'
+ }
 }
 
-function getRawStats(): Stats {
-  return {
-    totalRegistrations: {
-      value: 22122215,
-      label: "Users"
-    },
-    newUsers: {
-      value: 154,
-      label: "Users"
-    },
-    totalChallenges: {
-      value: 7560,
-      label: ""
-    },
-    totalRevenue: {
-      value: 10450.00,
-      label: "USD"
-    }
-  };
+async function getRawStats() {
+ // Get all users with created_at
+ const { data: users, error } = await supabase
+   .from('users')
+   .select('created_at')
+   .order('created_at', { ascending: false })
+
+ if (error) throw error
+
+ const totalCount = users.length
+
+ // Calculate new users (last 3 days)
+ const now = new Date()
+ const threeDaysAgo = new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000))
+ 
+ const newUsersCount = users.filter(user => {
+   const createdAt = new Date(user.created_at)
+   return createdAt >= threeDaysAgo
+ }).length
+
+ // Get active users (4+ hours daily)
+ const oneDayAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000))
+ const { data: activeUsers, error: activeError } = await supabase
+   .from('users')
+   .select('created_at')
+   .gte('created_at', oneDayAgo.toISOString())
+
+ if (activeError) throw activeError
+
+ const activeUsersCount = activeUsers?.length || 0
+
+ return {
+   totalRegistrations: {
+     value: totalCount,
+     label: "Users"
+   },
+   newUsers: {
+     value: newUsersCount,
+     label: "Users"
+   },
+   activeUsers: {
+     value: activeUsersCount,
+     label: "Active"
+   },
+   totalRevenue: {
+     value: totalCount,
+     label: "USD" 
+   }
+ }
 }
 
-function getUserData(): UserData[] {
-  return [
-    { month: 'Jan', totalUsers: 8000, newUsers: 2000 },
-    { month: 'Feb', totalUsers: 7000, newUsers: 1500 },
-    { month: 'Mar', totalUsers: 6000, newUsers: 1200 },
-    { month: 'Apr', totalUsers: 9000, newUsers: 2500 },
-    { month: 'May', totalUsers: 7500, newUsers: 1800 },
-    { month: 'Jun', totalUsers: 8500, newUsers: 2000 },
-    { month: 'Jul', totalUsers: 7800, newUsers: 1600 },
-    { month: 'Aug', totalUsers: 8200, newUsers: 1900 },
-    { month: 'Sep', totalUsers: 9500, newUsers: 2800 },
-    { month: 'Oct', totalUsers: 8800, newUsers: 2200 },
-    { month: 'Nov', totalUsers: 9200, newUsers: 2400 },
-    { month: 'Dec', totalUsers: 9800, newUsers: 2600 }
-  ];
+async function getUserData(): Promise<UserData[]> {
+ // Get users with created_at for monthly data
+ const { data: users, error } = await supabase
+   .from('users')
+   .select('created_at')
+   .order('created_at', { ascending: true })
+
+ if (error) throw error
+
+ // Group users by month
+ const monthlyData = users.reduce((acc, user) => {
+   const date = new Date(user.created_at)
+   const monthKey = date.toLocaleString('default', { month: 'short' })
+   
+   if (!acc[monthKey]) {
+     acc[monthKey] = {
+       totalUsers: 0,
+       newUsers: 0
+     }
+   }
+   
+   acc[monthKey].totalUsers++
+   
+   // Count as new user if within last 3 days
+   const now = new Date()
+   if (date >= new Date(now.getTime() - (3 * 24 * 60 * 60 * 1000))) {
+     acc[monthKey].newUsers++
+   }
+   
+   return acc
+ }, {} as Record<string, { totalUsers: number; newUsers: number }>)
+
+ return Object.entries(monthlyData).map(([month, data]) => ({
+   month,
+   totalUsers: data.totalUsers,
+   newUsers: data.newUsers
+ }))
 }
 
 export async function GET(): Promise<NextResponse<DashboardResponse>> {
-  try {
-    // Get raw stats and format them
-    const rawStats = getRawStats();
-    const statsData = Object.entries(rawStats).reduce((acc, [key, stat]) => ({
-      ...acc,
-      [key]: {
-        ...stat,
-        formatted: formatValue(stat.value, stat.label)
-      }
-    }), {} as Stats);
+ try {
+   const rawStats = await getRawStats()
+   const statsData = Object.entries(rawStats).reduce((acc, [key, stat]) => ({
+     ...acc,
+     [key]: {
+       ...stat,
+       formatted: formatValue(stat.value, stat.label)
+     }
+   }), {} as Stats)
 
-    // Get user data
-    const userData = getUserData();
+   const userData = await getUserData()
 
-    // Return combined response
-    return NextResponse.json({
-      stats: statsData,
-      userData: userData
-    });
-  } catch {
-    // Return empty data if something goes wrong
-    return NextResponse.json({
-      stats: {
-        totalRegistrations: { value: 0, label: "Users", formatted: "0 Users" },
-        newUsers: { value: 0, label: "Users", formatted: "0 Users" },
-        totalChallenges: { value: 0, label: "", formatted: "0" },
-        totalRevenue: { value: 0, label: "USD", formatted: "$0.00" }
-      },
-      userData: []
-    });
-  }
+   return NextResponse.json({
+     stats: statsData,
+     userData
+   })
+ } catch (error) {
+   console.error('Error:', error)
+   return NextResponse.json({
+     stats: {
+       totalRegistrations: { value: 0, label: "Users", formatted: "0 Users" },
+       newUsers: { value: 0, label: "Users", formatted: "0 Users" },
+       activeUsers: { value: 0, label: "Active", formatted: "0 Active" },
+       totalRevenue: { value: 0, label: "USD", formatted: "$0.00" }
+     },
+     userData: []
+   })
+ }
 }

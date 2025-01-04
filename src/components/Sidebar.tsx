@@ -71,9 +71,8 @@ const menuItems: MenuItemType[] = [
     icon: Users,
     path: "/users",
     subItems: [
-      { title: "All Users", path: "/users" },
-      { title: "New Users", path: "/users/new" },
-      { title: "User Groups", path: "/users/groups" },
+      { title: "KPIs", path: "/users/kpi" },
+      { title: "User Engagement", path: "/users/groups" },
     ],
   },
 ];
@@ -108,7 +107,7 @@ const Sidebar: React.FC = () => {
             src="https://xsgames.co/randomusers/avatar.php?g=male"
             alt="Profile"
             className="w-full h-full object-cover"
-          />
+          />thet
         </div>
         <span className="text-white font-medium">Simon Powel</span>
       </div>

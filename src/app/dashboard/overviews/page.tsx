@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 interface DashboardMetrics {
   totalRegistrations: { value: number; label: string; formatted: string };
   newUsers: { value: number; label: string; formatted: string };
-  totalChallenges: { value: number; label: string; formatted: string };
+  activeUsers: { value: number; label: string; formatted: string };
   totalRevenue: { value: number; label: string; formatted: string };
 }
 
@@ -87,15 +87,15 @@ export default function Page() {
         trend="up"
       />
       <StatCard 
-        title="New Users" 
+        title="New users (within 3 days)" 
         value={metrics.newUsers.formatted} 
         icon={Users} 
         change="-5.2% from last week"
         trend="down"
       />
       <StatCard 
-        title="Total Challenges" 
-        value={metrics.totalChallenges.formatted} 
+        title="Active users (4 hours daily)" 
+        value={metrics.activeUsers.formatted}  // Change this from totalChallenges to activeUsers
         icon={Trophy} 
         change="+8.7% this month"
         trend="up"

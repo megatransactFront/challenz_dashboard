@@ -52,6 +52,25 @@ const challengesData: Challenge[] = [
       second: "$2,500",
       third: "$1,000"
     }
+  },
+  {
+    id: "2",
+    title: "Jump and Jacks",
+    creator: "James Thor",
+    datePosted: "26/11/24",
+    dateExpired: "26/12/24",
+    topic: "Dance/Entertainment",
+    voting: "Off",
+    views: 853,
+    usersJoined: 500,
+    likes: 244,
+    comments: 57,
+    sponsored: "Adidas",
+    prizes: {
+      first: "$5,000",
+      second: "$2,500",
+      third: "$1,000"
+    }
   }
 ];
 
@@ -70,6 +89,16 @@ const commentsData: Comment[] = [
     id: "2",
     challengeId: "1",
     username: "Stephanie Kerr",
+    comment: "Wow, this recipe looks amazing! I love how simple it is. I'm going to make this for dinner tonight",
+    commentLikes: 74,
+    reports: 1,
+    replies: 60,
+    createdAt: "2024-11-26"
+  },
+  {
+    id: "3",
+    challengeId: "2",
+    username: "John Wild",
     comment: "Wow, this recipe looks amazing! I love how simple it is. I'm going to make this for dinner tonight",
     commentLikes: 74,
     reports: 1,
