@@ -1,6 +1,6 @@
 import React from 'react';
 import { Play, Heart, MessageCircle, Share2, Users } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 
 const KPIMetric = ({ icon: Icon, label, value }) => {
   return (
