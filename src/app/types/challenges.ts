@@ -85,7 +85,7 @@ const commentsData: Comment[] = [
     replies: 40,
     createdAt: "2024-11-26"
   },
-  {
+  { 
     id: "2",
     challengeId: "1",
     username: "Stephanie Kerr",
