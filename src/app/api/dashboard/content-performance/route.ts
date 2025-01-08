@@ -9,7 +9,7 @@ interface ContentPerformanceData {
 
 const mockContentPerformanceData: ContentPerformanceData = {
   topPosts: [
-    { id: 1, title: 'Ice Bucket Challenge', creator: 'James Thoi', views: '11 Mil', likes: '45k', shares: '190k', category: 'Fundraiser' },
+    { id: 1, title: 'Think Bucket Challenge', creator: 'James Thoi', views: '11 Mil', likes: '45k', shares: '190k', category: 'Fundraiser' },
     { id: 2, title: 'Screen Time Challenge', creator: 'Joseph Lee', views: '900.2k', likes: '40k', shares: '175k', category: 'Wellbeing' },
     { id: 3, title: 'Yoga Challenge', creator: 'Marcus Ferrari', views: '850.5k', likes: '37k', shares: '150k', category: 'Health' },
     { id: 4, title: 'Hip-Hop Challenge', creator: 'Ivan Dimitri', views: '772.0k', likes: '30k', shares: '125k', category: 'Entertainment' },
