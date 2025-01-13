@@ -1,130 +1,196 @@
-// app/users/challenges/page.tsx
 'use client'
 
-import React from 'react'
-import { BellIcon, MonitorIcon, Search, MessageSquare } from 'lucide-react'
-import Link from 'next/link'
-import { challengesData } from '@/app/types/challenges'
+import { useEffect, useState, useCallback } from 'react'
+import { Loader2 } from 'lucide-react'
+import { Card, CardContent } from "@/components/ui/card"
 
-export default function ChallengePage() {
+type User = {
+  id: string
+  username: string
+  email: string
+  first_name: string
+  last_name: string
+  phone_number: string | null
+  birthday: string | null
+  parent_id: string | null
+  coins: number
+  total_coins_earned: number
+  role: string
+  is_locked: boolean
+  created_at: string
+  updated_at: string
+  age: number | null
+  profile_picture_url: string | null
+  bio: string | null
+  location: string | null
+  isabove18: boolean | null
+  acceptterms: boolean | null
+  referral_code: string | null
+}
+
+type PaginationData = {
+  currentPage: number
+  totalPages: number
+  totalItems: number
+  itemsPerPage: number
+}
+
+export default function UsersPage() {
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState<PaginationData>({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10
+  })
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '10'
+      })
+
+      const response = await fetch(`/api/users?${params}`)
+      if (!response.ok) throw new Error('Failed to fetch users')
+      
+      const data = await response.json()
+      setUsers(data.users || [])
+      setPagination(data.pagination)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }, [page])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [fetchUsers])
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Master Dashboard</h1>
-            <p className="text-gray-500">Administrator</p>
-          </div>
+    <div className="p-6">
+      <Card>
+        <CardContent className="p-6">
+          <h2 className="text-xl font-semibold mb-6">Users List</h2>
           
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
-            <div className="relative flex-grow sm:flex-grow-0">
-              <input
-                type="text"
-                placeholder="Search Overview"
-                className="w-full sm:w-64 pl-4 pr-10 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-              <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+          {loading ? (
+            <div className="flex justify-center items-center min-h-[400px]">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
             </div>
-            <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <BellIcon className="h-5 w-5" />
-              </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <MonitorIcon className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Challenge Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Challenge Uploads</h2>
-            
-            {/* Mobile View - Card Layout */}
-            <div className="grid grid-cols-1 gap-4 md:hidden">
-              {challengesData.map((challenge) => (
-                <div 
-                  key={challenge.id}
-                  className="bg-white rounded-lg border p-4 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex justify-between items-start">
-                    <Link 
-                      href={`/users/challenges/${challenge.id}/details`}
-                      className="hover:text-teal-600 transition-colors"
-                    >
-                      {challenge.title}
-                    </Link>
-                    <Link
-                      href={`/users/challenges/${challenge.id}/comments`}
-                      className="flex items-center gap-1 text-sm text-teal-600 hover:text-teal-700"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                      <span>{challenge.comments}</span>
-                    </Link>
-                  </div>
-                  {/* ... rest of the mobile card content ... */}
-                </div>
-              ))}
-            </div>
-
-            {/* Desktop View - Table Layout */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-4 px-4 font-semibold">CHALLENGE TITLE</th>
-                    <th className="text-left py-4 px-4 font-semibold">CREATOR</th>
-                    <th className="text-left py-4 px-4 font-semibold">DATE POSTED</th>
-                    <th className="text-left py-4 px-4 font-semibold hidden lg:table-cell">VIEWS</th>
-                    <th className="text-left py-4 px-4 font-semibold hidden lg:table-cell">USERS JOINED</th>
-                    <th className="text-left py-4 px-4 font-semibold hidden xl:table-cell">LIKES</th>
-                    <th className="text-left py-4 px-4 font-semibold hidden xl:table-cell">COMMENTS</th>
-                    <th className="text-left py-4 px-4 font-semibold">SPONSORED</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {challengesData.map((challenge) => (
-                    <tr 
-                      key={challenge.id} 
-                      className="border-b hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="py-4 px-4 font-medium">
-                        <Link 
-                          href={`/users/challenges/${challenge.id}/details`}
-                          className="hover:text-teal-600 transition-colors"
-                        >
-                          {challenge.title}
-                        </Link>
-                      </td>
-                      <td className="py-4 px-4">{challenge.creator}</td>
-                      <td className="py-4 px-4">{challenge.datePosted}</td>
-                      <td className="py-4 px-4 hidden lg:table-cell">{challenge.views.toLocaleString()}</td>
-                      <td className="py-4 px-4 hidden lg:table-cell">{challenge.usersJoined.toLocaleString()}</td>
-                      <td className="py-4 px-4 hidden xl:table-cell">{challenge.likes.toLocaleString()}</td>
-                      <td className="py-4 px-4 hidden xl:table-cell">
-                        <Link
-                          href={`/users/challenges/${challenge.id}/comments`}
-                          className="flex items-center justify-center gap-1 text-sm text-teal-600 hover:text-teal-700"
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                          <span>{challenge.comments}</span>
-                        </Link>
-                      </td>
-                      <td className="py-4 px-4 text-teal-600">
-                        {challenge.sponsored}
-                      </td>
+          ) : error ? (
+            <div className="text-red-500 text-center py-8">{error}</div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-4 px-4 font-semibold">USER INFO</th>
+                      <th className="text-left py-4 px-4 font-semibold">CONTACT</th>
+                      <th className="text-left py-4 px-4 font-semibold">STATUS</th>
+                      <th className="text-left py-4 px-4 font-semibold">COINS</th>
+                      <th className="text-left py-4 px-4 font-semibold">JOINED</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr 
+                        key={user.id} 
+                        className="border-b hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="py-4 px-4">
+                          <div>
+                            <div className="font-medium">{user.username}</div>
+                            <div className="text-sm text-gray-500">
+                              {user.first_name} {user.last_name}
+                            </div>
+                            {user.age && (
+                              <div className="text-xs text-gray-400">
+                                Age: {user.age}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="text-sm">
+                            <div>{user.email}</div>
+                            {user.phone_number && (
+                              <div className="text-gray-500">{user.phone_number}</div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex flex-col gap-2">
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              user.is_locked 
+                                ? 'bg-red-100 text-red-800' 
+                                : 'bg-green-100 text-green-800'
+                            }`}>
+                              {user.is_locked ? 'Locked' : 'Active'}
+                            </span>
+                            <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                              {user.role}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="text-sm">
+                            <div className="font-medium">{user.coins}</div>
+                            <div className="text-xs text-gray-500">
+                              Total earned: {user.total_coins_earned}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="text-sm text-gray-500">
+                            {formatDate(user.created_at)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-        {/* Pagination and other UI elements remain the same */}
-      </div>
+              {/* Pagination */}
+              {pagination.totalPages > 1 && (
+                <div className="flex justify-between items-center mt-6">
+                  <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    Page {page} of {pagination.totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
+                    disabled={page === pagination.totalPages}
+                    className="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
