@@ -40,7 +40,7 @@ type DashboardData = {
 export default function ChallenzPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
 
