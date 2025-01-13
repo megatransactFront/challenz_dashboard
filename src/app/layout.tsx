@@ -15,20 +15,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <UserProvider>
     <html lang="en">
       <body className="min-h-screen bg-background">
-        <div className="relative flex min-h-screen max-h-screen overflow-hidden">
-          <Sidebar />
-          <main className="flex-1 flex flex-col max-h-screen overflow-hidden">
-            <Navbar />
-            <div className="flex-1 overflow-y-auto">
-              {children}
-            </div>
-          </main>
-        </div>
+        <UserProvider>
+          <div className="relative flex min-h-screen max-h-screen overflow-hidden">
+            <Sidebar />
+            <main className="flex-1 flex flex-col max-h-screen overflow-hidden">
+              <Navbar />
+              <div className="flex-1 overflow-y-auto">
+                {children}
+              </div>
+            </main>
+          </div>
+        </UserProvider>
       </body>
     </html>
-    </UserProvider>
   );
 }

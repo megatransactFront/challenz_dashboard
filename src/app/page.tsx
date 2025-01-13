@@ -1,10 +1,13 @@
-// app/page.tsx
 'use client'
+import { useEffect } from 'react'
 import { redirect } from 'next/navigation'
-import supabase from "@/config/supabaseClient"
+import { UserProvider } from '@auth0/nextjs-auth0/client'
 
 export default function Home() {
+  useEffect(() => {
+    redirect('/dashboard')
+  }, [])
 
-  console.log(supabase)
-  redirect('/dashboard')
+  // Return a loading state while redirect happens
+  return <div>Loading...</div>
 }
