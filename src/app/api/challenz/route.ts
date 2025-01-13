@@ -1,6 +1,7 @@
 // app/api/challenz/route.ts
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import type { Challenge } from '@/app/types/challenz';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,12 +22,9 @@ export async function GET(request: Request) {
       .from('challenges')
       .select('*', { count: 'exact', head: true });
 
-    if (countError) {
-      console.error('Count Error:', countError);
-      throw countError;
-    }
+    if (countError) throw countError;
 
-    // Get paginated data
+    // Get paginated data with all fields from the type
     const { data: challenges, error: dataError } = await supabase
       .from('challenges')
       .select(`
@@ -40,17 +38,18 @@ export async function GET(request: Request) {
         created_at,
         updated_at,
         user_id,
-        video_url
+        video_url,
+        duet_video_url,
+        submission_id,
+        joined_at,
+        inspired_by_id
       `)
       .range(from, to)
       .order('created_at', { ascending: false });
 
-    if (dataError) {
-      console.error('Data Error:', dataError);
-      throw dataError;
-    }
+    if (dataError) throw dataError;
 
-    // Add mock metrics
+    // Transform data with mock metrics
     const transformedChallenges = challenges?.map(challenge => ({
       ...challenge,
       views: Math.floor(Math.random() * 10000),
@@ -58,10 +57,6 @@ export async function GET(request: Request) {
       likes: Math.floor(Math.random() * 500),
       comments: Math.floor(Math.random() * 100)
     }));
-
-    console.log('Full Supabase Response:', {
-      data: challenges,
-    });
 
     return NextResponse.json({
       challenges: transformedChallenges || [],

@@ -11,31 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-// Types based on actual data structure
-type Challenge = {
-  id: string;
-  creator_id: string | null;
-  title: string;
-  description: string;
-  category: string | null;
-  is_seasonal: boolean;
-  is_sponsored: boolean;
-  created_at: string;
-  updated_at: string;
-  user_id: string | null;
-  video_url: string;
-}
-
-type DashboardData = {
-  challenges: Challenge[];
-  pagination: {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-  };
-}
+import type { Challenge, DashboardData } from '@/app/types/challenz';
 
 export default function ChallenzPage() {
   const [data, setData] = useState<DashboardData | null>(null);
