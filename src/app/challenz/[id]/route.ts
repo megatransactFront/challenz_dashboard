@@ -7,10 +7,13 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+// Define the params type for Next.js 14
+type RouteParams = {
+  params: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export async function GET(request: Request, { params }: RouteParams) {
   try {
     const id = params.id;
 
@@ -21,13 +24,14 @@ export async function GET(
         *,
         user:user_id (
           id,
-          name,
-          avatar_url
+          first_name,
+          last_name,
+          profile_picture_url
         ),
         creator:creator_id (
           id,
-          name,
-          profile_details
+          first_name,
+          last_name
         )
       `)
       .eq('id', id)
