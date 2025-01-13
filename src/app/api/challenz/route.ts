@@ -1,7 +1,7 @@
 // app/api/challenz/route.ts
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import type { Challenge } from '@/app/types/challenz';
+
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
