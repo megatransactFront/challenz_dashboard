@@ -27,7 +27,7 @@ import {
     creator: {
       id: string
       name: string
-      profile_details: any
+      profile_details: string
     }
   }
   
