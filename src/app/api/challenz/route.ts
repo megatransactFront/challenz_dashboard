@@ -2,7 +2,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -13,13 +12,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const search = searchParams.get('search')?.toLowerCase();
 
-    // Calculate range for pagination
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    // First, get the total count
+    // Get total count
     const { count, error: countError } = await supabase
       .from('challenges')
       .select('*', { count: 'exact', head: true });
@@ -29,7 +26,7 @@ export async function GET(request: Request) {
       throw countError;
     }
 
-    // Then get the paginated data
+    // Get paginated data
     const { data: challenges, error: dataError } = await supabase
       .from('challenges')
       .select(`
@@ -53,21 +50,18 @@ export async function GET(request: Request) {
       throw dataError;
     }
 
-    // Transform the data to include mock views for now
+    // Add mock metrics
     const transformedChallenges = challenges?.map(challenge => ({
       ...challenge,
-      views: Math.floor(Math.random() * 10000), // Mock views for now
-      usersJoined: Math.floor(Math.random() * 1000), // Mock users joined
-      likes: Math.floor(Math.random() * 500), // Mock likes
-      comments: Math.floor(Math.random() * 100) // Mock comments
+      views: Math.floor(Math.random() * 10000),
+      usersJoined: Math.floor(Math.random() * 1000),
+      likes: Math.floor(Math.random() * 500),
+      comments: Math.floor(Math.random() * 100)
     }));
 
-
-    // Detailed logging
     console.log('Full Supabase Response:', {
       data: challenges,
     });
-
 
     return NextResponse.json({
       challenges: transformedChallenges || [],
