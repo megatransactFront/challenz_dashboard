@@ -14,9 +14,10 @@ import {
 import type { Challenge, DashboardData } from '@/app/types/challenz';
 
 export default function ChallenzPage() {
+  // Fixed state declarations
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // Fixed this line
   const [page, setPage] = useState(1);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
 
