@@ -17,7 +17,6 @@ export default function ChallenzPage() {
   // Fixed state declarations
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // Fixed this line
   const [page, setPage] = useState(1);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
 
@@ -34,8 +33,6 @@ export default function ChallenzPage() {
       
       const result = await response.json();
       setData(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
