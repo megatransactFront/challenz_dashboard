@@ -5,11 +5,21 @@
 /* In globals.css */
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
 
-/* Then you can set it as default font for the whole app */
-body {
-  font-family: 'Manrope', sans-serif;
-}
+@layer base {
+  :root {
+    --font-inter: 'Inter', sans-serif;
+  }
 
+  body {
+    @apply text-gray-900 bg-gray-50;
+    font-family: var(--font-inter);
+    font-weight: 300; /* Lighter weight */
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 400; /* Reduced from 500 */
+  }
+}
 
 @layer base {
   :root {

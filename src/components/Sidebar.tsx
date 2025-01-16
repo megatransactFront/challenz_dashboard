@@ -1,41 +1,53 @@
 "use client";
 
-import React from "react";
-import { Settings, Users, BarChart3, Layout } from "lucide-react";
+import React, { useState } from "react";
+import { BarChart3, Layout, Users, Settings, Menu, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { MenuItem as MenuItemType, MenuItemProps } from "./types";
+import { MenuItem as MenuItemType } from "./types";
+import { cn } from "@/lib/utils";
+
+interface MenuItemProps {
+  item: MenuItemType;
+  pathname: string;
+  onNavigate: (path: string) => void;
+}
 
 const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate }) => {
   const isActive = pathname === item.path || pathname.startsWith(`${item.path}/`);
   const Icon = item.icon;
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <div
         onClick={() => onNavigate(item.path)}
-        className={`flex items-center py-2 px-2 rounded cursor-pointer transition-colors duration-200 ${
-          isActive ? "text-white bg-white/10" : "text-white/80 hover:bg-[#E45664]"
-        }`}
+        className={cn(
+          "flex items-center py-3 px-6 rounded-lg cursor-pointer transition-all duration-200",
+          isActive 
+            ? "bg-white/15 shadow-sm" 
+            : "hover:bg-[#1a4d5f] text-white/90"
+        )}
       >
-        <div className="flex items-center gap-2">
-          <Icon size={20} />
-          <span>{item.title}</span>
+        <div className="flex items-center gap-4">
+          <Icon size={22} className={cn("text-white", isActive ? "opacity-100" : "opacity-75")} />
+          <span className="text-[15px] font-medium tracking-wide">{item.title}</span>
         </div>
       </div>
 
-      {item.subItems && (
-        <div className="ml-6 space-y-1">
+      {item.subItems && isActive && (
+        <div className="ml-10 space-y-1">
           {item.subItems.map((subItem) => {
             const subItemActive = pathname === subItem.path;
             return (
               <div
                 key={subItem.path}
                 onClick={() => onNavigate(subItem.path)}
-                className={`flex items-center py-1 px-2 rounded cursor-pointer transition-colors duration-200 ${
-                  subItemActive ? "text-white bg-white/10" : "text-white/70 hover:bg-[#E45664]"
-                }`}
+                className={cn(
+                  "flex items-center py-2 px-4 rounded-lg cursor-pointer transition-all duration-200",
+                  "text-[15px] tracking-wide",
+                  subItemActive ? "bg-white/15 text-white" : "text-white/80 hover:bg-[#1a4d5f]"
+                )}
               >
-                <span className="text-sm">{subItem.title}</span>
+                {subItem.title}
               </div>
             );
           })}
@@ -47,33 +59,22 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate }) => {
 
 const menuItems: MenuItemType[] = [
   {
-    title: "Overview",
+    title: "Summary",
     icon: BarChart3,
     path: "/dashboard",
-    subItems: [
-      { title: "Revenues", path: "/dashboard/revenues" },
-      { title: "Engagement", path: "/dashboard/engagements" },
-      { title: "Content Performance", path: "/dashboard/content-performance" },
-    ],
   },
+];
+
+const mainMenuItems: MenuItemType[] = [
   {
     title: "Challenz",
     icon: Layout,
     path: "/challenz",
-    subItems: [
-      { title: "Active", path: "/challenz/active" },
-      { title: "Completed", path: "/challenz/completed" },
-      { title: "Statistics", path: "/challenz/statistics" },
-    ],
   },
   {
     title: "Users",
     icon: Users,
     path: "/users",
-    subItems: [
-      { title: "KPIs", path: "/users/kpi" },
-      { title: "User Engagement", path: "/users/groups" },
-    ],
   },
 ];
 
@@ -82,63 +83,110 @@ const otherMenuItems: MenuItemType[] = [
     title: "Settings",
     icon: Settings,
     path: "/other/settings",
-    subItems: [
-      { title: "Profile", path: "/other/profile" },
-      { title: "Notifications", path: "/settings/notifications" },
-      { title: "Security", path: "/settings/security" },
-    ],
   },
 ];
 
-const Sidebar: React.FC = () => {
+const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleNavigation = (path: string): void => {
     router.push(path);
+    setIsMobileMenuOpen(false);
   };
 
   return (
-    <div className="h-screen w-64 p-4 flex flex-col overflow-y-auto" style={{ backgroundColor: "#1F5C71" }}>
-      {/* Profile Section */}
-      <div className="flex items-center gap-2 mb-8">
-        <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
-          <img
-            src="https://xsgames.co/randomusers/avatar.php?g=male"
-            alt="Profile"
-            className="w-full h-full object-cover"
-          />thet
-        </div>
-        <span className="text-white font-medium">Simon Powel</span>
+    <>
+      {/* Mobile Menu Button */}
+      <div className="fixed top-4 left-4 z-50 lg:hidden">
+        <button 
+          className="p-2 rounded-lg bg-[#1F5C71] hover:bg-[#1a4d5f] transition-colors"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {isMobileMenuOpen ? (
+            <X className="h-6 w-6 text-white" />
+          ) : (
+            <Menu className="h-6 w-6 text-white" />
+          )}
+        </button>
       </div>
 
-      {/* Menu Sections */}
-      <div className="space-y-8 flex-1">
-        <div className="space-y-2">
-          {menuItems.map((item) => (
-            <MenuItem
-              key={item.path}
-              item={item}
-              pathname={pathname}
-              onNavigate={handleNavigation}
-            />
-          ))}
-        </div>
+      {/* Sidebar */}
+      <aside className={cn(
+        "fixed inset-y-0 left-0 z-40 w-72 bg-[#1F5C71] shadow-xl",
+        "transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+        "lg:relative lg:shadow-none",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="h-full flex flex-col py-6">
+          {/* Profile Section */}
+          <div className="flex items-center gap-4 px-6 mb-8">
+            <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden">
+              <img
+                 src="https://xsgames.co/randomusers/avatar.php?g=male"
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="text-white text-lg font-medium">Simon Powel</span>
+          </div>
 
-        {/* Other Section */}
-        <div className="mt-auto">
-          <div className="text-white/70 mb-4 text-sm">Other</div>
-          {otherMenuItems.map((item) => (
-            <MenuItem
-              key={item.path}
-              item={item}
-              pathname={pathname}
-              onNavigate={handleNavigation}
-            />
-          ))}
+          {/* Menu Sections */}
+          <div className="flex-1 space-y-10">
+            {/* Summary Section */}
+            <div>
+              {menuItems.map((item) => (
+                <MenuItem
+                  key={item.path}
+                  item={item}
+                  pathname={pathname}
+                  onNavigate={handleNavigation}
+                />
+              ))}
+            </div>
+
+            {/* Menu Section */}
+            <div>
+              <div className="px-6 mb-3 text-[15px] font-medium text-white/50 uppercase tracking-wider">
+                Menu
+              </div>
+              {mainMenuItems.map((item) => (
+                <MenuItem
+                  key={item.path}
+                  item={item}
+                  pathname={pathname}
+                  onNavigate={handleNavigation}
+                />
+              ))}
+            </div>
+
+            {/* Other Section */}
+            <div>
+              <div className="px-6 mb-3 text-[15px] font-medium text-white/50 uppercase tracking-wider">
+                Other
+              </div>
+              {otherMenuItems.map((item) => (
+                <MenuItem
+                  key={item.path}
+                  item={item}
+                  pathname={pathname}
+                  onNavigate={handleNavigation}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </aside>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+    </>
   );
 };
 
