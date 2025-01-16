@@ -1,4 +1,12 @@
 // app/types/challenz.ts
+export type User = {
+  id: string;
+  username: string;
+  last_name: string;
+  first_name: string;
+  profile_picture_url: string | null;
+}
+
 export type Challenge = {
   id: string;
   creator_id: string | null;
@@ -15,25 +23,13 @@ export type Challenge = {
   submission_id: string | null;
   joined_at: string | null;
   inspired_by_id: string | null;
-  // Additional fields from transformedChallenges
+  // From the join query
+  creator?: User;
+  // Additional metrics
   views?: number;
   usersJoined?: number;
   likes?: number;
   comments?: number;
-}
-
-export type ChallengeDetail = Challenge & {
-  user?: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    profile_picture_url: string | null;
-  };
-  creator?: {
-    id: string;
-    first_name: string;
-    last_name: string;
-  };
 }
 
 export type DashboardData = {

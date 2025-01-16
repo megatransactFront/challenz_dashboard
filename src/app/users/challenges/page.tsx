@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Video } from 'lucide-react'
 import { Card, CardContent } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 type User = {
   id: string
@@ -26,6 +27,11 @@ type User = {
   isabove18: boolean | null
   acceptterms: boolean | null
   referral_code: string | null
+  challenges?: Array<{
+    id: string
+    title: string
+    created_at: string
+  }>
 }
 
 type PaginationData = {
@@ -40,6 +46,8 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [userDetailsLoading, setUserDetailsLoading] = useState(false)
   const [pagination, setPagination] = useState<PaginationData>({
     currentPage: 1,
     totalPages: 1,
@@ -67,6 +75,20 @@ export default function UsersPage() {
       setLoading(false)
     }
   }, [page])
+
+  const fetchUserDetails = async (userId: string) => {
+    try {
+      setUserDetailsLoading(true)
+      const response = await fetch(`/api/users?userId=${userId}`)
+      if (!response.ok) throw new Error('Failed to fetch user details')
+      const data = await response.json()
+      setSelectedUser(data)
+    } catch (err) {
+      console.error('Error fetching user details:', err)
+    } finally {
+      setUserDetailsLoading(false)
+    }
+  }
 
   useEffect(() => {
     fetchUsers()
@@ -109,19 +131,35 @@ export default function UsersPage() {
                     {users.map((user) => (
                       <tr 
                         key={user.id} 
-                        className="border-b hover:bg-gray-50 transition-colors"
+                        className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => fetchUserDetails(user.id)}
                       >
                         <td className="py-4 px-4">
-                          <div>
-                            <div className="font-medium">{user.username}</div>
-                            <div className="text-sm text-gray-500">
-                              {user.first_name} {user.last_name}
-                            </div>
-                            {user.age && (
-                              <div className="text-xs text-gray-400">
-                                Age: {user.age}
+                          <div className="flex items-center gap-3">
+                            {user.profile_picture_url ? (
+                              <img 
+                                src={user.profile_picture_url} 
+                                alt={user.username}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                <span className="text-gray-600">
+                                  {user.first_name?.[0]}{user.last_name?.[0]}
+                                </span>
                               </div>
                             )}
+                            <div>
+                              <div className="font-medium">{user.username}</div>
+                              <div className="text-sm text-gray-500">
+                                {user.first_name} {user.last_name}
+                              </div>
+                              {user.age && (
+                                <div className="text-xs text-gray-400">
+                                  Age: {user.age}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="py-4 px-4">
@@ -191,6 +229,103 @@ export default function UsersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* User Details Modal */}
+      <Dialog 
+        open={!!selectedUser} 
+        onOpenChange={(open) => !open && setSelectedUser(null)}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          {userDetailsLoading ? (
+            <div className="flex justify-center items-center min-h-[200px]">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : selectedUser ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>User Profile</DialogTitle>
+              </DialogHeader>
+              
+              <div className="mt-6 space-y-6">
+                {/* User Basic Info */}
+                <div className="flex items-start gap-4">
+                  {selectedUser.profile_picture_url ? (
+                    <img 
+                      src={selectedUser.profile_picture_url}
+                      alt={selectedUser.username}
+                      className="w-24 h-24 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-2xl text-gray-600">
+                        {selectedUser.first_name?.[0]}{selectedUser.last_name?.[0]}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <h2 className="text-xl font-semibold">
+                      {selectedUser.first_name} {selectedUser.last_name}
+                    </h2>
+                    <p className="text-gray-500">@{selectedUser.username}</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Joined {formatDate(selectedUser.created_at)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Additional User Info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="font-medium text-gray-500">Email</h3>
+                    <p>{selectedUser.email}</p>
+                  </div>
+                  {selectedUser.phone_number && (
+                    <div>
+                      <h3 className="font-medium text-gray-500">Phone</h3>
+                      <p>{selectedUser.phone_number}</p>
+                    </div>
+                  )}
+                  {selectedUser.location && (
+                    <div>
+                      <h3 className="font-medium text-gray-500">Location</h3>
+                      <p>{selectedUser.location}</p>
+                    </div>
+                  )}
+                  {selectedUser.bio && (
+                    <div className="col-span-2">
+                      <h3 className="font-medium text-gray-500">Bio</h3>
+                      <p>{selectedUser.bio}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* User's Challenges */}
+                {selectedUser.challenges && selectedUser.challenges.length > 0 && (
+                  <div>
+                    <h3 className="font-medium text-gray-500 mb-3">Recent Challenges</h3>
+                    <div className="space-y-2">
+                      {selectedUser.challenges.map(challenge => (
+                        <div 
+                          key={challenge.id}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Video className="h-4 w-4 text-gray-500" />
+                            <span>{challenge.title}</span>
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {formatDate(challenge.created_at)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

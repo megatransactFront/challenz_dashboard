@@ -2,7 +2,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -24,7 +23,7 @@ export async function GET(request: Request) {
 
     if (countError) throw countError;
 
-    // Get paginated data with all fields from the type
+    // Get challenges with creator details
     const { data: challenges, error: dataError } = await supabase
       .from('challenges')
       .select(`
@@ -42,12 +41,25 @@ export async function GET(request: Request) {
         duet_video_url,
         submission_id,
         joined_at,
-        inspired_by_id
+        inspired_by_id,
+        creator:users!creator_id (
+          id,
+          username,
+          first_name,
+          last_name,
+          profile_picture_url
+        )
       `)
       .range(from, to)
       .order('created_at', { ascending: false });
 
-    if (dataError) throw dataError;
+    // Log the data to see the structure
+    console.log('Challenge with creator data:', JSON.stringify(challenges?.[0], null, 2));
+
+    if (dataError) {
+      console.error('Data Error:', dataError);
+      throw dataError;
+    }
 
     // Transform data with mock metrics
     const transformedChallenges = challenges?.map(challenge => ({
