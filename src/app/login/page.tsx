@@ -25,7 +25,7 @@ export default function LoginPage() {
     e.preventDefault();
     
     // Hardcoded password - replace with your desired password
-    const correctPassword = 'admin123';
+    const correctPassword = 'Challengingthechallenge2030!';
     
     if (password === correctPassword) {
       // Set a cookie that expires in 1 day
