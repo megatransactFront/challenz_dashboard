@@ -1,13 +1,20 @@
-'use client'
-import { useEffect } from 'react'
-import { redirect } from 'next/navigation'
+'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 export default function Home() {
+  const router = useRouter();
+  
   useEffect(() => {
-    redirect('/dashboard')
-  }, [])
+    const isAdmin = Cookies.get('isAdmin');
+    if (isAdmin === 'true') {
+      router.push('/dashboard');
+    } else {
+      router.push('/login');
+    }
+  }, [router]);
 
-  // Return a loading state while redirect happens
-  return <div>Loading...</div>
+  return <div>Loading...</div>;
 }

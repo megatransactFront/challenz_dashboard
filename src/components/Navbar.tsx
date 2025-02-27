@@ -2,6 +2,8 @@
 
 import React from "react";
 import { Search, Bell, Settings } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -106,21 +108,35 @@ const NotificationsDropdown: React.FC<{ notifications: NotificationItem[] }> = (
   </DropdownMenu>
 );
 
-const SettingsDropdown: React.FC = () => (
-  <DropdownMenu>
-    <DropdownMenuTrigger className="focus:outline-none">
-      <Settings className="text-gray-600 hover:text-gray-800" size={20} />
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
-      <DropdownMenuLabel>My Account</DropdownMenuLabel>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-      <DropdownMenuItem>Preferences</DropdownMenuItem>
-      <DropdownMenuItem>Help & Support</DropdownMenuItem>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem className="text-red-500 hover:text-red-600">
-        Sign Out
-      </DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
-);
+const SettingsDropdown: React.FC = () => {
+  const router = useRouter();
+  
+  const handleSignOut = () => {
+    // Remove the admin authentication cookie
+    Cookies.remove('isAdmin');
+    // Redirect to login page
+    router.push('/login');
+  };
+  
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger className="focus:outline-none">
+        <Settings className="text-gray-600 hover:text-gray-800" size={20} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>Profile Settings</DropdownMenuItem>
+        <DropdownMenuItem>Preferences</DropdownMenuItem>
+        <DropdownMenuItem>Help & Support</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          className="text-red-500 hover:text-red-600"
+          onClick={handleSignOut}
+        >
+          Sign Out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
