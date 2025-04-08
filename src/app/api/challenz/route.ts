@@ -1,6 +1,8 @@
 // app/api/challenz/route.ts
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { json } from 'stream/consumers';
+import { log } from 'util';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,51 +20,41 @@ export async function GET(request: Request) {
 
     // Get total count
     const { count, error: countError } = await supabase
-      .from('challenges')
+      .from('submissions')
       .select('*', { count: 'exact', head: true });
 
     if (countError) throw countError;
 
-    // Get challenges with creator details
-    const { data: challenges, error: dataError } = await supabase
-      .from('challenges')
-      .select(`
-        id,
-        creator_id,
-        title,
-        description,
-        category,
-        is_seasonal,
-        is_sponsored,
-        created_at,
-        updated_at,
-        user_id,
-        video_url,
-        duet_video_url,
-        submission_id,
-        joined_at,
-        inspired_by_id,
-        creator:users!creator_id (
-          id,
-          username,
-          first_name,
-          last_name,
-          profile_picture_url
-        )
-      `)
-      .range(from, to)
-      .order('created_at', { ascending: false });
+    const { data: challenges, error: challengesError } = await supabase
+      .from('user_challenges')
+      .select('*, submissions(*)')
 
-    // Log the data to see the structure
-    console.log('Challenge with creator data:', JSON.stringify(challenges?.[0], null, 2));
-
-    if (dataError) {
-      console.error('Data Error:', dataError);
-      throw dataError;
+    if (challengesError) {
+      console.error('Error fetching challenges:', challengesError);
+      throw challengesError;
     }
 
+    const usersChallenges = await Promise.all(
+      challenges.map(async (challenge) => {
+        const { data: creator, error: userError } = await supabase
+          .from('users')
+          .select('id, username, first_name, last_name, profile_picture_url')
+          .eq('id', challenge?.submissions.user_id)
+          .single();
+
+        if (userError) {
+          console.error('Error fetching user:', userError);
+          throw userError;
+        }
+        return {
+          creator,
+          ...challenge?.submissions
+        };
+      })
+    );
+
     // Transform data with mock metrics
-    const transformedChallenges = challenges?.map(challenge => ({
+    const transformedChallenges = usersChallenges?.map(challenge => ({
       ...challenge,
       views: Math.floor(Math.random() * 10000),
       usersJoined: Math.floor(Math.random() * 1000),
@@ -82,9 +74,9 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('API Error:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Internal Server Error',
-        details: process.env.NODE_ENV === 'development' ? error : undefined 
+        details: process.env.NODE_ENV === 'development' ? error : undefined
       },
       { status: 500 }
     );
