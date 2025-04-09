@@ -14,7 +14,6 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    const from = (page - 1) * limit;
 
     // Get total count
     const { count, error: countError } = await supabase
