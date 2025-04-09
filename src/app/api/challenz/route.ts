@@ -1,8 +1,7 @@
 // app/api/challenz/route.ts
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import { json } from 'stream/consumers';
-import { log } from 'util';
+
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,7 +15,6 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '10');
 
     const from = (page - 1) * limit;
-    const to = from + limit - 1;
 
     // Get total count
     const { count, error: countError } = await supabase
