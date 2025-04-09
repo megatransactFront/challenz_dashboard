@@ -14,7 +14,7 @@ export default function ChallenzPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  
+
   // Modal states
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
@@ -27,10 +27,10 @@ export default function ChallenzPage() {
         page: page.toString(),
         limit: '10'
       });
-      
+
       const response = await fetch(`/api/challenz?${params}`);
       if (!response.ok) throw new Error('Failed to fetch data');
-      
+
       const result = await response.json();
       setData(result);
     } catch (err) {
@@ -57,7 +57,7 @@ export default function ChallenzPage() {
       <Card>
         <CardContent className="p-6">
           <h2 className="text-xl font-semibold mb-6">Challenge Uploads</h2>
-          
+
           {loading ? (
             <div className="flex justify-center items-center min-h-[400px]">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -79,18 +79,18 @@ export default function ChallenzPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data?.challenges.map((challenge) => (
-                      <TableRow key={challenge.id}>
+                    {data?.challenges.map((challenge, index) => (
+                      <TableRow key={index}>
                         <TableCell className="font-medium">{challenge.title}</TableCell>
                         <TableCell>
                           {challenge.creator && (
-                            <div 
+                            <div
                               className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg"
                               onClick={() => setSelectedUserId(challenge.creator!.id)}
                             >
                               {challenge.creator.profile_picture_url && (
-                                <img 
-                                  src={challenge.creator.profile_picture_url} 
+                                <img
+                                  src={challenge.creator.profile_picture_url}
                                   alt={challenge.creator.username}
                                   className="w-8 h-8 rounded-full object-cover"
                                 />
@@ -125,8 +125,8 @@ export default function ChallenzPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             className="text-blue-600 hover:text-blue-800"
                             onClick={() => setSelectedChallenge(challenge)}
                           >
@@ -167,13 +167,13 @@ export default function ChallenzPage() {
       </Card>
 
       {/* Modals */}
-      <UserDetailModal 
+      <UserDetailModal
         isOpen={!!selectedUserId}
         onClose={() => setSelectedUserId(null)}
         userId={selectedUserId}
       />
-      
-      <VideoDetailModal 
+
+      <VideoDetailModal
         isOpen={!!selectedChallenge}
         onClose={() => setSelectedChallenge(null)}
         challenge={selectedChallenge}
