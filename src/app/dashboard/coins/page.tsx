@@ -4,6 +4,15 @@
 import React, { useEffect, useState } from 'react';
 import { Coins, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { CoinData } from '@/app/types/coins';
 
 export default function CoinsPage() {
@@ -117,78 +126,66 @@ export default function CoinsPage() {
                     </select>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b">
-                                <th className="py-3 px-4 text-left">DATE</th>
-                                <th className="py-3 px-4 text-left">TOTAL LIKES</th>
-                                <th className="py-3 px-4 text-left">TOTAL REFERRALS</th>
-                                <th className="py-3 px-4 text-left">TOTAL SHARES</th>
-                                <th className="py-3 px-4 text-left">CHALLENGES MADE</th>
-                                <th className="py-3 px-4 text-left">BADGES RECEIVED</th>
-                                <th className="py-3 px-4 text-left bg-green-50">TOTAL EARNED</th>
-                                <th className="py-3 px-4 text-left bg-red-50">TOTAL SPENT</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {coinData.transactions
-                                .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                                .map((transaction, index) => (
-                                    <tr key={index} className="border-b">
-                                        <td className="py-3 px-4">{transaction.date}</td>
-                                        <td className="py-3 px-4">${transaction.totalLikes}</td>
-                                        <td className="py-3 px-4">${transaction.totalReferrals}</td>
-                                        <td className="py-3 px-4">${transaction.totalShares}</td>
-                                        <td className="py-3 px-4">${transaction.challengesMade}</td>
-                                        <td className="py-3 px-4">${transaction.badgesReceived}</td>
-                                        <td className="py-3 px-4 text-green-600 font-medium">+${transaction.totalEarned}</td>
-                                        <td className="py-3 px-4 text-red-600 font-medium">-${transaction.totalSpent}</td>
-                                    </tr>
-                                ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination */}
-                <div className="flex justify-between items-center mt-6">
-                    <button
-                        className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                    >
-                        <ChevronLeft className="h-5 w-5" />
-                    </button>
-                    <div className="flex items-center gap-2">
-                        {Array.from({ length: Math.ceil(coinData.transactions.length / itemsPerPage) }, (_, i) => i + 1)
-                            .map(page => (
-                                <button
-                                    key={page}
-                                    className={`w-8 h-8 flex items-center justify-center rounded-lg ${currentPage === page
-                                        ? 'bg-[#1F5C71] text-white'
-                                        : 'bg-gray-200 hover:bg-gray-300'
-                                        }`}
-                                    onClick={() => setCurrentPage(page)}
-                                >
-                                    {page}
-                                </button>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>DATE</TableHead>
+                            <TableHead>TOTAL LIKES</TableHead>
+                            <TableHead>TOTAL REFERRALS</TableHead>
+                            <TableHead>TOTAL SHARES</TableHead>
+                            <TableHead>CHALLENGES MADE</TableHead>
+                            <TableHead>BADGES RECEIVED</TableHead>
+                            <TableHead className="bg-green-50">TOTAL EARNED</TableHead>
+                            <TableHead className="bg-red-50">TOTAL SPENT</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {coinData.transactions
+                            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                            .map((transaction, index) => (
+                                <TableRow key={index}>
+                                    <TableCell>{transaction.date}</TableCell>
+                                    <TableCell>${transaction.totalLikes}</TableCell>
+                                    <TableCell>${transaction.totalReferrals}</TableCell>
+                                    <TableCell>${transaction.totalShares}</TableCell>
+                                    <TableCell>${transaction.challengesMade}</TableCell>
+                                    <TableCell>${transaction.badgesReceived}</TableCell>
+                                    <TableCell className="text-green-600 font-medium">+${transaction.totalEarned}</TableCell>
+                                    <TableCell className="text-red-600 font-medium">-${transaction.totalSpent}</TableCell>
+                                </TableRow>
                             ))}
-                    </div>
-                    <button
-                        className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(coinData.transactions.length / itemsPerPage)))}
-                        disabled={currentPage === Math.ceil(coinData.transactions.length / itemsPerPage)}
-                    >
-                        <ChevronRight className="h-5 w-5" />
-                    </button>
-                </div>
+                    </TableBody>
+                </Table>
             </div>
 
-            {/* Footer */}
-            <div className="flex justify-center mt-8">
-                <button className="px-6 py-3 bg-[#E05D5D] text-white rounded-lg uppercase font-medium">
-                    Prospering Together
-                </button>
+            {/* Pagination */}
+            <div className="flex justify-between items-center mb-12">
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-gray-600 text-white"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                >
+                    <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <div className="flex items-center">
+                    <Button
+                        variant="default"
+                        className="w-12 h-12 rounded-lg bg-[#1F5C71] text-white"
+                    >
+                        1
+                    </Button>
+                </div>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-gray-600 text-white"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(coinData.transactions.length / itemsPerPage)))}
+                    disabled={currentPage === Math.ceil(coinData.transactions.length / itemsPerPage)}
+                >
+                    <ChevronRight className="h-6 w-6" />
+                </Button>
             </div>
         </div>
     );

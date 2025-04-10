@@ -3,6 +3,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardLayout({
   children,
@@ -26,8 +27,8 @@ export default function DashboardLayout({
       description: "Monitor user engagement"
     },
     "/dashboard/coins": {
-      title: "Uwaci Coins",
-      description: "Manage and track coin transactions"
+      title: "",
+      description: ""
     }
   } as const;
 
@@ -40,12 +41,22 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-gray-50">
       <div className="p-8">
         {/* Page Title and Description */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold">{currentPageDetails.title}</h1>
-          <p className="text-gray-500">{currentPageDetails.description}</p>
-        </div>
-
+        {
+          currentPageDetails?.title === "" ? (<></>
+          ) : (
+            <div className="">
+              <h1 className="text-2xl font-bold">{currentPageDetails.title}</h1>
+              <p className="text-gray-500">{currentPageDetails.description}</p>
+            </div>
+          )}
         {children}
+      </div>
+
+      {/* Footer */}
+      <div className="w-full flex justify-center items-center mt-8 bg-white min-h-[100px]">
+        <Button className=" px-6 py-3 bg-[#E45664] text-white rounded-lg uppercase font-medium">
+          Prospering Together
+        </Button>
       </div>
     </div>
   );
