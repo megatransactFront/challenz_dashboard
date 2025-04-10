@@ -23,7 +23,7 @@ export default function RootLayout({
 }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const pathname = usePathname();
-  
+
   useEffect(() => {
     // Check if user is authenticated
     const isAdmin = Cookies.get('isAdmin');
@@ -32,7 +32,7 @@ export default function RootLayout({
 
   // Check if on login page
   const isLoginPage = pathname === '/login';
-  
+
   // Only show sidebar and navbar if authenticated and not on login page
   const showNavigation = isAuthenticated && !isLoginPage;
 
@@ -44,7 +44,7 @@ export default function RootLayout({
             {showNavigation && <Sidebar />}
             <div className="flex-1 flex flex-col min-w-0">
               {showNavigation && <Navbar />}
-              <main className="flex-1 overflow-y-auto bg-[#F8F9FA] p-6">
+              <main className="flex-1 overflow-y-auto bg-[#F8F9FA]">
                 {children}
               </main>
             </div>
