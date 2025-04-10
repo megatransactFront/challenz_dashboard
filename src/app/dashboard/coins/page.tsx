@@ -1,38 +1,90 @@
 // app/dashboard/coins/page.tsx
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Coins, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CoinData } from '@/app/types/coins';
 import { CoinTransactionTable } from '@/app/dashboard/components/coins/CoinTransactionTable';
-
+import CoinsMetrics from '../components/coins/coins-metrics';
+import { useRouter } from "next/navigation";
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 export default function CoinsPage() {
     // State management
     const [coinData, setCoinData] = useState<CoinData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
-        const fetchCoinData = async () => {
-            try {
-                setIsLoading(true);
-                const response = await fetch('/api/dashboard/coins');
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch coin data');
+        const channel = supabase
+            .channel("realtime coins")
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "coin_transactions",
+                },
+                async () => {
+                    await reFetchCoinData();
                 }
+            ).on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "users",
+                },
+                async () => {
+                    await reFetchCoinData();
+                }
+            )
+            .subscribe();
 
-                const data = await response.json();
-                setCoinData(data);
-                setError(null);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'An error occurred');
-                console.error('Error fetching coin data:', err);
-            } finally {
-                setIsLoading(false);
-            }
+        return () => {
+            supabase.removeChannel(channel);
         };
+    }, [supabase, router]);
+    const fetchCoinData = async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch('/api/dashboard/coins');
 
+            if (!response.ok) {
+                throw new Error('Failed to fetch coin data');
+            }
+
+            const data = await response.json();
+            setCoinData(data);
+            setError(null);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
+            console.error('Error fetching coin data:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    const reFetchCoinData = async () => {
+        try {
+            const response = await fetch('/api/dashboard/coins');
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch coin data');
+            }
+
+            const data = await response.json();
+            setCoinData(data);
+            setError(null);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
+            console.error('Error fetching coin data:', err);
+        }
+    };
+    useEffect(() => {
         fetchCoinData();
     }, []);
 
@@ -62,47 +114,7 @@ export default function CoinsPage() {
     return (
         <div className="space-y-6">
             {/* Stat Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                    <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 rounded-full bg-[#1F5C71] flex items-center justify-center mr-4">
-                            <Coins className="h-6 w-6 text-white" />
-                        </div>
-                        <span>Total Uwaci Coins</span>
-                    </div>
-                    <div className="text-3xl font-bold">$1.3 Billion</div>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                    <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 rounded-full bg-[#1F5C71] flex items-center justify-center mr-4">
-                            <Coins className="h-6 w-6 text-white" />
-                        </div>
-                        <span>Coins Earned</span>
-                    </div>
-                    <div className="text-3xl font-bold text-green-500">+700 mil</div>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                    <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 rounded-full bg-[#1F5C71] flex items-center justify-center mr-4">
-                            <Coins className="h-6 w-6 text-white" />
-                        </div>
-                        <span>Coins Spent</span>
-                    </div>
-                    <div className="text-3xl font-bold text-red-500">-650 mil</div>
-                </div>
-
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                    <div className="flex items-center mb-4">
-                        <div className="w-12 h-12 rounded-full bg-[#1F5C71] flex items-center justify-center mr-4">
-                            <Coins className="h-6 w-6 text-white" />
-                        </div>
-                        <span>Total Difference</span>
-                    </div>
-                    <div className="text-3xl font-bold text-green-500">+150 mil</div>
-                </div>
-            </div>
+            <CoinsMetrics metrics={coinData?.metrics} />
             <CoinTransactionTable transactions={coinData?.transactions} />
         </div>
     );
