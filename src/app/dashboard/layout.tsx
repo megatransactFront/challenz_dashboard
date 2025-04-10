@@ -40,7 +40,7 @@ export default function DashboardLayout({
       title: "",
       description: "",
       footer: (
-        <div className="w-full flex justify-center items-center mt-8 bg-white min-h-[100px]">
+        <div className="w-full flex justify-center items-center m-0 p-0 mt-0 bg-white min-h-[100px]">
           <Button className=" px-6 py-3 bg-[#E45664] text-white rounded-lg uppercase font-medium">
             Prospering Together
           </Button>
@@ -55,14 +55,14 @@ export default function DashboardLayout({
   };
 
   return (
-    <div>
+    <div className="flex flex-col justify-between h-full">
       <div className=" bg-gray-50">
         <div className="p-8">
           {/* Page Title and Description */}
           {
             currentPageDetails?.title === "" ? (<></>
             ) : (
-              <div className="">
+              <div>
                 <h1 className="text-2xl font-bold">{currentPageDetails.title}</h1>
                 <p className="text-gray-500">{currentPageDetails.description}</p>
               </div>
