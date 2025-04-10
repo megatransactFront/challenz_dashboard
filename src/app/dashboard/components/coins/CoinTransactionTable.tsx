@@ -83,7 +83,7 @@ export function CoinTransactionTable({ transactions }: CoinTransactionTableProps
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-between items-center mb-12">
+            <div className="flex justify-between items-center mb-2">
                 <Button
                     variant="outline"
                     size="icon"
