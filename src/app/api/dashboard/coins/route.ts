@@ -1,7 +1,11 @@
 // app/api/dashboard/coins/route.ts
 import { NextResponse } from 'next/server';
 import { CoinData, CoinTransaction } from '@/app/types/coins';
-
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 export async function GET() {
     try {
         // Mock data for demonstration purposes
@@ -249,32 +253,61 @@ export async function GET() {
             }
         ];
 
+        const [coinsListResponse, coinsInTransactionsResponse] = await Promise.all([
+            supabase.from('users').select('coins'),
+            supabase.from('coin_transactions').select('amount')
+        ]);
+
+        const { data: coinsList, error: coinsListError } = coinsListResponse;
+        const { data: coinsInTransactions, error: coinsInTransactionsError } = coinsInTransactionsResponse;
+
+        if (coinsListError) {
+            console.error('Error fetching coins list:', coinsListError);
+            throw coinsListError;
+        }
+        if (coinsInTransactionsError) {
+            console.error('Error fetching coins in transactions:', coinsInTransactionsError);
+            throw coinsInTransactionsError;
+        }
+
+        const totalCoins = coinsList.reduce((acc, user) => acc + (user.coins || 0), 0);
+        const totalCoinsEarned = coinsInTransactions.reduce((acc, transaction) => acc + (transaction.amount || 0), 0);
+        const totalCoinsSpent = 0.25; // Example value, replace with actual calculation
+        const totalDifference = totalCoinsEarned - totalCoinsSpent;
+        const formatNumber = (num: number) => {
+            if (num >= 1_000_000_000) {
+                return `${(num / 1_000_000_000).toFixed(1)} Billion`;
+            } else if (num >= 1_000_000) {
+                return `${(num / 1_000_000).toFixed(1)} mil`;
+            }
+            return `${num.toLocaleString()}`;
+        };
+
         const coinData: CoinData = {
             metrics: {
                 totalUwaciCoins: {
-                    value: 1300000000,
+                    value: totalCoins,
                     label: 'Total Uwaci Coins',
-                    formatted: '$1.3 Billion'
+                    formatted: formatNumber(totalCoins)
                 },
                 coinsEarned: {
-                    value: 700000000,
+                    value: totalCoinsEarned,
                     label: 'Coins Earned',
-                    formatted: '+700 mil'
+                    formatted: formatNumber(totalCoinsEarned)
                 },
                 coinsSpent: {
-                    value: 650000000,
+                    value: totalCoinsSpent,
                     label: 'Coins Spent',
-                    formatted: '-650 mil'
+                    formatted: formatNumber(totalCoinsSpent)
                 },
                 totalDifference: {
-                    value: 150000000,
+                    value: totalDifference,
                     label: 'Total Difference',
-                    formatted: '+150 mil'
+                    formatted: formatNumber(totalDifference)
                 }
             },
             transactions: mockTransactions
         };
-
         return NextResponse.json(coinData);
     } catch (error) {
         console.error('Error fetching coin data:', error);
