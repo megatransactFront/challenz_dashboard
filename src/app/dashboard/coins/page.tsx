@@ -1,7 +1,7 @@
 // app/dashboard/coins/page.tsx
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Coins, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CoinData } from '@/app/types/coins';
 import { CoinTransactionTable } from '@/app/dashboard/components/coins/CoinTransactionTable';
