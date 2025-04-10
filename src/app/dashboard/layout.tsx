@@ -1,6 +1,4 @@
-// app/dashboard/layout.tsx
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -17,7 +15,6 @@ export default function DashboardLayout({
     setChildrenLoaded(true);
   }, []);
 
-  // Updated paths to match actual route structure
   const pageDetails = {
     "/dashboard": {
       title: "Overview Dashboard",
