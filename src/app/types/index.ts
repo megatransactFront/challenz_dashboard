@@ -2,6 +2,7 @@
 export * from './dashboard';
 export * from './revenues';
 export * from './engagement';
+export * from './coins';
 
 // types/index.ts
 import { LucideIcon } from "lucide-react";

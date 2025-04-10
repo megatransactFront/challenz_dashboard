@@ -24,6 +24,10 @@ export default function DashboardLayout({
     "/dashboard/engagements": {
       title: "Engagement Metrics",
       description: "Monitor user engagement"
+    },
+    "/dashboard/coins": {
+      title: "Uwaci Coins",
+      description: "Manage and track coin transactions"
     }
   } as const;
 

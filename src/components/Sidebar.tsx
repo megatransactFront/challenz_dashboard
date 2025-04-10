@@ -22,8 +22,8 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate }) => {
         onClick={() => onNavigate(item.path)}
         className={cn(
           "flex items-center py-3 px-6 rounded-lg cursor-pointer transition-all duration-200",
-          isActive 
-            ? "bg-white/15 shadow-sm" 
+          isActive
+            ? "bg-white/15 shadow-sm"
             : "hover:bg-[#1a4d5f] text-white/90"
         )}
       >
@@ -62,6 +62,12 @@ const menuItems: MenuItemType[] = [
     title: "Summary",
     icon: BarChart3,
     path: "/dashboard",
+    subItems: [
+      {
+        title: "Coins",
+        path: "/dashboard/coins",
+      },
+    ],
   },
 ];
 
@@ -100,7 +106,7 @@ const Sidebar = () => {
     <>
       {/* Mobile Menu Button */}
       <div className="fixed top-4 left-4 z-50 lg:hidden">
-        <button 
+        <button
           className="p-2 rounded-lg bg-[#1F5C71] hover:bg-[#1a4d5f] transition-colors"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
@@ -124,7 +130,7 @@ const Sidebar = () => {
           <div className="flex items-center gap-4 px-6 mb-8">
             <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden">
               <img
-                 src="https://xsgames.co/randomusers/avatar.php?g=male"
+                src="https://xsgames.co/randomusers/avatar.php?g=male"
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
@@ -181,7 +187,7 @@ const Sidebar = () => {
 
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         />
