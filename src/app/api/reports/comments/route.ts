@@ -1,7 +1,6 @@
 // app/api/dashboard/coins/route.ts
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { CommentReport } from '@/app/types/reports';
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -28,7 +27,7 @@ export async function GET() {
             console.error('Error fetching reports data:', reportDataError);
             throw new Error('Failed to fetch reports data');
         }
-        const fullReportsData: CommentReport[] = await Promise.all(
+        const fullReportsData = await Promise.all(
             reportsData?.map(async (report: any) => {
                 if (!report?.comment?.video_id) return report;
                 const { data: videoData, error: videoError } = await supabase
@@ -37,15 +36,16 @@ export async function GET() {
                     .eq('id', report?.comment?.video_id)
                     .single();
 
-                if (videoError) {
+                if (videoError || !videoData) {
                     return report;
                 }
 
-                const { video_id, ...restComments } = report.comment;
                 return {
                     ...report,
                     comment: {
-                        ...restComments,
+                        id: report?.comment?.id,
+                        content: report?.comment?.content,
+                        likes: report?.comment?.likes,
                         video: {
                             ...videoData
                         },

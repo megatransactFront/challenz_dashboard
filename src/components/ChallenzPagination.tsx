@@ -7,11 +7,6 @@ const ChallenzPagination = ({ items = [], itemsPerPage = 10, setCurrentItems }: 
     const [currentPage, setCurrentPage] = useState(1);
     const totalPages = Math.ceil(items?.length / itemsPerPage);
 
-    // Change page
-    const goToPage = (pageNumber: number) => {
-        setCurrentPage(pageNumber);
-    };
-
     // Get current items
     useEffect(() => {
         const indexOfLastItem = currentPage * itemsPerPage;

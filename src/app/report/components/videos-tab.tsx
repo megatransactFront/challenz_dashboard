@@ -40,11 +40,8 @@ export default function VideosTab() {
             if (!response.ok) {
                 throw new Error('Failed to fetch videos data');
             }
-
             const data = await response.json();
             setVideosData(data);
-            console.log('Videos data:', data);
-
             setError(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
