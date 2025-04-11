@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { use, useCallback, useEffect, useState } from "react";
 import {
     Table,
     TableBody,
@@ -9,146 +9,119 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import ChallenzPagination from "@/components/ChallenzPagination";
+import { CommentReport } from "@/app/types/comments-report";
+import { Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import VideoCommentsTab from "@/app/report/components/video-comments-tab";
 
-interface Comment {
-    id: number;
-    username: string;
-    comment: string;
-    likes: number;
-    reports: number | null;
-    replies: number | null;
+interface Video {
+    id: string
+    title: string
+    video_url: string
 }
 
-const commentsData: Comment[] = [
-    {
-        id: 1,
-        username: "Jacob Evans",
-        comment: "This workout was intense! I'm definitely feeling the burn. Can't wait to try it again tomorrow!",
-        likes: 74,
-        reports: null,
-        replies: 40,
-    },
-    {
-        id: 2,
-        username: "Stephanie Kerr",
-        comment: "Wow, this recipe looks amazing! I love how simple it is. I'm going to make this for dinner tonight!",
-        likes: 74,
-        reports: 1,
-        replies: 60,
-    },
-    {
-        id: 3,
-        username: "Caitlin James",
-        comment: "This place looks beautiful! Adding it to my bucket list. Thanks for sharing your adventure!",
-        likes: 74,
-        reports: null,
-        replies: null,
-    },
-    {
-        id: 4,
-        username: "Ramona Hill",
-        comment: "Aww, your dog is so adorable! I can't believe how fluffy he is!",
-        likes: 56,
-        reports: null,
-        replies: null,
-    },
-    {
-        id: 5,
-        username: "Martha Stewart",
-        comment: "Love these outfits! Where did you get that jacket? I need it in my life!",
-        likes: 456,
-        reports: null,
-        replies: 9,
-    },
-    {
-        id: 6,
-        username: "Max Wild",
-        comment: "These tips are super useful! I can't believe I didn't think of that before. Thanks for sharing",
-        likes: 6789,
-        reports: null,
-        replies: 10,
-    },
-    {
-        id: 7,
-        username: "Jonathan Price",
-        comment: "I'm dying 😂 This is the funniest thing I've seen all week! Keep it up!",
-        likes: 32,
-        reports: 5,
-        replies: 60,
-    },
-    {
-        id: 8,
-        username: "Martin Gore",
-        comment: "This was so helpful! I'm trying to improve my painting skills, and your tips are just what I needed",
-        likes: 2000,
-        reports: null,
-        replies: 50,
-    },
-    {
-        id: 9,
-        username: "John Cenat",
-        comment: "Your voice is incredible! This cover gave me chills. Please do more songs like this!",
-        likes: 5000,
-        reports: null,
-        replies: null,
-    },
-    {
-        id: 10,
-        username: "Jai Liger",
-        comment: "Your voice is incredible! Love this Challenge Response!!!",
-        likes: 20000,
-        reports: null,
-        replies: 234,
-    },
-    {
-        id: 11,
-        username: "Jai Liger",
-        comment: "Your voice is incredible! Love this Challenge Response!!!",
-        likes: 20000,
-        reports: null,
-        replies: 234,
-    },
-    {
-        id: 12,
-        username: "Jai Liger",
-        comment: "Your voice is incredible! Love this Challenge Response!!!",
-        likes: 20000,
-        reports: null,
-        replies: 234,
-    },
-];
-
 export default function CommentsTab() {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [commentsData, setCommentsData] = useState<CommentReport[]>([]);
+    const [video, setVideo] = useState<Video | null>(null);
     const itemsPerPage = 10;
-    const [currentItems, setCurrentItems] = useState<Comment[]>(commentsData.slice(0, itemsPerPage));
-    const handleSetCurrentItems = useCallback((items: Comment[]) => {
+    const [currentItems, setCurrentItems] = useState<CommentReport[]>([]);
+    const handleSetCurrentItems = useCallback((items: CommentReport[]) => {
         setCurrentItems(items);
     }, []);
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
+    const handleViewVideo = (video: Video | undefined) => {
+        console.log(video);
+
+        if (!video) return;
+        setVideo(video);
+
+    };
+    const fetchComments = async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch('/api/reports/comments');
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch coin data');
+            }
+
+            const data = await response.json();
+
+            setCommentsData(data);
+            setError(null);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
+            console.error('Error fetching comments data:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    useEffect(() => {
+        fetchComments();
+        setCurrentItems(commentsData.slice(0, itemsPerPage));
+    }, []);
+
+    if (error) {
+        return (
+            <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        );
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
+            </div>
+        );
+    }
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-semibold">Comments</h2>
             <div className="bg-white rounded-lg shadow">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-[#F7F9FC] ">
                         <TableRow >
                             <TableHead className="w-[200px] text-center">USERNAME</TableHead>
+                            <TableHead className="text-center bg-[#E4566466]">REASON REPORT</TableHead>
                             <TableHead className="text-center">COMMENT</TableHead>
                             <TableHead className="text-center">COMMENT LIKES</TableHead>
-                            <TableHead className="text-center">REPORTS</TableHead>
-                            <TableHead className="text-center">REPLIES</TableHead>
+                            <TableHead className="text-center">CREATED AT</TableHead>
+                            <TableHead className="text-center">VIDEO</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {currentItems.map((comment) => (
-                            <TableRow key={comment.id}>
-                                <TableCell className="font-medium text-center py-3">{comment.username}</TableCell>
-                                <TableCell className="text-center">{comment.comment}</TableCell>
-                                <TableCell className="text-center">{comment.likes}</TableCell>
-                                <TableCell className="text-center">{comment.reports || "-"}</TableCell>
-                                <TableCell className="text-center">{comment.replies || "-"}</TableCell>
+                        {currentItems?.map((report) => (
+                            <TableRow key={report?.id}>
+                                <TableCell className="font-medium text-center py-3">{report?.reporters?.username}</TableCell>
+                                <TableCell className="text-center  text-red-600">{report?.reason}</TableCell>
+                                <TableCell className="text-center">{report?.comments?.content}</TableCell>
+                                <TableCell className="text-center">{report?.comments?.likes}</TableCell>
+                                <TableCell className="text-center">{formatDate(report?.created_at?.toString())}</TableCell>
+                                <TableCell className="text-center">
+                                    {report?.comments?.video ? (
+                                        <Button
+                                            variant="ghost"
+                                            className="text-blue-600 hover:text-blue-800"
+                                            onClick={() => handleViewVideo(report?.comments?.video)}
+                                        >
+                                            View Video
+                                        </Button>
+                                    ) : (
+                                        <span className="text-gray-500">No Video</span>
+                                    )}
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -157,6 +130,9 @@ export default function CommentsTab() {
 
             {/* Pagination */}
             <ChallenzPagination items={commentsData} itemsPerPage={itemsPerPage} setCurrentItems={handleSetCurrentItems} />
+
+            {/* Video Player Modal */}
+            <VideoCommentsTab isOpen={!!video} onClose={() => setVideo(null)} video={video} />
 
         </div>
     );

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 
 const ChallenzPagination = ({ items = [], itemsPerPage = 10, setCurrentItems }: { items: Array<any>, itemsPerPage?: number, setCurrentItems: (data: any) => void }) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const totalPages = Math.ceil(items.length / itemsPerPage);
+    const totalPages = Math.ceil(items?.length / itemsPerPage);
 
     // Change page
     const goToPage = (pageNumber: number) => {
@@ -16,7 +16,7 @@ const ChallenzPagination = ({ items = [], itemsPerPage = 10, setCurrentItems }: 
     useEffect(() => {
         const indexOfLastItem = currentPage * itemsPerPage;
         const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-        const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
+        const currentItems = items?.slice(indexOfFirstItem, indexOfLastItem);
         setCurrentItems(currentItems);
     }
         , [currentPage, items, itemsPerPage, setCurrentItems]);
