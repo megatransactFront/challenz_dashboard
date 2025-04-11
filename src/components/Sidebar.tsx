@@ -82,6 +82,11 @@ const mainMenuItems: MenuItemType[] = [
     icon: Users,
     path: "/users",
   },
+  {
+    title: "Report",
+    icon: BarChart3,
+    path: "/report",
+  },
 ];
 
 const otherMenuItems: MenuItemType[] = [
