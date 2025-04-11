@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
     Table,
     TableBody,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import ChallenzPagination from "@/components/ChallenzPagination";
 
 interface Comment {
     id: number;
@@ -102,42 +103,37 @@ const commentsData: Comment[] = [
         reports: null,
         replies: 234,
     },
+    {
+        id: 11,
+        username: "Jai Liger",
+        comment: "Your voice is incredible! Love this Challenge Response!!!",
+        likes: 20000,
+        reports: null,
+        replies: 234,
+    },
+    {
+        id: 12,
+        username: "Jai Liger",
+        comment: "Your voice is incredible! Love this Challenge Response!!!",
+        likes: 20000,
+        reports: null,
+        replies: 234,
+    },
 ];
 
 export default function CommentsTab() {
-    const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-    const totalPages = Math.ceil(commentsData.length / itemsPerPage);
-
-    // Get current items
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = commentsData.slice(indexOfFirstItem, indexOfLastItem);
-
-    // Change page
-    const goToPage = (pageNumber: number) => {
-        setCurrentPage(pageNumber);
-    };
-
-    const goToPreviousPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
-    const goToNextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
-
+    const [currentItems, setCurrentItems] = useState<Comment[]>(commentsData.slice(0, itemsPerPage));
+    const handleSetCurrentItems = useCallback((items: Comment[]) => {
+        setCurrentItems(items);
+    }, []);
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-semibold">Dance Challenge Comments</h2>
+            <h2 className="text-2xl font-semibold">Comments</h2>
             <div className="bg-white rounded-lg shadow">
                 <Table>
                     <TableHeader>
-                        <TableRow>
+                        <TableRow >
                             <TableHead className="w-[200px] text-center">USERNAME</TableHead>
                             <TableHead className="text-center">COMMENT</TableHead>
                             <TableHead className="text-center">COMMENT LIKES</TableHead>
@@ -148,7 +144,7 @@ export default function CommentsTab() {
                     <TableBody>
                         {currentItems.map((comment) => (
                             <TableRow key={comment.id}>
-                                <TableCell className="font-medium text-center">{comment.username}</TableCell>
+                                <TableCell className="font-medium text-center py-3">{comment.username}</TableCell>
                                 <TableCell className="text-center">{comment.comment}</TableCell>
                                 <TableCell className="text-center">{comment.likes}</TableCell>
                                 <TableCell className="text-center">{comment.reports || "-"}</TableCell>
@@ -160,34 +156,8 @@ export default function CommentsTab() {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-between items-center mb-2">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                >
-                    <ChevronLeft className="h-6 w-6" />
-                </Button>
-                <div className="flex items-center">
-                    <Button
-                        variant="default"
-                        className="w-12 h-12 rounded-lg bg-[#1F5C71] text-white"
-                    >
-                        {currentPage}
-                    </Button>
-                </div>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                >
-                    <ChevronRight className="h-6 w-6" />
-                </Button>
-            </div>
+            <ChallenzPagination items={commentsData} itemsPerPage={itemsPerPage} setCurrentItems={handleSetCurrentItems} />
+
         </div>
     );
 }

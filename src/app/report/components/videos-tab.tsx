@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
     Table,
     TableBody,
@@ -9,8 +9,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import ChallenzPagination from "@/components/ChallenzPagination";
 
 interface Video {
     id: number;
@@ -116,41 +115,21 @@ const videosData: Video[] = [
 ];
 
 export default function VideosTab() {
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 8;
-    const totalPages = Math.ceil(videosData.length / itemsPerPage);
-
-    // Get current items
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = videosData.slice(indexOfFirstItem, indexOfLastItem);
-
-    // Change page
-    const goToPage = (pageNumber: number) => {
-        setCurrentPage(pageNumber);
-    };
-
-    const goToPreviousPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
-    const goToNextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
+    const itemsPerPage = 10;
+    const [currentItems, setCurrentItems] = useState<Video[]>(videosData.slice(0, itemsPerPage));
+    const handleSetCurrentItems = useCallback((items: Video[]) => {
+        setCurrentItems(items);
+    }, []);
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-semibold">Popular Challenge Videos</h2>
+            <h2 className="text-2xl font-semibold">Videos</h2>
             <div className="bg-white rounded-lg shadow">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[200px]">CREATOR</TableHead>
-                            <TableHead>VIDEO TITLE</TableHead>
+                            <TableHead className="w-[200px] text-center">CREATOR</TableHead>
+                            <TableHead className="text-center">VIDEO TITLE</TableHead>
                             <TableHead className="text-center">VIEWS</TableHead>
                             <TableHead className="text-center">LIKES</TableHead>
                             <TableHead className="text-center">COMMENTS</TableHead>
@@ -160,8 +139,8 @@ export default function VideosTab() {
                     <TableBody>
                         {currentItems.map((video) => (
                             <TableRow key={video.id}>
-                                <TableCell className="font-medium">{video.username}</TableCell>
-                                <TableCell>{video.title}</TableCell>
+                                <TableCell className="font-medium py-3 text-center">{video.username}</TableCell>
+                                <TableCell className="text-center">{video.title}</TableCell>
                                 <TableCell className="text-center">{video.views.toLocaleString()}</TableCell>
                                 <TableCell className="text-center">{video.likes.toLocaleString()}</TableCell>
                                 <TableCell className="text-center">{video.comments.toLocaleString()}</TableCell>
@@ -172,35 +151,7 @@ export default function VideosTab() {
                 </Table>
             </div>
 
-            {/* Pagination */}
-            <div className="flex justify-between items-center mb-2">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                >
-                    <ChevronLeft className="h-6 w-6" />
-                </Button>
-                <div className="flex items-center">
-                    <Button
-                        variant="default"
-                        className="w-12 h-12 rounded-lg bg-[#1F5C71] text-white"
-                    >
-                        {currentPage}
-                    </Button>
-                </div>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                >
-                    <ChevronRight className="h-6 w-6" />
-                </Button>
-            </div>
+            <ChallenzPagination items={videosData} itemsPerPage={itemsPerPage} setCurrentItems={handleSetCurrentItems} />
         </div>
     );
 }
