@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     Table,
     TableBody,
@@ -10,17 +10,11 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import ChallenzPagination from "@/components/ChallenzPagination";
-import { CommentReport } from "@/app/types/comments-report";
+import { CommentReport, Video } from "@/app/types/reports";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import VideoCommentsTab from "@/app/report/components/video-comments-tab";
-
-interface Video {
-    id: string
-    title: string
-    video_url: string
-}
+import VideoReportDialog from "@/app/report/components/video-report-dialog";
 
 export default function CommentsTab() {
     const [isLoading, setIsLoading] = useState(false);
@@ -40,8 +34,6 @@ export default function CommentsTab() {
         });
     };
     const handleViewVideo = (video: Video | undefined) => {
-        console.log(video);
-
         if (!video) return;
         setVideo(video);
 
@@ -50,13 +42,10 @@ export default function CommentsTab() {
         try {
             setIsLoading(true);
             const response = await fetch('/api/reports/comments');
-
             if (!response.ok) {
                 throw new Error('Failed to fetch coin data');
             }
-
             const data = await response.json();
-
             setCommentsData(data);
             setError(null);
         } catch (err) {
@@ -91,7 +80,7 @@ export default function CommentsTab() {
             <h2 className="text-2xl font-semibold">Comments</h2>
             <div className="bg-white rounded-lg shadow">
                 <Table>
-                    <TableHeader className="bg-[#F7F9FC] ">
+                    <TableHeader className="bg-[#F7F9FC]">
                         <TableRow >
                             <TableHead className="w-[200px] text-center">USERNAME</TableHead>
                             <TableHead className="text-center bg-[#E4566466]">REASON REPORT</TableHead>
@@ -102,19 +91,19 @@ export default function CommentsTab() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {currentItems?.map((report) => (
+                        {currentItems?.map((report: CommentReport) => (
                             <TableRow key={report?.id}>
-                                <TableCell className="font-medium text-center py-3">{report?.reporters?.username}</TableCell>
-                                <TableCell className="text-center  text-red-600">{report?.reason}</TableCell>
-                                <TableCell className="text-center">{report?.comments?.content}</TableCell>
-                                <TableCell className="text-center">{report?.comments?.likes}</TableCell>
-                                <TableCell className="text-center">{formatDate(report?.created_at?.toString())}</TableCell>
+                                <TableCell className="font-medium text-center py-3">{report?.reporter?.username ? report?.reporter?.username : (<span className="text-gray-500">Not found</span>)}</TableCell>
+                                <TableCell className="text-center  text-red-600">{report?.reason ? report?.reason : (<span className="text-gray-500">Not found</span>)}</TableCell>
+                                <TableCell className="text-center">{report?.comment?.content ? report?.comment?.content : (<span className="text-gray-500">Not found</span>)}</TableCell>
+                                <TableCell className="text-center">{report?.comment?.likes ? report?.comment?.likes : (<span className="text-gray-500">Not found</span>)}</TableCell>
+                                <TableCell className="text-center">{report?.created_at ? formatDate(report?.created_at?.toString()) : (<span className="text-gray-500">Not found</span>)}</TableCell>
                                 <TableCell className="text-center">
-                                    {report?.comments?.video ? (
+                                    {report?.comment?.video ? (
                                         <Button
                                             variant="ghost"
                                             className="text-blue-600 hover:text-blue-800"
-                                            onClick={() => handleViewVideo(report?.comments?.video)}
+                                            onClick={() => handleViewVideo(report.comment.video)}
                                         >
                                             View Video
                                         </Button>
@@ -132,7 +121,7 @@ export default function CommentsTab() {
             <ChallenzPagination items={commentsData} itemsPerPage={itemsPerPage} setCurrentItems={handleSetCurrentItems} />
 
             {/* Video Player Modal */}
-            <VideoCommentsTab isOpen={!!video} onClose={() => setVideo(null)} video={video} />
+            <VideoReportDialog isOpen={!!video} onClose={() => setVideo(null)} video={video} />
 
         </div>
     );

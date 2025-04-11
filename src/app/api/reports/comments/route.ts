@@ -1,8 +1,7 @@
 // app/api/dashboard/coins/route.ts
 import { NextResponse } from 'next/server';
-import { CoinData, CoinTransaction } from '@/app/types/coins';
 import { createClient } from '@supabase/supabase-js';
-import { CommentReport } from '@/app/types/comments-report';
+import { CommentReport } from '@/app/types/reports';
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -15,12 +14,12 @@ export async function GET() {
                 id,
                 reason,
                 created_at,
-                comments:comment_id (
+                comment:comment_id (
                 id,
                 content,
                 likes,
                 video_id),
-                reporters:reporter_id (
+                reporter:reporter_id (
                 id,
                 username
                 )
@@ -31,21 +30,21 @@ export async function GET() {
         }
         const fullReportsData: CommentReport[] = await Promise.all(
             reportsData?.map(async (report: any) => {
-                if (!report?.comments?.video_id) return report;
+                if (!report?.comment?.video_id) return report;
                 const { data: videoData, error: videoError } = await supabase
                     .from('submissions')
-                    .select('id, title, video_url')
-                    .eq('id', report?.comments?.video_id)
+                    .select('id, title, video_url, description')
+                    .eq('id', report?.comment?.video_id)
                     .single();
 
                 if (videoError) {
                     return report;
                 }
 
-                const { video_id, ...restComments } = report.comments;
+                const { video_id, ...restComments } = report.comment;
                 return {
                     ...report,
-                    comments: {
+                    comment: {
                         ...restComments,
                         video: {
                             ...videoData
@@ -56,9 +55,9 @@ export async function GET() {
         );
         return NextResponse.json(fullReportsData);
     } catch (error) {
-        console.error('Error fetching coin data:', error);
+        console.error('Error fetching comments data:', error);
         return NextResponse.json(
-            { error: 'Failed to fetch coin data' },
+            { error: 'Failed to fetch comments data' },
             { status: 500 }
         );
     }
