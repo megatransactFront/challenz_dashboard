@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Loader2, Video } from 'lucide-react'
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { formatDate } from '@/helpers/formater'
 
 type User = {
   id: string
@@ -65,7 +66,7 @@ export default function UsersPage() {
 
       const response = await fetch(`/api/users?${params}`)
       if (!response.ok) throw new Error('Failed to fetch users')
-      
+
       const data = await response.json()
       setUsers(data.users || [])
       setPagination(data.pagination)
@@ -94,20 +95,12 @@ export default function UsersPage() {
     fetchUsers()
   }, [fetchUsers])
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
   return (
     <div className="p-6">
       <Card>
         <CardContent className="p-6">
           <h2 className="text-xl font-semibold mb-6">Users List</h2>
-          
+
           {loading ? (
             <div className="flex justify-center items-center min-h-[400px]">
               <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -129,16 +122,16 @@ export default function UsersPage() {
                   </thead>
                   <tbody>
                     {users.map((user) => (
-                      <tr 
-                        key={user.id} 
+                      <tr
+                        key={user.id}
                         className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
                         onClick={() => fetchUserDetails(user.id)}
                       >
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
                             {user.profile_picture_url ? (
-                              <img 
-                                src={user.profile_picture_url} 
+                              <img
+                                src={user.profile_picture_url}
                                 alt={user.username}
                                 className="w-10 h-10 rounded-full object-cover"
                               />
@@ -172,11 +165,10 @@ export default function UsersPage() {
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex flex-col gap-2">
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              user.is_locked 
-                                ? 'bg-red-100 text-red-800' 
-                                : 'bg-green-100 text-green-800'
-                            }`}>
+                            <span className={`px-2 py-1 rounded-full text-xs ${user.is_locked
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-green-100 text-green-800'
+                              }`}>
                               {user.is_locked ? 'Locked' : 'Active'}
                             </span>
                             <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
@@ -231,8 +223,8 @@ export default function UsersPage() {
       </Card>
 
       {/* User Details Modal */}
-      <Dialog 
-        open={!!selectedUser} 
+      <Dialog
+        open={!!selectedUser}
         onOpenChange={(open) => !open && setSelectedUser(null)}
       >
         <DialogContent className="sm:max-w-2xl">
@@ -245,12 +237,12 @@ export default function UsersPage() {
               <DialogHeader>
                 <DialogTitle>User Profile</DialogTitle>
               </DialogHeader>
-              
+
               <div className="mt-6 space-y-6">
                 {/* User Basic Info */}
                 <div className="flex items-start gap-4">
                   {selectedUser.profile_picture_url ? (
-                    <img 
+                    <img
                       src={selectedUser.profile_picture_url}
                       alt={selectedUser.username}
                       className="w-24 h-24 rounded-full object-cover"
@@ -305,7 +297,7 @@ export default function UsersPage() {
                     <h3 className="font-medium text-gray-500 mb-3">Recent Challenges</h3>
                     <div className="space-y-2">
                       {selectedUser.challenges.map(challenge => (
-                        <div 
+                        <div
                           key={challenge.id}
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                         >
