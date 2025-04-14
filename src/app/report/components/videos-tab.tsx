@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import { Video, VideoReport } from "@/app/types/reports";
 import { Button } from "@/components/ui/button";
 import VideoReportDialog from "./video-report-dialog";
+import { formatDate } from "@/app/helpers/formater";
 
 export default function VideosTab() {
     const itemsPerPage = 10;
@@ -25,13 +26,6 @@ export default function VideosTab() {
     const [video, setVideo] = useState<Video | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [videosData, setVideosData] = useState<VideoReport[]>([]);
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
     const fetchVideos = async () => {
         try {
             setIsLoading(true);

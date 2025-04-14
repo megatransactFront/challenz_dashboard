@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { UserDetailModal } from './components/user-details-modal';
 import { VideoDetailModal } from './components/challenge-details-modal';
 import type { Challenge, DashboardData } from '@/app/types/challenz';
+import { formatDate } from "@/app/helpers/formater";
 
 export default function ChallenzPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -44,13 +45,7 @@ export default function ChallenzPage() {
     fetchData();
   }, [fetchData]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
+
 
   return (
     <div className="p-6">
