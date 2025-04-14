@@ -30,7 +30,7 @@ export default function VideosTab() {
     const fetchVideos = async () => {
         try {
             setIsLoading(true);
-            if (cachedVideos) {
+            if (cachedVideos && currentItems) {
                 setVideosData(cachedVideos);
                 setCurrentItems(cachedVideos.slice(0, itemsPerPage));
                 setIsLoading(false);
