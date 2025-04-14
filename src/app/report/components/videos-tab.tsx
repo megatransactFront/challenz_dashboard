@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import VideoReportDialog from "./video-report-dialog";
 import { formatDate } from "@/app/helpers/formater";
 
+let cachedVideos: VideoReport[] | null = null;
 export default function VideosTab() {
     const itemsPerPage = 10;
     const [currentItems, setCurrentItems] = useState<VideoReport[] | []>([]);
@@ -29,6 +30,12 @@ export default function VideosTab() {
     const fetchVideos = async () => {
         try {
             setIsLoading(true);
+            if (cachedVideos) {
+                setVideosData(cachedVideos);
+                setCurrentItems(cachedVideos.slice(0, itemsPerPage));
+                setIsLoading(false);
+                return;
+            }
             const response = await fetch('/api/reports/videos');
 
             if (!response.ok) {
@@ -36,6 +43,7 @@ export default function VideosTab() {
             }
             const data = await response.json();
             setVideosData(data);
+            cachedVideos = data;
             setError(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');

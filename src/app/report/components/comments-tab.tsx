@@ -15,42 +15,51 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import VideoReportDialog from "@/app/report/components/video-report-dialog";
 import { formatDate } from "@/app/helpers/formater";
+let cachedComments: CommentReport[] | null = null;
 
 export default function CommentsTab() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [commentsData, setCommentsData] = useState<CommentReport[]>([]);
     const [video, setVideo] = useState<Video | null>(null);
-    const itemsPerPage = 10;
     const [currentItems, setCurrentItems] = useState<CommentReport[]>([]);
+    const itemsPerPage = 10;
+
     const handleSetCurrentItems = useCallback((items: CommentReport[]) => {
         setCurrentItems(items);
     }, []);
+
     const handleViewVideo = (video: Video | undefined) => {
         if (!video) return;
         setVideo(video);
-
     };
+
     const fetchComments = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('/api/reports/comments');
-            if (!response.ok) {
-                throw new Error('Failed to fetch coin data');
+            if (cachedComments) {
+                setCommentsData(cachedComments);
+                setCurrentItems(cachedComments.slice(0, itemsPerPage));
+                setIsLoading(false);
+                return;
             }
+            const response = await fetch('/api/reports/comments');
+            if (!response.ok) throw new Error('Failed to fetch comment data');
+
             const data = await response.json();
+            cachedComments = data; // cache in memory
             setCommentsData(data);
+            setCurrentItems(data.slice(0, itemsPerPage));
             setError(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
-            console.error('Error fetching comments data:', err);
         } finally {
             setIsLoading(false);
         }
     };
+
     useEffect(() => {
         fetchComments();
-        setCurrentItems(commentsData.slice(0, itemsPerPage));
     }, []);
 
     if (error) {
