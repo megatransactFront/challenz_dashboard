@@ -15,7 +15,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import VideoReportDialog from "@/app/report/components/video-report-dialog";
 import { formatDate } from "@/app/helpers/formater";
-let cachedComments: CommentReport[] | null = null;
 
 export default function CommentsTab() {
     const [isLoading, setIsLoading] = useState(false);
@@ -37,17 +36,10 @@ export default function CommentsTab() {
     const fetchComments = async () => {
         try {
             setIsLoading(true);
-            if (cachedComments) {
-                setCommentsData(cachedComments);
-                setCurrentItems(cachedComments.slice(0, itemsPerPage));
-                setIsLoading(false);
-                return;
-            }
             const response = await fetch('/api/reports/comments');
             if (!response.ok) throw new Error('Failed to fetch comment data');
 
             const data = await response.json();
-            cachedComments = data; // cache in memory
             setCommentsData(data);
             setCurrentItems(data.slice(0, itemsPerPage));
             setError(null);
