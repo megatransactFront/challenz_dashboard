@@ -11,6 +11,7 @@ import {
 import { CoinTransaction } from '@/app/types/coins';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ChallenzPagination from '@/components/ChallenzPagination';
+import { formatDateWithSign } from '@/helpers/formater';
 
 interface CoinTransactionTableProps {
     transactions: CoinTransaction[];
@@ -66,7 +67,7 @@ export function CoinTransactionTable({ transactions }: CoinTransactionTableProps
                         {currentItems
                             .map((transaction, index) => (
                                 <TableRow key={index}>
-                                    <TableCell className="text-center">{transaction.date}</TableCell>
+                                    <TableCell className="text-center">{formatDateWithSign(transaction.date, "/")}</TableCell>
                                     <TableCell className="text-center">${transaction.totalLikes}</TableCell>
                                     <TableCell className="text-center">${transaction.totalReferrals}</TableCell>
                                     <TableCell className="text-center">${transaction.totalShares}</TableCell>
