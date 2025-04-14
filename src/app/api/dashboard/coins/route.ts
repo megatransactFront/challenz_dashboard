@@ -11,105 +11,110 @@ export async function GET() {
         // Mock data for demonstration purposes
         // In a real application, this would fetch data from a database or external API
         const mockTransactions: CoinTransaction[] = [
+            // Daily Transactions for 2025
             {
-                date: '2025-03-10T06:58:50.850000+00:00',
+                date: '2025-04-14T08:00:00.000000+00:00',
                 totalLikes: 120,
-                totalReferrals: 210,
+                totalReferrals: 215,
                 totalShares: 430,
-                challengesMade: 980,
-                badgesReceived: 4000,
-                totalEarned: 5740,
-                totalSpent: 80
+                challengesMade: 960,
+                badgesReceived: 3850,
+                totalEarned: 5950,
+                totalSpent: 95
             },
             {
-                date: '2024-12-15T08:45:30.123000+00:00',
-                totalLikes: 95,
-                totalReferrals: 190,
-                totalShares: 310,
-                challengesMade: 760,
-                badgesReceived: 3500,
-                totalEarned: 4855,
-                totalSpent: 120
-            },
-            {
-                date: '2023-11-05T14:22:10.987000+00:00',
-                totalLikes: 180,
-                totalReferrals: 275,
-                totalShares: 540,
-                challengesMade: 1340,
-                badgesReceived: 6000,
-                totalEarned: 8335,
-                totalSpent: 200
-            },
-            {
-                date: '2022-08-20T09:11:40.456000+00:00',
-                totalLikes: 75,
-                totalReferrals: 100,
-                totalShares: 220,
-                challengesMade: 500,
-                badgesReceived: 2000,
-                totalEarned: 2895,
-                totalSpent: 50
-            },
-            {
-                date: '2021-06-25T17:33:25.789000+00:00',
+                date: '2025-04-15T08:00:00.000000+00:00',
                 totalLikes: 130,
-                totalReferrals: 300,
-                totalShares: 480,
-                challengesMade: 1100,
-                badgesReceived: 5200,
-                totalEarned: 7210,
-                totalSpent: 90
+                totalReferrals: 230,
+                totalShares: 440,
+                challengesMade: 1000,
+                badgesReceived: 3950,
+                totalEarned: 6050,
+                totalSpent: 105
             },
             {
-                date: '2020-10-14T11:10:10.111000+00:00',
-                totalLikes: 105,
-                totalReferrals: 160,
-                totalShares: 390,
-                challengesMade: 870,
+                date: '2025-04-16T08:00:00.000000+00:00',
+                totalLikes: 125,
+                totalReferrals: 220,
+                totalShares: 435,
+                challengesMade: 990,
                 badgesReceived: 3900,
-                totalEarned: 5525,
-                totalSpent: 70
+                totalEarned: 6000,
+                totalSpent: 100
+            },
+
+            // Weekly Transactions for 2025
+            {
+                date: '2025-04-13T08:00:00.000000+00:00',
+                totalLikes: 710,
+                totalReferrals: 1330,
+                totalShares: 2950,
+                challengesMade: 6900,
+                badgesReceived: 26500,
+                totalEarned: 41500,
+                totalSpent: 710
             },
             {
-                date: '2019-04-30T13:05:50.321000+00:00',
-                totalLikes: 85,
-                totalReferrals: 130,
-                totalShares: 350,
-                challengesMade: 690,
-                badgesReceived: 3300,
-                totalEarned: 4555,
-                totalSpent: 60
+                date: '2025-04-06T08:00:00.000000+00:00',
+                totalLikes: 700,
+                totalReferrals: 1300,
+                totalShares: 2900,
+                challengesMade: 6800,
+                badgesReceived: 26000,
+                totalEarned: 41000,
+                totalSpent: 700
             },
             {
-                date: '2018-07-12T06:29:20.654000+00:00',
-                totalLikes: 140,
-                totalReferrals: 240,
-                totalShares: 510,
-                challengesMade: 1230,
-                badgesReceived: 5600,
-                totalEarned: 7720,
-                totalSpent: 110
+                date: '2025-03-30T08:00:00.000000+00:00',
+                totalLikes: 690,
+                totalReferrals: 1320,
+                totalShares: 2950,
+                challengesMade: 6900,
+                badgesReceived: 26200,
+                totalEarned: 41300,
+                totalSpent: 710
+            },
+
+            // Monthly Transactions for 2025
+            {
+                date: '2025-04-01T08:00:00.000000+00:00',
+                totalLikes: 3300,
+                totalReferrals: 6100,
+                totalShares: 13200,
+                challengesMade: 30500,
+                badgesReceived: 122000,
+                totalEarned: 190000,
+                totalSpent: 3300
             },
             {
-                date: '2017-01-09T19:45:55.200000+00:00',
-                totalLikes: 100,
-                totalReferrals: 180,
-                totalShares: 400,
-                challengesMade: 950,
-                badgesReceived: 4100,
-                totalEarned: 5730,
-                totalSpent: 85
+                date: '2025-03-01T08:00:00.000000+00:00',
+                totalLikes: 3200,
+                totalReferrals: 6000,
+                totalShares: 13000,
+                challengesMade: 30000,
+                badgesReceived: 120000,
+                totalEarned: 185000,
+                totalSpent: 3200
             },
             {
-                date: '2016-05-01T04:20:30.999000+00:00',
-                totalLikes: 70,
-                totalReferrals: 90,
-                totalShares: 290,
-                challengesMade: 620,
-                badgesReceived: 2500,
-                totalEarned: 3570,
-                totalSpent: 40
+                date: '2025-02-01T08:00:00.000000+00:00',
+                totalLikes: 3100,
+                totalReferrals: 5900,
+                totalShares: 12500,
+                challengesMade: 29000,
+                badgesReceived: 115000,
+                totalEarned: 180000,
+                totalSpent: 3100
+            },
+            {
+                date: '2025-01-01T08:00:00.000000+00:00',
+                totalLikes: 3000,
+                totalReferrals: 5800,
+                totalShares: 12000,
+                challengesMade: 28000,
+                badgesReceived: 110000,
+                totalEarned: 175000,
+                totalSpent: 3000
             }
         ];
 
