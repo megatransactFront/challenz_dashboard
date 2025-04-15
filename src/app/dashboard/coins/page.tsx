@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CoinData } from '@/app/types/coins';
 import { CoinTransactionTable } from '@/app/dashboard/components/coins/CoinTransactionTable';
-import CoinsMetrics from '../components/coins/coins-metrics';
+import CoinsMetrics from '../components/coins/CoinsMetrics';
 import { useRouter } from "next/navigation";
 import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(
@@ -14,6 +14,7 @@ const supabase = createClient(
 );
 const usersTransactions = [
     {
+        userId: 1,
         name: "Jeremy Evans",
         uwcEarnedToday: 100,
         uwcEarnedTotal: 725,
@@ -27,6 +28,7 @@ const usersTransactions = [
         ]
     },
     {
+        userId: 2,
         name: "Ricky Starks",
         uwcEarnedToday: 100,
         uwcEarnedTotal: 725,
@@ -40,6 +42,7 @@ const usersTransactions = [
         ]
     },
     {
+        userId: 3,
         name: "Liv Magan",
         uwcEarnedToday: 100,
         uwcEarnedTotal: 725,
@@ -53,6 +56,7 @@ const usersTransactions = [
         ]
     },
     {
+        userId: 4,
         name: "Caleb Bane",
         uwcEarnedToday: 100,
         uwcEarnedTotal: 725,
@@ -66,6 +70,7 @@ const usersTransactions = [
         ]
     },
     {
+        userId: 5,
         name: "Cade Green",
         uwcEarnedToday: 100,
         uwcEarnedTotal: 725,
@@ -79,6 +84,7 @@ const usersTransactions = [
         ]
     },
     {
+        userId: 6,
         name: "Jalen Bourn",
         uwcEarnedToday: 100,
         uwcEarnedTotal: 725,
@@ -92,6 +98,7 @@ const usersTransactions = [
         ]
     },
     {
+        userId: 7,
         name: "Matt Jane",
         uwcEarnedToday: 100,
         uwcEarnedTotal: 725,
@@ -105,6 +112,7 @@ const usersTransactions = [
         ]
     },
     {
+        userId: 8,
         name: "Jules Grant",
         uwcEarnedToday: 100,
         uwcEarnedTotal: 725,

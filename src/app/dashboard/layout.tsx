@@ -50,8 +50,8 @@ export default function DashboardLayout({
   } as const;
 
   const currentPageDetails = pageDetails[pathname as keyof typeof pageDetails] || {
-    title: "Dashboard",
-    description: "View your metrics"
+    title: "",
+    description: ""
   };
 
   return (

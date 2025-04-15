@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 
 interface CoinTransactionTableProps {
     transactions: CoinTransaction[];
@@ -84,7 +85,11 @@ export function CoinTransactionTable({ transactions }: { transactions: any }) {
                                     <TableCell className="text-center text-[#FF4C51] font-medium">${transaction.uwcSpentToday}</TableCell>
                                     <TableCell className="text-center text-[#FF4C51] font-medium">${transaction.uwcSpentTotal}</TableCell>
                                     <TableCell className="text-center">${transaction.uwcBalance}</TableCell>
-                                    <TableCell className="text-center text-[#1F5C71] underline">View</TableCell>
+                                    <TableCell className="text-center text-[#1F5C71] underline cursor-pointer">
+                                        <Link href={`/dashboard/coins/history/${transaction.userId}`}>
+                                            View
+                                        </Link>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                     </TableBody>
