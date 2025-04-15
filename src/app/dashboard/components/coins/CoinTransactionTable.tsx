@@ -80,11 +80,11 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                             .map((metrics: any, index: any) => (
                                 <TableRow key={index}>
                                     <TableCell className="text-center">{metrics.name}</TableCell>
-                                    <TableCell className="text-center text-[#34A853] font-medium">${metrics.uwcEarnedToday}</TableCell>
-                                    <TableCell className="text-center text-[#34A853] font-medium">${metrics.uwcEarnedTotal}</TableCell>
-                                    <TableCell className="text-center text-[#FF4C51] font-medium">${metrics.uwcSpentToday}</TableCell>
-                                    <TableCell className="text-center text-[#FF4C51] font-medium">${metrics.uwcSpentTotal}</TableCell>
-                                    <TableCell className="text-center">${metrics.uwcBalance}</TableCell>
+                                    <TableCell className="text-center text-[#34A853]">+{metrics.uwcEarnedToday} UWC</TableCell>
+                                    <TableCell className="text-center text-[#34A853]">+{metrics.uwcEarnedTotal} UWC</TableCell>
+                                    <TableCell className="text-center text-[#FF4C51]">-{metrics.uwcSpentToday} UWC</TableCell>
+                                    <TableCell className="text-center text-[#FF4C51]">-{metrics.uwcSpentTotal} UWC</TableCell>
+                                    <TableCell className="text-center">${metrics.uwcBalance} UWC</TableCell>
                                     <TableCell className="text-center text-[#1F5C71] underline cursor-pointer">
                                         <Link href={`/dashboard/coins/history/${metrics.userId}`}>
                                             View
