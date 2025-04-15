@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import VideoReportDialog from "@/app/report/components/video-report-dialog";
+import { formatDate } from "@/helpers/formaters";
 
 export default function CommentsTab() {
     const [isLoading, setIsLoading] = useState(false);
@@ -25,13 +26,6 @@ export default function CommentsTab() {
     const handleSetCurrentItems = useCallback((items: CommentReport[]) => {
         setCurrentItems(items);
     }, []);
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
     const handleViewVideo = (video: Video | undefined) => {
         if (!video) return;
         setVideo(video);
