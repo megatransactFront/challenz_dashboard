@@ -1,6 +1,6 @@
 // app/api/dashboard/coins/route.ts
 import { NextResponse } from 'next/server';
-import { CoinData, CoinTransaction } from '@/app/types/coins';
+import { CoinData, UserMetrics } from '@/app/types/coins';
 import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,246 +10,78 @@ export async function GET() {
     try {
         // Mock data for demonstration purposes
         // In a real application, this would fetch data from a database or external API
-        const mockTransactions: CoinTransaction[] = [
+        const usersMetrics: UserMetrics[] = [
             {
-                date: '30/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 500,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
+                userId: '1',
+                name: "Jeremy Evans",
+                uwcEarnedToday: 100,
+                uwcEarnedTotal: 725,
+                uwcSpentToday: 150,
+                uwcSpentTotal: 250,
+                uwcBalance: 475
             },
             {
-                date: '29/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 500,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
+                userId: '2',
+                name: "Ricky Starks",
+                uwcEarnedToday: 100,
+                uwcEarnedTotal: 725,
+                uwcSpentToday: 150,
+                uwcSpentTotal: 250,
+                uwcBalance: 475
             },
             {
-                date: '28/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 500,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
+                userId: '3',
+                name: "Liv Magan",
+                uwcEarnedToday: 100,
+                uwcEarnedTotal: 725,
+                uwcSpentToday: 150,
+                uwcSpentTotal: 250,
+                uwcBalance: 475
             },
             {
-                date: '27/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 500,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
+                userId: '4',
+                name: "Caleb Bane",
+                uwcEarnedToday: 100,
+                uwcEarnedTotal: 725,
+                uwcSpentToday: 150,
+                uwcSpentTotal: 250,
+                uwcBalance: 475
             },
             {
-                date: '26/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
+                userId: '5',
+                name: "Cade Green",
+                uwcEarnedToday: 100,
+                uwcEarnedTotal: 725,
+                uwcSpentToday: 150,
+                uwcSpentTotal: 250,
+                uwcBalance: 475
             },
             {
-                date: '25/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
+                userId: '6',
+                name: "Jalen Bourn",
+                uwcEarnedToday: 100,
+                uwcEarnedTotal: 725,
+                uwcSpentToday: 150,
+                uwcSpentTotal: 250,
+                uwcBalance: 475
             },
             {
-                date: '24/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
+                userId: '7',
+                name: "Matt Jane",
+                uwcEarnedToday: 100,
+                uwcEarnedTotal: 725,
+                uwcSpentToday: 150,
+                uwcSpentTotal: 250,
+                uwcBalance: 475
             },
             {
-                date: '23/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '24/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '23/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '24/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '23/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '24/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '23/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '24/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '23/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '24/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '23/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '24/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '23/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '24/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '23/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '24/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
-            },
-            {
-                date: '23/04/2024',
-                totalLikes: 100,
-                totalReferrals: 250,
-                totalShares: 100,
-                challengesMade: 1250,
-                badgesReceived: 5000,
-                totalEarned: 7100,
-                totalSpent: 100
+                userId: '8',
+                name: "Jules Grant",
+                uwcEarnedToday: 100,
+                uwcEarnedTotal: 725,
+                uwcSpentToday: 150,
+                uwcSpentTotal: 250,
+                uwcBalance: 475
             }
         ];
 
@@ -306,7 +138,7 @@ export async function GET() {
                     formatted: formatNumber(totalDifference)
                 }
             },
-            transactions: mockTransactions
+            userMetrics: usersMetrics
         };
         return NextResponse.json(coinData);
     } catch (error) {

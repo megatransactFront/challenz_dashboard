@@ -8,12 +8,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { CoinTransaction } from '@/app/types/coins';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Download, Search } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import Link from 'next/link';
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -70,9 +67,9 @@ export function TransactionHistoryTable({ transactions }: { transactions: any })
                         {transactions
                             .map((transaction: any, index: any) => (
                                 <TableRow key={index}>
-                                    <TableCell className="text-center  font-medium">{formatDate(transaction.date)}</TableCell>
-                                    <TableCell className="text-center  font-medium">{transaction.partnerShop}</TableCell>
-                                    <TableCell className="text-center font-medium">${transaction.uwcSpent}</TableCell>
+                                    <TableCell className="text-center">{formatDate(transaction.date)}</TableCell>
+                                    <TableCell className="text-center">{transaction.partnerShop}</TableCell>
+                                    <TableCell className="text-center">${transaction.uwcSpent}</TableCell>
                                 </TableRow>
                             ))}
                     </TableBody>

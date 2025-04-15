@@ -8,18 +8,18 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { CoinTransaction } from '@/app/types/coins';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { UserMetrics } from '@/app/types';
 
 interface CoinTransactionTableProps {
-    transactions: CoinTransaction[];
+    usersMetrics: UserMetrics[];
 }
 
-export function CoinTransactionTable({ transactions }: { transactions: any }) {
+export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
     const [timeframe, setTimeFrame] = useState('');
@@ -28,7 +28,7 @@ export function CoinTransactionTable({ transactions }: { transactions: any }) {
         console.log(`Fetching data for ${value} timeframe`);
     };
     // No data state
-    if (!transactions) {
+    if (!usersMetrics) {
         return null;
     }
     return (
@@ -75,18 +75,18 @@ export function CoinTransactionTable({ transactions }: { transactions: any }) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {transactions
+                        {usersMetrics
                             .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                            .map((transaction: any, index: any) => (
+                            .map((metrics: any, index: any) => (
                                 <TableRow key={index}>
-                                    <TableCell className="text-center">{transaction.name}</TableCell>
-                                    <TableCell className="text-center text-[#34A853] font-medium">${transaction.uwcEarnedToday}</TableCell>
-                                    <TableCell className="text-center text-[#34A853] font-medium">${transaction.uwcEarnedTotal}</TableCell>
-                                    <TableCell className="text-center text-[#FF4C51] font-medium">${transaction.uwcSpentToday}</TableCell>
-                                    <TableCell className="text-center text-[#FF4C51] font-medium">${transaction.uwcSpentTotal}</TableCell>
-                                    <TableCell className="text-center">${transaction.uwcBalance}</TableCell>
+                                    <TableCell className="text-center">{metrics.name}</TableCell>
+                                    <TableCell className="text-center text-[#34A853] font-medium">${metrics.uwcEarnedToday}</TableCell>
+                                    <TableCell className="text-center text-[#34A853] font-medium">${metrics.uwcEarnedTotal}</TableCell>
+                                    <TableCell className="text-center text-[#FF4C51] font-medium">${metrics.uwcSpentToday}</TableCell>
+                                    <TableCell className="text-center text-[#FF4C51] font-medium">${metrics.uwcSpentTotal}</TableCell>
+                                    <TableCell className="text-center">${metrics.uwcBalance}</TableCell>
                                     <TableCell className="text-center text-[#1F5C71] underline cursor-pointer">
-                                        <Link href={`/dashboard/coins/history/${transaction.userId}`}>
+                                        <Link href={`/dashboard/coins/history/${metrics.userId}`}>
                                             View
                                         </Link>
                                     </TableCell>
@@ -119,8 +119,8 @@ export function CoinTransactionTable({ transactions }: { transactions: any }) {
                     variant="outline"
                     size="icon"
                     className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(transactions.length / itemsPerPage)))}
-                    disabled={currentPage === Math.ceil(transactions.length / itemsPerPage)}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(usersMetrics.length / itemsPerPage)))}
+                    disabled={currentPage === Math.ceil(usersMetrics.length / itemsPerPage)}
                 >
                     <ChevronRight className="h-6 w-6" />
                 </Button>
