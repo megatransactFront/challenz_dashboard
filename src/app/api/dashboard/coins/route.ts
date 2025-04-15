@@ -10,6 +10,7 @@ export async function GET() {
     try {
         // Mock data for demonstration purposes
         // In a real application, this would fetch data from a database or external API
+
         const usersMetrics: UserMetrics[] = [
             {
                 userId: '1',
@@ -82,6 +83,7 @@ export async function GET() {
                 uwcSpentToday: 150,
                 uwcSpentTotal: 250,
                 uwcBalance: 475
+
             }
         ];
 

@@ -1,12 +1,7 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
@@ -14,6 +9,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { UserMetrics } from '@/app/types';
+
 
 interface CoinTransactionTableProps {
     usersMetrics: UserMetrics[];
@@ -23,20 +19,22 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
     const [timeframe, setTimeFrame] = useState('');
+
     const handleTimeFrameChange = (value: string) => {
         setTimeFrame(value);
-        console.log(`Fetching data for ${value} timeframe`);
+        console.log(`Filtering data for ${value} timeframe`);
     };
     // No data state
     if (!usersMetrics) {
         return null;
     }
+
     return (
         <>
-            {/* Transactions Table */}
             <div className="bg-white p-1 pt-6 rounded-lg shadow-sm">
                 <div className="flex ml-6 mr-20 justify-between items-center mb-6">
                     <h2 className="text-xl font-medium">Uwaci Coins</h2>
+
                     <div className='flex justify-between gap-4'>
                         <div className="relative w-[150px]">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -60,6 +58,7 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                             </SelectContent>
                         </Select>
                     </div>
+
                 </div>
 
                 <Table>
@@ -95,7 +94,6 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                     </TableBody>
                 </Table>
             </div>
-
             {/* Pagination */}
             <div className="flex justify-between items-center mb-2">
                 <Button
@@ -125,6 +123,7 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                     <ChevronRight className="h-6 w-6" />
                 </Button>
             </div>
+
         </>
     );
 }

@@ -13,8 +13,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { Video, VideoReport } from "@/app/types/reports";
 import { Button } from "@/components/ui/button";
-import VideoReportDialog from "./video-report-dialog";
 import { formatDate } from "@/helpers/formaters";
+
 
 export default function VideosTab() {
     const itemsPerPage = 10;

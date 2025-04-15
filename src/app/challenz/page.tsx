@@ -10,6 +10,7 @@ import { VideoDetailModal } from './components/challenge-details-modal';
 import type { Challenge, DashboardData } from '@/app/types/challenz';
 import { formatDate } from '@/helpers/formaters';
 
+
 export default function ChallenzPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
