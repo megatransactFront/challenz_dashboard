@@ -9,7 +9,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Download, Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formatDate = (dateString: string) => {

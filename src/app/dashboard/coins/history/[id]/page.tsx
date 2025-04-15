@@ -1,7 +1,6 @@
 "use client"
 import { TransactionHistoryTable } from "@/app/dashboard/components/coins/TransactionHistoryTable";
 import { Separator } from "@/components/ui/separator";
-import { useParams } from "next/navigation";
 import { useState } from "react";
 const usersTransaction =
 {
@@ -38,7 +37,7 @@ const TransactionHistory = () => {
         <div>
             <div className="mb-3 flex items-center justify-between mr-20">
                 <h1 className="font-bold sm:text-xl md:text-4xl text-5xl">
-                    {firstName}'s Transaction History
+                    {firstName}&apos;s Transaction History
                 </h1>
                 <div className="flex h-5 items-center space-x-4 font-medium">
                     {timeframes.map((timeframe) => (
