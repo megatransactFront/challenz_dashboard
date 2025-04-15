@@ -1,50 +1,81 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
 import { CoinTransaction } from '@/app/types/coins';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue
+} from '@/components/ui/select';
+import ChallenzPagination from '@/components/ChallenzPagination';
+import { formatDateWithSign } from '@/helpers/formater';
 
 interface CoinTransactionTableProps {
     transactions: CoinTransaction[];
 }
 
 export function CoinTransactionTable({ transactions }: CoinTransactionTableProps) {
-    const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
+    const [filteredTransactions, setFilteredTransactions] = useState<CoinTransaction[]>([]);
+    const [currentItems, setCurrentItems] = useState<CoinTransaction[]>([]);
     const [timeframe, setTimeFrame] = useState('daily');
+
+    useEffect(() => {
+        const now = new Date();
+
+        // Sort the transactions by date descending (latest first)
+        const sortedTransactions = [...transactions].sort((a, b) =>
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        const filterByTimeframe = (timeframe: string) => {
+            return sortedTransactions.filter(transaction => {
+                const transactionDate = new Date(transaction.date);
+                const diffTime = now.getTime() - transactionDate.getTime();
+                const diffDays = diffTime / (1000 * 3600 * 24);
+
+                switch (timeframe) {
+                    case 'daily':
+                        return diffDays <= 1;
+                    case 'weekly':
+                        return diffDays <= 7;
+                    case 'monthly':
+                        return diffDays <= 30;
+                    case 'yearly':
+                        return diffDays <= 365;
+                    default:
+                        return true;
+                }
+            });
+        };
+
+        const filtered = filterByTimeframe(timeframe);
+        setFilteredTransactions(filtered);
+        setCurrentItems(filtered.slice(0, itemsPerPage));
+    }, [transactions, timeframe]);
+
     const handleTimeFrameChange = (value: string) => {
         setTimeFrame(value);
-        console.log(`Fetching data for ${value} timeframe`);
+        console.log(`Filtering data for ${value} timeframe`);
     };
-    // No data state
-    if (!transactions) {
-        return null;
-    }
+
+    if (!transactions) return null;
+
     return (
         <>
-            {/* Transactions Table */}
             <div className="bg-white p-1 pt-6 rounded-lg shadow-sm">
                 <div className="flex ml-6 mr-20 justify-between items-center mb-6">
                     <h2 className="text-xl font-medium">Uwaci Coins</h2>
                     <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
-                        <SelectTrigger className="w-[150px]" >
-                            <SelectValue placeholder="Select a fruit" />
+                        <SelectTrigger className="w-[150px]">
+                            <SelectValue placeholder="Select Timeframe" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
                                 <SelectItem value="daily">Daily</SelectItem>
                                 <SelectItem value="weekly">Weekly</SelectItem>
                                 <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="yearly">YearKy</SelectItem>
+                                <SelectItem value="yearly">Yearly</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
@@ -64,53 +95,27 @@ export function CoinTransactionTable({ transactions }: CoinTransactionTableProps
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {transactions
-                            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                            .map((transaction, index) => (
-                                <TableRow key={index}>
-                                    <TableCell className="text-center">{transaction.date}</TableCell>
-                                    <TableCell className="text-center">${transaction.totalLikes}</TableCell>
-                                    <TableCell className="text-center">${transaction.totalReferrals}</TableCell>
-                                    <TableCell className="text-center">${transaction.totalShares}</TableCell>
-                                    <TableCell className="text-center">${transaction.challengesMade}</TableCell>
-                                    <TableCell className="text-center">${transaction.badgesReceived}</TableCell>
-                                    <TableCell className="text-center text-[#34A853] font-medium">+${transaction.totalEarned}</TableCell>
-                                    <TableCell className="text-center text-[#E45664] font-medium">-${transaction.totalSpent}</TableCell>
-                                </TableRow>
-                            ))}
+                        {currentItems.map((transaction, index) => (
+                            <TableRow key={index}>
+                                <TableCell className="text-center">{formatDateWithSign(transaction.date, "/")}</TableCell>
+                                <TableCell className="text-center">${transaction.totalLikes}</TableCell>
+                                <TableCell className="text-center">${transaction.totalReferrals}</TableCell>
+                                <TableCell className="text-center">${transaction.totalShares}</TableCell>
+                                <TableCell className="text-center">${transaction.challengesMade}</TableCell>
+                                <TableCell className="text-center">${transaction.badgesReceived}</TableCell>
+                                <TableCell className="text-center text-[#34A853] font-medium">+${transaction.totalEarned}</TableCell>
+                                <TableCell className="text-center text-[#E45664] font-medium">-${transaction.totalSpent}</TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </div>
 
-            {/* Pagination */}
-            <div className="flex justify-between items-center mb-2">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                >
-                    <ChevronLeft className="h-6 w-6" />
-                </Button>
-                <div className="flex items-center">
-                    <Button
-                        variant="default"
-                        className="w-12 h-12 rounded-lg bg-[#1F5C71] text-white"
-                    >
-                        {currentPage}
-                    </Button>
-                </div>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(transactions.length / itemsPerPage)))}
-                    disabled={currentPage === Math.ceil(transactions.length / itemsPerPage)}
-                >
-                    <ChevronRight className="h-6 w-6" />
-                </Button>
-            </div>
+            <ChallenzPagination
+                items={filteredTransactions}
+                itemsPerPage={itemsPerPage}
+                setCurrentItems={setCurrentItems}
+            />
         </>
     );
 }

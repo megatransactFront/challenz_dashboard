@@ -2,6 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from 'react';
 import { Loader2, Video } from 'lucide-react';
+import { formatDate } from "@/helpers/formater";
 
 type UserDetails = {
   id: string;
@@ -32,7 +33,7 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
   useEffect(() => {
     async function fetchUserDetails() {
       if (!userId) return;
-      
+
       try {
         setLoading(true);
         setError(null);
@@ -40,7 +41,7 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
         console.log('Fetching user details for ID:', userId);
 
         const response = await fetch(`/api/users?userId=${userId}`);
-        
+
         if (!response.ok) {
           const errorText = await response.text();
           console.error('Error response:', errorText);
@@ -49,7 +50,7 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
 
         const data = await response.json();
         console.log('Received user data:', data);
-        
+
         if (!data) {
           throw new Error('No user data received');
         }
@@ -70,18 +71,6 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
     }
   }, [isOpen, userId]);
 
-  const formatDate = (dateString: string) => {
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    } catch {
-      return 'Invalid Date';
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -101,11 +90,11 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
               </DialogTitle>
               <p className="text-gray-500">@{user.username}</p>
             </DialogHeader>
-            
+
             <div className="mt-6 space-y-6">
               <div className="flex items-start gap-4">
                 {user.profile_picture_url ? (
-                  <img 
+                  <img
                     src={user.profile_picture_url}
                     alt={`${user.first_name} ${user.last_name}`}
                     className="w-24 h-24 rounded-full object-cover"
@@ -129,7 +118,7 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
                   <h3 className="text-lg font-semibold mb-3">Recent Challenges</h3>
                   <div className="space-y-2">
                     {user.challenges.map(challenge => (
-                      <div 
+                      <div
                         key={challenge.id}
                         className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                       >
