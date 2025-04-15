@@ -10,17 +10,18 @@ import {
 } from "@/components/ui/table";
 import { CoinTransaction } from '@/app/types/coins';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 interface CoinTransactionTableProps {
     transactions: CoinTransaction[];
 }
 
-export function CoinTransactionTable({ transactions }: CoinTransactionTableProps) {
+export function CoinTransactionTable({ transactions }: { transactions: any }) {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
-    const [timeframe, setTimeFrame] = useState('daily');
+    const [timeframe, setTimeFrame] = useState('');
     const handleTimeFrameChange = (value: string) => {
         setTimeFrame(value);
         console.log(`Fetching data for ${value} timeframe`);
@@ -35,47 +36,55 @@ export function CoinTransactionTable({ transactions }: CoinTransactionTableProps
             <div className="bg-white p-1 pt-6 rounded-lg shadow-sm">
                 <div className="flex ml-6 mr-20 justify-between items-center mb-6">
                     <h2 className="text-xl font-medium">Uwaci Coins</h2>
-                    <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
-                        <SelectTrigger className="w-[150px]" >
-                            <SelectValue placeholder="Select a fruit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value="daily">Daily</SelectItem>
-                                <SelectItem value="weekly">Weekly</SelectItem>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="yearly">YearKy</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+                    <div className='flex justify-between gap-4'>
+                        <div className="relative w-[150px]">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                            <Input
+                                type="search"
+                                placeholder="Search..."
+                                className="pl-10 min-h-[45px]"
+                            />
+                        </div>
+                        <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
+                            <SelectTrigger className="w-[150px] min-h-[45px]" >
+                                <SelectValue placeholder="Filter" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="daily">Daily</SelectItem>
+                                    <SelectItem value="weekly">Weekly</SelectItem>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                    <SelectItem value="yearly">YearKy</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
 
                 <Table>
-                    <TableHeader>
+                    <TableHeader >
                         <TableRow>
-                            <TableHead className="bg-[#F7F9FC] text-center">DATE</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center">TOTAL LIKES</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center">TOTAL REFERRALS</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center">TOTAL SHARES</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center">CHALLENGES MADE</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center">BADGES RECEIVED</TableHead>
-                            <TableHead className="bg-[#56E45866] text-center">TOTAL EARNED</TableHead>
-                            <TableHead className="bg-[#E4566466] text-center">TOTAL SPENT</TableHead>
+                            <TableHead className="bg-[#F7F9FC] text-center text-black">USER</TableHead>
+                            <TableHead className="bg-[#C6F1CC] text-center text-black">UWC EARNED TODAY</TableHead>
+                            <TableHead className="bg-[#C6F1CC] text-center text-black">UWC EARNED TOTAL</TableHead>
+                            <TableHead className="bg-[#FFACB7] text-center text-black">UWC SPENT TODAY</TableHead>
+                            <TableHead className="bg-[#FFACB7] text-center text-black">UWC SPENT TOTAL</TableHead>
+                            <TableHead className="bg-[#F7F9FC] text-center text-black">UWC BALANCE</TableHead>
+                            <TableHead className="bg-[#1F5C71] text-center text-white">TRANSACTION HISTORY</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {transactions
                             .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                            .map((transaction, index) => (
+                            .map((transaction: any, index: any) => (
                                 <TableRow key={index}>
-                                    <TableCell className="text-center">{transaction.date}</TableCell>
-                                    <TableCell className="text-center">${transaction.totalLikes}</TableCell>
-                                    <TableCell className="text-center">${transaction.totalReferrals}</TableCell>
-                                    <TableCell className="text-center">${transaction.totalShares}</TableCell>
-                                    <TableCell className="text-center">${transaction.challengesMade}</TableCell>
-                                    <TableCell className="text-center">${transaction.badgesReceived}</TableCell>
-                                    <TableCell className="text-center text-[#34A853] font-medium">+${transaction.totalEarned}</TableCell>
-                                    <TableCell className="text-center text-[#E45664] font-medium">-${transaction.totalSpent}</TableCell>
+                                    <TableCell className="text-center">{transaction.name}</TableCell>
+                                    <TableCell className="text-center text-[#34A853] font-medium">${transaction.uwcEarnedToday}</TableCell>
+                                    <TableCell className="text-center text-[#34A853] font-medium">${transaction.uwcEarnedTotal}</TableCell>
+                                    <TableCell className="text-center text-[#FF4C51] font-medium">${transaction.uwcSpentToday}</TableCell>
+                                    <TableCell className="text-center text-[#FF4C51] font-medium">${transaction.uwcSpentTotal}</TableCell>
+                                    <TableCell className="text-center">${transaction.uwcBalance}</TableCell>
+                                    <TableCell className="text-center text-[#1F5C71] underline">View</TableCell>
                                 </TableRow>
                             ))}
                     </TableBody>
