@@ -1,14 +1,13 @@
 // app/types/coins.ts
 
-export interface CoinTransaction {
-    date: string;
-    totalLikes: number;
-    totalReferrals: number;
-    totalShares: number;
-    challengesMade: number;
-    badgesReceived: number;
-    totalEarned: number;
-    totalSpent: number;
+export interface UserMetrics {
+    userId: string,
+    name: string,
+    uwcEarnedToday: number,
+    uwcEarnedTotal: number,
+    uwcSpentToday: number,
+    uwcSpentTotal: number,
+    uwcBalance: number
 }
 
 export interface CoinMetrics {
@@ -20,5 +19,5 @@ export interface CoinMetrics {
 
 export interface CoinData {
     metrics: CoinMetrics;
-    transactions: CoinTransaction[];
+    userMetrics: UserMetrics[];
 }

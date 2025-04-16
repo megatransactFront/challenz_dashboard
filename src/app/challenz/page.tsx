@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { UserDetailModal } from './components/user-details-modal';
 import { VideoDetailModal } from './components/challenge-details-modal';
 import type { Challenge, DashboardData } from '@/app/types/challenz';
-import { formatDate } from '@/helpers/formater';
+import { formatDate } from '@/helpers/formaters';
+
 
 export default function ChallenzPage() {
   const [data, setData] = useState<DashboardData | null>(null);

@@ -2,7 +2,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from 'react';
 import { Loader2, Video } from 'lucide-react';
-import { formatDate } from "@/helpers/formater";
+
+import { formatDate } from "@/helpers/formaters";
+
 
 type UserDetails = {
   id: string;

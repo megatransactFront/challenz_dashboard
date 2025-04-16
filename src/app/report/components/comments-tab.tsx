@@ -14,7 +14,8 @@ import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import VideoReportDialog from "@/app/report/components/video-report-dialog";
-import { formatDate } from "@/helpers/formater";
+import { formatDate } from "@/helpers/formaters";
+
 
 export default function CommentsTab() {
     const [isLoading, setIsLoading] = useState(false);

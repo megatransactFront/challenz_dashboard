@@ -3,119 +3,127 @@ import React, { useEffect, useState } from 'react';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
-import { CoinTransaction } from '@/app/types/coins';
-import {
-    Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue
-} from '@/components/ui/select';
-import ChallenzPagination from '@/components/ChallenzPagination';
-import { formatDateWithSign } from '@/helpers/formater';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import Link from 'next/link';
+import { UserMetrics } from '@/app/types';
+
 
 interface CoinTransactionTableProps {
-    transactions: CoinTransaction[];
+    usersMetrics: UserMetrics[];
 }
 
-export function CoinTransactionTable({ transactions }: CoinTransactionTableProps) {
+export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps) {
+    const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
-    const [filteredTransactions, setFilteredTransactions] = useState<CoinTransaction[]>([]);
-    const [currentItems, setCurrentItems] = useState<CoinTransaction[]>([]);
-    const [timeframe, setTimeFrame] = useState('daily');
-
-    useEffect(() => {
-        const now = new Date();
-
-        // Sort the transactions by date descending (latest first)
-        const sortedTransactions = [...transactions].sort((a, b) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-
-        const filterByTimeframe = (timeframe: string) => {
-            return sortedTransactions.filter(transaction => {
-                const transactionDate = new Date(transaction.date);
-                const diffTime = now.getTime() - transactionDate.getTime();
-                const diffDays = diffTime / (1000 * 3600 * 24);
-
-                switch (timeframe) {
-                    case 'daily':
-                        return diffDays <= 1;
-                    case 'weekly':
-                        return diffDays <= 7;
-                    case 'monthly':
-                        return diffDays <= 30;
-                    case 'yearly':
-                        return diffDays <= 365;
-                    default:
-                        return true;
-                }
-            });
-        };
-
-        const filtered = filterByTimeframe(timeframe);
-        setFilteredTransactions(filtered);
-        setCurrentItems(filtered.slice(0, itemsPerPage));
-    }, [transactions, timeframe]);
+    const [timeframe, setTimeFrame] = useState('');
 
     const handleTimeFrameChange = (value: string) => {
         setTimeFrame(value);
         console.log(`Filtering data for ${value} timeframe`);
     };
-
-    if (!transactions) return null;
+    // No data state
+    if (!usersMetrics) {
+        return null;
+    }
 
     return (
         <>
             <div className="bg-white p-1 pt-6 rounded-lg shadow-sm">
                 <div className="flex ml-6 mr-20 justify-between items-center mb-6">
                     <h2 className="text-xl font-medium">Uwaci Coins</h2>
-                    <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
-                        <SelectTrigger className="w-[150px]">
-                            <SelectValue placeholder="Select Timeframe" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value="daily">Daily</SelectItem>
-                                <SelectItem value="weekly">Weekly</SelectItem>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="yearly">Yearly</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
+
+                    <div className='flex justify-between gap-4'>
+                        <div className="relative w-[150px]">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                            <Input
+                                type="search"
+                                placeholder="Search..."
+                                className="pl-10 min-h-[45px]"
+                            />
+                        </div>
+                        <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
+                            <SelectTrigger className="w-[150px] min-h-[45px]" >
+                                <SelectValue placeholder="Filter" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="daily">Daily</SelectItem>
+                                    <SelectItem value="weekly">Weekly</SelectItem>
+                                    <SelectItem value="monthly">Monthly</SelectItem>
+                                    <SelectItem value="yearly">YearKy</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                 </div>
 
                 <Table>
-                    <TableHeader>
+                    <TableHeader >
                         <TableRow>
-                            <TableHead className="bg-[#F7F9FC] text-center">DATE</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center">TOTAL LIKES</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center">TOTAL REFERRALS</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center">TOTAL SHARES</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center">CHALLENGES MADE</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center">BADGES RECEIVED</TableHead>
-                            <TableHead className="bg-[#56E45866] text-center">TOTAL EARNED</TableHead>
-                            <TableHead className="bg-[#E4566466] text-center">TOTAL SPENT</TableHead>
+                            <TableHead className="bg-[#F7F9FC] text-center text-black">USER</TableHead>
+                            <TableHead className="bg-[#C6F1CC] text-center text-black">UWC EARNED TODAY</TableHead>
+                            <TableHead className="bg-[#C6F1CC] text-center text-black">UWC EARNED TOTAL</TableHead>
+                            <TableHead className="bg-[#FFACB7] text-center text-black">UWC SPENT TODAY</TableHead>
+                            <TableHead className="bg-[#FFACB7] text-center text-black">UWC SPENT TOTAL</TableHead>
+                            <TableHead className="bg-[#F7F9FC] text-center text-black">UWC BALANCE</TableHead>
+                            <TableHead className="bg-[#1F5C71] text-center text-white">TRANSACTION HISTORY</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {currentItems.map((transaction, index) => (
-                            <TableRow key={index}>
-                                <TableCell className="text-center">{formatDateWithSign(transaction.date, "/")}</TableCell>
-                                <TableCell className="text-center">${transaction.totalLikes}</TableCell>
-                                <TableCell className="text-center">${transaction.totalReferrals}</TableCell>
-                                <TableCell className="text-center">${transaction.totalShares}</TableCell>
-                                <TableCell className="text-center">${transaction.challengesMade}</TableCell>
-                                <TableCell className="text-center">${transaction.badgesReceived}</TableCell>
-                                <TableCell className="text-center text-[#34A853] font-medium">+${transaction.totalEarned}</TableCell>
-                                <TableCell className="text-center text-[#E45664] font-medium">-${transaction.totalSpent}</TableCell>
-                            </TableRow>
-                        ))}
+                        {usersMetrics
+                            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                            .map((metrics: any, index: any) => (
+                                <TableRow key={index}>
+                                    <TableCell className="text-center">{metrics.name}</TableCell>
+                                    <TableCell className="text-center text-[#34A853]">+{metrics.uwcEarnedToday} UWC</TableCell>
+                                    <TableCell className="text-center text-[#34A853]">+{metrics.uwcEarnedTotal} UWC</TableCell>
+                                    <TableCell className="text-center text-[#FF4C51]">-{metrics.uwcSpentToday} UWC</TableCell>
+                                    <TableCell className="text-center text-[#FF4C51]">-{metrics.uwcSpentTotal} UWC</TableCell>
+                                    <TableCell className="text-center">${metrics.uwcBalance} UWC</TableCell>
+                                    <TableCell className="text-center text-[#1F5C71] underline cursor-pointer">
+                                        <Link href={`/dashboard/coins/history/${metrics.userId}`}>
+                                            View
+                                        </Link>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
                     </TableBody>
                 </Table>
             </div>
+            {/* Pagination */}
+            <div className="flex justify-between items-center mb-2">
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                >
+                    <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <div className="flex items-center">
+                    <Button
+                        variant="default"
+                        className="w-12 h-12 rounded-lg bg-[#1F5C71] text-white"
+                    >
+                        {currentPage}
+                    </Button>
+                </div>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(usersMetrics.length / itemsPerPage)))}
+                    disabled={currentPage === Math.ceil(usersMetrics.length / itemsPerPage)}
+                >
+                    <ChevronRight className="h-6 w-6" />
+                </Button>
+            </div>
 
-            <ChallenzPagination
-                items={filteredTransactions}
-                itemsPerPage={itemsPerPage}
-                setCurrentItems={setCurrentItems}
-            />
         </>
     );
 }

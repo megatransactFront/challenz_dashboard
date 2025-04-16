@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CoinData } from '@/app/types/coins';
 import { CoinTransactionTable } from '@/app/dashboard/components/coins/CoinTransactionTable';
-import CoinsMetrics from '../components/coins/coins-metrics';
+import CoinsMetrics from '../components/coins/CoinsMetrics';
 import { useRouter } from "next/navigation";
 import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(
@@ -115,7 +115,7 @@ export default function CoinsPage() {
         <div className="space-y-6">
             {/* Stat Cards */}
             <CoinsMetrics metrics={coinData?.metrics} />
-            <CoinTransactionTable transactions={coinData?.transactions} />
+            <CoinTransactionTable usersMetrics={coinData?.userMetrics} />
         </div>
     );
 }

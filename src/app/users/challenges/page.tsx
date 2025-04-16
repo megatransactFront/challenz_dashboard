@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { Loader2, Video } from 'lucide-react'
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { formatDate } from '@/helpers/formater'
+import { formatDate } from '@/helpers/formaters'
+
 
 type User = {
   id: string
