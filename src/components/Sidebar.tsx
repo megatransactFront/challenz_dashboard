@@ -5,6 +5,8 @@ import { BarChart3, Layout, Users, Settings, Menu, X, ChevronRight } from "lucid
 import { usePathname, useRouter } from "next/navigation";
 import { MenuItem as MenuItemType } from "./types";
 import { cn } from "@/lib/utils";
+import useMobile from "@/hooks/useMobile";
+import { useAppContext } from "@/contexts/AppContext";
 
 interface MenuItemProps {
   item: MenuItemType;
@@ -110,35 +112,19 @@ const otherMenuItems: MenuItemType[] = [
 const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
+  const { isSidebarOpen, closeSidebar } = useAppContext()
   const handleNavigation = (path: string): void => {
     router.push(path);
-    setIsMobileMenuOpen(false);
+    closeSidebar();
   };
-
   return (
     <>
-      {/* Mobile Menu Button */}
-      <div className="fixed top-4 left-4 z-50 lg:hidden">
-        <button
-          className="p-2 rounded-lg bg-primary hover:bg-[#1a4d5f] transition-colors"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          {isMobileMenuOpen ? (
-            <X className="h-6 w-6 text-white" />
-          ) : (
-            <Menu className="h-6 w-6 text-white" />
-          )}
-        </button>
-      </div>
-
       {/* Sidebar */}
       <aside className={cn(
         "fixed inset-y-0 left-0 z-40 w-72 bg-primary shadow-xl",
         "transform transition-transform duration-300 ease-in-out lg:translate-x-0",
         "lg:relative lg:shadow-none",
-        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="h-full flex flex-col py-6">
           {/* Profile Section */}
@@ -201,10 +187,10 @@ const Sidebar = () => {
       </aside>
 
       {/* Mobile Overlay */}
-      {isMobileMenuOpen && (
+      {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden backdrop-blur-sm"
-          onClick={() => setIsMobileMenuOpen(false)}
+          onClick={closeSidebar}
         />
       )}
     </>
