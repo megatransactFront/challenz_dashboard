@@ -16,7 +16,7 @@ export default function ReportPage() {
                 onValueChange={setActiveTab}
                 className="w-full"
             >
-                <TabsList className="grid w-[400px] grid-cols-2">
+                <TabsList className="grid max-w-[400px] grid-cols-2">
                     <TabsTrigger value="comments">Comments</TabsTrigger>
                     <TabsTrigger value="videos">Videos</TabsTrigger>
                 </TabsList>

@@ -42,20 +42,19 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <nav className="border-b border-gray-200 px-8 py-4 bg-white">
       <div className="flex items-center justify-between">
+        <div className="lg:hidden">
+          <Button
+            className="p-2 rounded-lg bg-primary hover:bg-primary transition-colors"
+            onClick={openSidebar}
+          >
+            <Menu className="h-6 w-6 text-white" />
+          </Button>
+        </div>
         {/* Breadcrumb Section */}
         <BreadcrumbSection breadcrumb={breadcrumb} />
-        {isMobile && (
-          <div className="lg:hidden">
-            <Button
-              className="p-2 rounded-lg bg-primary hover:bg-primary transition-colors"
-              onClick={openSidebar}
-            >
-              <Menu className="h-6 w-6 text-white" />
-            </Button>
-          </div>
-        )}
+
         {/* Actions Section */}
-        <div className="flex w-full justify-end items-center gap-6">
+        <div className="flex justify-end items-center gap-6">
 
           <div className="flex gap-4">
             {isMobile ? <Search size={20} /> : <SearchInput />}
@@ -72,15 +71,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 const BreadcrumbSection: React.FC<{ breadcrumb: Breadcrumb }> = ({ breadcrumb }) => {
   const isMobile = useMobile()
   if (!isMobile) return (
-    (
-      <div className="flex w-full items-center gap-2">
-        <h1 className="text-xl font-semibold">{breadcrumb.title}</h1>
-        <span className="font-semibold mx-1">/</span>
-        <span className="text-secondary font-medium text-xl">{breadcrumb.subtitle}</span>
-      </div>
-    )
+    <div className="flex items-center gap-2">
+      <h1 className="sm:text-md xl:text-xl font-semibold">{breadcrumb.title}</h1>
+      <span className="font-semibold sm:mx-0 md:mx-1">/</span>
+      <span className="sm:text-md text-secondary font-medium xl:text-xl">{breadcrumb.subtitle}</span>
+    </div>
   )
-  return null;
+  return null
 };
 
 const SearchInput: React.FC = () => (

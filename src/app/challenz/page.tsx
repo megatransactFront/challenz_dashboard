@@ -103,7 +103,9 @@ export default function ChallenzPage() {
                           )}
                         </TableCell>
                         <TableCell className="max-w-xs truncate">
-                          {challenge.description}
+                          <div className='px-6 sm:px-0'>
+                            {challenge.description}
+                          </div>
                         </TableCell>
                         <TableCell>{formatDate(challenge.created_at)}</TableCell>
                         <TableCell>
