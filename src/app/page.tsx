@@ -6,7 +6,7 @@ import Cookies from 'js-cookie';
 
 export default function Home() {
   const router = useRouter();
-  
+
   useEffect(() => {
     const isAdmin = Cookies.get('isAdmin');
     if (isAdmin === 'true') {
