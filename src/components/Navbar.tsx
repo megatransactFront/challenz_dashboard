@@ -52,8 +52,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 const BreadcrumbSection: React.FC<{ breadcrumb: Breadcrumb }> = ({ breadcrumb }) => (
   <div className="flex items-center gap-2">
     <h1 className="text-xl font-semibold">{breadcrumb.title}</h1>
-    <span className="text-gray-400">/</span>
-    <span className="text-gray-500">{breadcrumb.subtitle}</span>
+    <span className="font-semibold mx-1">/</span>
+    <span className="text-secondary font-medium text-xl">{breadcrumb.subtitle}</span>
   </div>
 );
 

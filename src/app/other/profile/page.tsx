@@ -13,7 +13,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold">Simon Powel</h1>
-            <p className="text-gray-500">Administrator</p>
+            <p className="text-secondary">Administrator</p>
           </div>
         </div>
         <button className="px-4 py-2 bg-rose-400 text-white rounded-md hover:bg-rose-500 transition-colors">
