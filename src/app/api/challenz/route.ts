@@ -2,7 +2,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -13,46 +12,31 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-
-    // Get total count
-    const { count, error: countError } = await supabase
+    const { data: challenges, count, error } = await supabase
       .from('submissions')
-      .select('*', { count: 'exact', head: true });
+      .select('*', { count: 'exact' })
+      .range(from, to)
+      .order('created_at', { ascending: false });
 
-    if (countError) throw countError;
+    if (error) throw error;
 
-    const { data: challenges, error: challengesError } = await supabase
-      .from('user_challenges')
-      .select('*, submissions(*)')
+    const userIds = [...new Set(challenges.map(c => c.user_id))];
 
-    if (challengesError) {
-      console.error('Error fetching challenges:', challengesError);
-      throw challengesError;
-    }
+    const { data: users, error: usersError } = await supabase
+      .from('users')
+      .select('id, username, first_name, last_name, profile_picture_url')
+      .in('id', userIds);
 
-    const usersChallenges = await Promise.all(
-      challenges.map(async (challenge) => {
-        const { data: creator, error: userError } = await supabase
-          .from('users')
-          .select('id, username, first_name, last_name, profile_picture_url')
-          .eq('id', challenge?.submissions.user_id)
-          .single();
+    if (usersError) throw usersError;
 
-        if (userError) {
-          console.error('Error fetching user:', userError);
-          throw userError;
-        }
-        return {
-          creator,
-          ...challenge?.submissions
-        };
-      })
-    );
+    const userMap = Object.fromEntries(users.map(user => [user.id, user]));
 
-    // Transform data with mock metrics
-    const transformedChallenges = usersChallenges?.map(challenge => ({
+    const transformedChallenges = challenges.map(challenge => ({
       ...challenge,
+      creator: userMap[challenge.user_id],
       views: Math.floor(Math.random() * 10000),
       usersJoined: Math.floor(Math.random() * 1000),
       likes: Math.floor(Math.random() * 500),
@@ -60,7 +44,7 @@ export async function GET(request: Request) {
     }));
 
     return NextResponse.json({
-      challenges: transformedChallenges || [],
+      challenges: transformedChallenges,
       pagination: {
         currentPage: page,
         totalPages: Math.ceil((count || 0) / limit),
