@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import { Video, VideoReport } from "@/app/types/reports";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/helpers/formaters";
+import VideoReportDialog from "./video-report-dialog";
 
 
 export default function VideosTab() {
