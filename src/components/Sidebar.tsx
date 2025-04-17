@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { BarChart3, Layout, Users, Settings, Menu, X } from "lucide-react";
+import { BarChart3, Layout, Users, Settings, Menu, X, ChevronRight } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { MenuItem as MenuItemType } from "./types";
 import { cn } from "@/lib/utils";
@@ -15,19 +15,23 @@ interface MenuItemProps {
 const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate }) => {
   const isActive = pathname === item.path || pathname.startsWith(`${item.path}/`);
   const Icon = item.icon;
-
+  let PrevIcon;
+  if (item?.prevIcon) {
+    PrevIcon = item.prevIcon
+  }
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 px-6">
       <div
         onClick={() => onNavigate(item.path)}
         className={cn(
           "flex items-center py-3 px-6 rounded-lg cursor-pointer transition-all duration-200",
           isActive
-            ? "bg-white/15 shadow-sm"
+            ? "bg-secondary text-white"
             : "hover:bg-[#1a4d5f] text-white/90"
         )}
       >
         <div className="flex items-center gap-4">
+          {PrevIcon && <PrevIcon size={22} className={cn("text-white w-6 h-6 bold mr-2", isActive ? "opacity-100" : "opacity-75")} />}
           <Icon size={22} className={cn("text-white", isActive ? "opacity-100" : "opacity-75")} />
           <span className="text-[15px] font-medium tracking-wide">{item.title}</span>
         </div>
@@ -44,7 +48,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate }) => {
                 className={cn(
                   "flex items-center py-2 px-4 rounded-lg cursor-pointer transition-all duration-200",
                   "text-[15px] tracking-wide",
-                  subItemActive ? "bg-white/15 text-white" : "text-white/80 hover:bg-[#1a4d5f]"
+                  subItemActive ? "bg-secondary text-white" : "text-white/80 hover:bg-[#1a4d5f]"
                 )}
               >
                 {subItem.title}
@@ -70,20 +74,22 @@ const menuItems: MenuItemType[] = [
     ],
   },
 ];
-
 const mainMenuItems: MenuItemType[] = [
   {
     title: "Challenz",
+    prevIcon: ChevronRight,
     icon: Layout,
     path: "/challenz",
   },
   {
     title: "Users",
+    prevIcon: ChevronRight,
     icon: Users,
     path: "/users",
   },
   {
     title: "Report",
+    prevIcon: ChevronRight,
     icon: BarChart3,
     path: "/report",
   },
@@ -112,7 +118,7 @@ const Sidebar = () => {
       {/* Mobile Menu Button */}
       <div className="fixed top-4 left-4 z-50 lg:hidden">
         <button
-          className="p-2 rounded-lg bg-[#1F5C71] hover:bg-[#1a4d5f] transition-colors"
+          className="p-2 rounded-lg bg-primary hover:bg-[#1a4d5f] transition-colors"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? (
@@ -125,7 +131,7 @@ const Sidebar = () => {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-40 w-72 bg-[#1F5C71] shadow-xl",
+        "fixed inset-y-0 left-0 z-40 w-72 bg-primary shadow-xl",
         "transform transition-transform duration-300 ease-in-out lg:translate-x-0",
         "lg:relative lg:shadow-none",
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"

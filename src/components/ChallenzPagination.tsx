@@ -40,7 +40,7 @@ const ChallenzPagination = ({ items = [], itemsPerPage = 10, setCurrentItems }: 
             <div className="flex items-center">
                 <Button
                     variant="default"
-                    className="w-12 h-12 rounded-lg bg-[#1F5C71] text-white"
+                    className="w-12 h-12 rounded-lg bg-primary text-white"
                 >
                     {currentPage}
                 </Button>

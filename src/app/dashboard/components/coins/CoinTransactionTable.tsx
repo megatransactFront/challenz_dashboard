@@ -1,14 +1,14 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { UserMetrics } from '@/app/types';
+import ChallenzPagination from '@/components/ChallenzPagination';
 
 
 interface CoinTransactionTableProps {
@@ -16,10 +16,9 @@ interface CoinTransactionTableProps {
 }
 
 export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps) {
-    const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
     const [timeframe, setTimeFrame] = useState('');
-
+    const [currentItems, setCurrentItems] = useState(usersMetrics.slice(0, itemsPerPage));
     const handleTimeFrameChange = (value: string) => {
         setTimeFrame(value);
         console.log(`Filtering data for ${value} timeframe`);
@@ -70,12 +69,11 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                             <TableHead className="bg-[#FFACB7] text-center text-black">UWC SPENT TODAY</TableHead>
                             <TableHead className="bg-[#FFACB7] text-center text-black">UWC SPENT TOTAL</TableHead>
                             <TableHead className="bg-[#F7F9FC] text-center text-black">UWC BALANCE</TableHead>
-                            <TableHead className="bg-[#1F5C71] text-center text-white">TRANSACTION HISTORY</TableHead>
+                            <TableHead className="bg-primary text-center text-white">TRANSACTION HISTORY</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {usersMetrics
-                            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                        {currentItems
                             .map((metrics: any, index: any) => (
                                 <TableRow key={index}>
                                     <TableCell className="text-center">{metrics.name}</TableCell>
@@ -84,7 +82,7 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                                     <TableCell className="text-center text-[#FF4C51]">-{metrics.uwcSpentToday} UWC</TableCell>
                                     <TableCell className="text-center text-[#FF4C51]">-{metrics.uwcSpentTotal} UWC</TableCell>
                                     <TableCell className="text-center">${metrics.uwcBalance} UWC</TableCell>
-                                    <TableCell className="text-center text-[#1F5C71] underline cursor-pointer">
+                                    <TableCell className="text-center text-primary underline cursor-pointer">
                                         <Link href={`/dashboard/coins/history/${metrics.userId}`}>
                                             View
                                         </Link>
@@ -95,35 +93,7 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                 </Table>
             </div>
             {/* Pagination */}
-            <div className="flex justify-between items-center mb-2">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                >
-                    <ChevronLeft className="h-6 w-6" />
-                </Button>
-                <div className="flex items-center">
-                    <Button
-                        variant="default"
-                        className="w-12 h-12 rounded-lg bg-[#1F5C71] text-white"
-                    >
-                        {currentPage}
-                    </Button>
-                </div>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(usersMetrics.length / itemsPerPage)))}
-                    disabled={currentPage === Math.ceil(usersMetrics.length / itemsPerPage)}
-                >
-                    <ChevronRight className="h-6 w-6" />
-                </Button>
-            </div>
-
+            <ChallenzPagination items={usersMetrics} itemsPerPage={itemsPerPage} setCurrentItems={setCurrentItems} />
         </>
     );
 }

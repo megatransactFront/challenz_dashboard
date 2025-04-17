@@ -36,7 +36,7 @@ export default function DashboardLayout({
       description: "",
       footer: (
         <div className="w-full flex justify-center items-center m-0 p-0 mt-0 bg-white min-h-[100px]">
-          <Button className="px-6 py-3 bg-[#E45664] text-white rounded-lg uppercase font-medium">
+          <Button className="px-6 py-3 bg-secondary text-white rounded-lg uppercase font-medium">
             Prospering Together
           </Button>
         </div>
@@ -47,7 +47,7 @@ export default function DashboardLayout({
       description: "",
       footer: (
         <div className="w-full flex justify-center items-center m-0 p-0 mt-0 bg-white min-h-[100px]">
-          <Button className="px-6 py-3 bg-[#E45664] text-white rounded-lg uppercase font-medium">
+          <Button className="px-6 py-3 bg-secondary text-white rounded-lg uppercase font-medium">
             Prospering Together
           </Button>
         </div>

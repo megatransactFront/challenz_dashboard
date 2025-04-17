@@ -52,8 +52,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 const BreadcrumbSection: React.FC<{ breadcrumb: Breadcrumb }> = ({ breadcrumb }) => (
   <div className="flex items-center gap-2">
     <h1 className="text-xl font-semibold">{breadcrumb.title}</h1>
-    <span className="text-gray-400">/</span>
-    <span className="text-gray-500">{breadcrumb.subtitle}</span>
+    <span className="font-semibold mx-1">/</span>
+    <span className="text-secondary font-medium text-xl">{breadcrumb.subtitle}</span>
   </div>
 );
 
@@ -62,7 +62,7 @@ const SearchInput: React.FC = () => (
     <input
       type="text"
       placeholder="Search Overview"
-      className="rounded-lg border border-gray-200 py-2 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="rounded-lg border border-gray-200 py-2 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-secondary"
     />
     <Search
       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -110,14 +110,14 @@ const NotificationsDropdown: React.FC<{ notifications: NotificationItem[] }> = (
 
 const SettingsDropdown: React.FC = () => {
   const router = useRouter();
-  
+
   const handleSignOut = () => {
     // Remove the admin authentication cookie
     Cookies.remove('isAdmin');
     // Redirect to login page
     router.push('/login');
   };
-  
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none">
@@ -130,7 +130,7 @@ const SettingsDropdown: React.FC = () => {
         <DropdownMenuItem>Preferences</DropdownMenuItem>
         <DropdownMenuItem>Help & Support</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
+        <DropdownMenuItem
           className="text-red-500 hover:text-red-600"
           onClick={handleSignOut}
         >

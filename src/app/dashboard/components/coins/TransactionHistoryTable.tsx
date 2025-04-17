@@ -9,8 +9,9 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ChallenzPagination from '@/components/ChallenzPagination';
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -20,8 +21,8 @@ const formatDate = (dateString: string) => {
     });
 };
 export function TransactionHistoryTable({ transactions }: { transactions: any }) {
-    const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 8;
+    const [currentItems, setCurrentItems] = useState(transactions.slice(0, itemsPerPage))
     const [timeframe, setTimeFrame] = useState('');
     const handleTimeFrameChange = (value: string) => {
         setTimeFrame(value);
@@ -64,7 +65,7 @@ export function TransactionHistoryTable({ transactions }: { transactions: any })
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {transactions
+                        {currentItems
                             .map((transaction: any, index: any) => (
                                 <TableRow key={index}>
                                     <TableCell className="text-center">{formatDate(transaction.date)}</TableCell>
@@ -77,34 +78,7 @@ export function TransactionHistoryTable({ transactions }: { transactions: any })
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-between items-center mb-2">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                >
-                    <ChevronLeft className="h-6 w-6" />
-                </Button>
-                <div className="flex items-center">
-                    <Button
-                        variant="default"
-                        className="w-12 h-12 rounded-lg bg-[#1F5C71] text-white"
-                    >
-                        {currentPage}
-                    </Button>
-                </div>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(transactions?.length / itemsPerPage)))}
-                    disabled={currentPage === Math.ceil(transactions?.length / itemsPerPage)}
-                >
-                    <ChevronRight className="h-6 w-6" />
-                </Button>
-            </div>
+            <ChallenzPagination items={transactions} itemsPerPage={itemsPerPage} setCurrentItems={setCurrentItems} />
         </>
     );
 }
