@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { BarChart3, Layout, Users, Settings, Menu, X, Dot, Circle, ChevronRight } from "lucide-react";
+import { BarChart3, Layout, Users, Settings, Menu, X, ChevronRight } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { MenuItem as MenuItemType } from "./types";
 import { cn } from "@/lib/utils";
