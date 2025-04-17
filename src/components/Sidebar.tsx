@@ -68,6 +68,10 @@ const menuItems: MenuItemType[] = [
     path: "/dashboard",
     subItems: [
       {
+        title: "Dashboad",
+        path: "/dashboard",
+      },
+      {
         title: "Coins",
         path: "/dashboard/coins",
       },
