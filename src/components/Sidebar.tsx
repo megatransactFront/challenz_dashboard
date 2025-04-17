@@ -112,7 +112,7 @@ const Sidebar = () => {
       {/* Mobile Menu Button */}
       <div className="fixed top-4 left-4 z-50 lg:hidden">
         <button
-          className="p-2 rounded-lg bg-[#1F5C71] hover:bg-[#1a4d5f] transition-colors"
+          className="p-2 rounded-lg bg-primary hover:bg-[#1a4d5f] transition-colors"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? (
@@ -125,7 +125,7 @@ const Sidebar = () => {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-40 w-72 bg-[#1F5C71] shadow-xl",
+        "fixed inset-y-0 left-0 z-40 w-72 bg-primary shadow-xl",
         "transform transition-transform duration-300 ease-in-out lg:translate-x-0",
         "lg:relative lg:shadow-none",
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"

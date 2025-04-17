@@ -70,7 +70,7 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                             <TableHead className="bg-[#FFACB7] text-center text-black">UWC SPENT TODAY</TableHead>
                             <TableHead className="bg-[#FFACB7] text-center text-black">UWC SPENT TOTAL</TableHead>
                             <TableHead className="bg-[#F7F9FC] text-center text-black">UWC BALANCE</TableHead>
-                            <TableHead className="bg-[#1F5C71] text-center text-white">TRANSACTION HISTORY</TableHead>
+                            <TableHead className="bg-primary text-center text-white">TRANSACTION HISTORY</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -84,7 +84,7 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                                     <TableCell className="text-center text-[#FF4C51]">-{metrics.uwcSpentToday} UWC</TableCell>
                                     <TableCell className="text-center text-[#FF4C51]">-{metrics.uwcSpentTotal} UWC</TableCell>
                                     <TableCell className="text-center">${metrics.uwcBalance} UWC</TableCell>
-                                    <TableCell className="text-center text-[#1F5C71] underline cursor-pointer">
+                                    <TableCell className="text-center text-primary underline cursor-pointer">
                                         <Link href={`/dashboard/coins/history/${metrics.userId}`}>
                                             View
                                         </Link>
@@ -108,7 +108,7 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                 <div className="flex items-center">
                     <Button
                         variant="default"
-                        className="w-12 h-12 rounded-lg bg-[#1F5C71] text-white"
+                        className="w-12 h-12 rounded-lg bg-primary text-white"
                     >
                         {currentPage}
                     </Button>
