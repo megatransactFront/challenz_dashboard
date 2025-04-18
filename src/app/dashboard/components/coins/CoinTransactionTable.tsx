@@ -22,7 +22,6 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
     const [currentItems, setCurrentItems] = useState(usersMetrics.slice(0, itemsPerPage));
     const handleTimeFrameChange = (value: string) => {
         setTimeFrame(value);
-        console.log(`Filtering data for ${value} timeframe`);
     };
     const isMobile = useMobile();
     // No data state
