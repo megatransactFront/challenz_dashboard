@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
-import { Search } from 'lucide-react';
+import { Search, ListFilter } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { UserMetrics } from '@/app/types';
 import ChallenzPagination from '@/components/ChallenzPagination';
+import useMobile from '@/hooks/useMobile';
 
 
 interface CoinTransactionTableProps {
@@ -23,6 +24,7 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
         setTimeFrame(value);
         console.log(`Filtering data for ${value} timeframe`);
     };
+    const isMobile = useMobile();
     // No data state
     if (!usersMetrics) {
         return null;
@@ -31,31 +33,55 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
     return (
         <>
             <div className="bg-white p-1 pt-6 rounded-lg shadow-sm">
-                <div className="flex ml-6 mr-20 justify-between items-center mb-6">
-                    <h2 className="text-xl font-medium">Uwaci Coins</h2>
+                <div className="flex mx-6 md:mr-20 justify-between items-center mb-6">
+                    <h2 className=" text-md sm:text-xl font-medium">Uwaci Coins</h2>
 
-                    <div className='flex justify-between gap-4'>
-                        <div className="relative w-[150px]">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                            <Input
-                                type="search"
-                                placeholder="Search..."
-                                className="pl-10 min-h-[45px]"
-                            />
-                        </div>
-                        <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
-                            <SelectTrigger className="w-[150px] min-h-[45px]" >
-                                <SelectValue placeholder="Filter" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectItem value="daily">Daily</SelectItem>
-                                    <SelectItem value="weekly">Weekly</SelectItem>
-                                    <SelectItem value="monthly">Monthly</SelectItem>
-                                    <SelectItem value="yearly">YearKy</SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
+                    <div className='flex justify-end md:justify-between gap-4'>
+                        {
+                            isMobile ? (
+                                <>
+                                    <Search className='w-8 h-8' />
+                                    <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
+                                        <SelectTrigger className="" >
+                                            <ListFilter className='w-4 h-4' />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="daily">Daily</SelectItem>
+                                                <SelectItem value="weekly">Weekly</SelectItem>
+                                                <SelectItem value="monthly">Monthly</SelectItem>
+                                                <SelectItem value="yearly">YearKy</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="relative w-[150px]">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                                        <Input
+                                            type="search"
+                                            placeholder="Search..."
+                                            className="pl-10 min-h-[45px]"
+                                        />
+                                    </div>
+                                    <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
+                                        <SelectTrigger className="w-[150px] min-h-[45px]" >
+                                            <SelectValue placeholder="Filter" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value="daily">Daily</SelectItem>
+                                                <SelectItem value="weekly">Weekly</SelectItem>
+                                                <SelectItem value="monthly">Monthly</SelectItem>
+                                                <SelectItem value="yearly">YearKy</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </>
+                            )
+                        }
+
                     </div>
 
                 </div>

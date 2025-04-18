@@ -33,13 +33,13 @@ export default function Page() {
       try {
         setIsLoading(true);
         const response = await fetch('/api/dashboard/overview');
-  
+
         if (!response.ok) {
           throw new Error('Failed to fetch dashboard data');
         }
-  
+
         const { stats, userData } = await response.json();
-  
+
         setMetrics(stats);
         setUserData(userData);
         setError(null);
@@ -50,7 +50,7 @@ export default function Page() {
         setIsLoading(false);
       }
     };
-  
+
     fetchDashboardData();
   }, []); // Em
   // Loading state
@@ -79,28 +79,27 @@ export default function Page() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <StatCard 
-        title="Total Registrations" 
-        value={metrics.totalRegistrations.formatted} 
-        icon={Users} 
-        change="+12.3% from last month"
-        trend="up"
-      />
-      <StatCard 
-        title="New users (within 3 days)" 
-        value={metrics.newUsers.formatted} 
-        icon={Users} 
-        change="-5.2% from last week"
-        trend="down"
-      />
-      <StatCard 
-        title="Active users (4 hours daily)" 
-        value={metrics.activeUsers.formatted}  // Change this from totalChallenges to activeUsers
-        icon={Trophy} 
-        change="+8.7% this month"
-        trend="up"
-      />
-      
+        <StatCard
+          title="Total Registrations"
+          value={metrics.totalRegistrations.formatted}
+          icon={Users}
+          change="+12.3% from last month"
+          trend="up"
+        />
+        <StatCard
+          title="New users (within 3 days)"
+          value={metrics.newUsers.formatted}
+          icon={Users}
+          change="-5.2% from last week"
+          trend="down"
+        />
+        <StatCard
+          title="Active users (4 hours daily)"
+          value={metrics.activeUsers.formatted}  // Change this from totalChallenges to activeUsers
+          icon={Trophy}
+          change="+8.7% this month"
+          trend="up"
+        />
       </div>
 
       <Card>
