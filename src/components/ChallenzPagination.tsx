@@ -3,29 +3,16 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 
-const ChallenzPagination = ({ items = [], itemsPerPage = 10, setCurrentItems }: { items: Array<any>, itemsPerPage?: number, setCurrentItems: (data: any) => void }) => {
-    const [currentPage, setCurrentPage] = useState(1);
-    const totalPages = Math.ceil(items?.length / itemsPerPage);
-
-    // Get current items
-    useEffect(() => {
-        const indexOfLastItem = currentPage * itemsPerPage;
-        const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-        const currentItems = items?.slice(indexOfFirstItem, indexOfLastItem);
-        setCurrentItems(currentItems);
+const ChallenzPagination = ({ currentPage, totalPages, setCurrentPage }: { currentPage: number, totalPages: number, setCurrentPage: (page: number) => void }) => {
+    function goToPreviousPage() {
+        setCurrentPage(currentPage - 1);
     }
-        , [currentPage, items, itemsPerPage, setCurrentItems]);
-    const goToPreviousPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
 
-    const goToNextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
+    function goToNextPage() {
+        setCurrentPage(currentPage + 1);
+
+    }
+
     return (
         <div className="flex justify-between items-center mb-2">
             <Button

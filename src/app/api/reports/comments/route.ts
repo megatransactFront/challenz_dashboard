@@ -5,9 +5,15 @@ const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const { data: reportsData, error: reportDataError } = await supabase
+        const { searchParams } = new URL(request.url);
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '10');
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
+        const { data: reportsData, error: reportDataError, count } = await supabase
             .from('comment_reports')
             .select(`
                 id,
@@ -22,7 +28,8 @@ export async function GET() {
                 id,
                 username
                 )
-            `)
+            `, { count: "exact" }).range(from, to)
+            .order('created_at', { ascending: false });
         if (reportDataError) {
             console.error('Error fetching reports data:', reportDataError);
             throw new Error('Failed to fetch reports data');
@@ -48,12 +55,20 @@ export async function GET() {
                         likes: report?.comment?.likes,
                         video: {
                             ...videoData
-                        },
-                    }
+                        }
+                    },
                 };
             })
         );
-        return NextResponse.json(fullReportsData);
+        return NextResponse.json({
+            data: fullReportsData,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil((count || 0) / limit),
+                totalItems: count || 0,
+                itemsPerPage: limit
+            }
+        });
     } catch (error) {
         console.error('Error fetching comments data:', error);
         return NextResponse.json(

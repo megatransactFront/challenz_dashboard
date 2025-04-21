@@ -93,7 +93,7 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                 </Table>
             </div>
             {/* Pagination */}
-            <ChallenzPagination items={usersMetrics} itemsPerPage={itemsPerPage} setCurrentItems={setCurrentItems} />
+            {/* <ChallenzPagination items={usersMetrics} itemsPerPage={itemsPerPage} setCurrentItems={setCurrentItems} /> */}
         </>
     );
 }
