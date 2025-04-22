@@ -39,8 +39,6 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
       try {
         setLoading(true);
         setError(null);
-        // Log the userId being requested
-        console.log('Fetching user details for ID:', userId);
 
         const response = await fetch(`/api/users?userId=${userId}`);
 
@@ -51,7 +49,6 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
         }
 
         const data = await response.json();
-        console.log('Received user data:', data);
 
         if (!data) {
           throw new Error('No user data received');

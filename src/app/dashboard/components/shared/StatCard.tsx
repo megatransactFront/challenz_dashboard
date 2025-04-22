@@ -12,7 +12,7 @@ interface StatCardProps {
 
 export function StatCard(props: StatCardProps) {
   const { title, value, icon: Icon, change, trend } = props;  // Destructure in the function body
-  
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -20,12 +20,11 @@ export function StatCard(props: StatCardProps) {
         <Icon className="h-4 w-4 text-teal-600" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className={`text-sm ${
-          trend === 'up' ? 'text-green-600' : 
-          trend === 'down' ? 'text-red-600' : 
-          'text-gray-600'
-        }`}>
+        <div className="text-lg sm:text-2xl font-bold">{value}</div>
+        <p className={`text-sm ${trend === 'up' ? 'text-green-600' :
+          trend === 'down' ? 'text-red-600' :
+            'text-gray-600'
+          }`}>
           {change}
         </p>
       </CardContent>

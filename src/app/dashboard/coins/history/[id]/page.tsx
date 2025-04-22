@@ -1,6 +1,7 @@
 "use client"
 import { TransactionHistoryTable } from "@/app/dashboard/components/coins/TransactionHistoryTable";
 import { Separator } from "@/components/ui/separator";
+import useMobile from "@/hooks/useMobile";
 import { useState } from "react";
 const usersTransaction =
 {
@@ -13,16 +14,17 @@ const usersTransaction =
     ]
 }
 const TransactionHistory = () => {
+    const isMobile = useMobile();
     const timeframes = [
         {
             key: "today",
             title: "Today",
-            separator: <Separator orientation="vertical" />
+            separator: true
         },
         {
             key: "lastWeek",
-            title: "Last 7 Days",
-            separator: <Separator orientation="vertical" />
+            title: isMobile ? "Last Week" : "Last 7 Days",
+            separator: true
         },
         {
             key: "lastMonth",
@@ -35,18 +37,21 @@ const TransactionHistory = () => {
     const firstName = usersTransaction?.name?.split(' ')[0]
     return (
         <div>
-            <div className="mb-3 flex items-center justify-between mr-20">
-                <h1 className="font-bold sm:text-xl md:text-4xl text-5xl">
+            <div className="mb-3 flex flex-wrap justify-center items-center sm:justify-between md:mr-20">
+                <h1 className="font-bold text-sm md:text-2xl xl:text-4xl">
                     {firstName}&apos;s Transaction History
                 </h1>
                 <div className="flex h-5 items-center space-x-4 font-medium">
                     {timeframes.map((timeframe) => (
                         <>
                             <div key={timeframe?.key} className="cursor-pointer" onClick={() => setFilter(timeframe?.key)}>
-                                {timeframe?.title}
+                                <div className="text-xs md:text-lg">
+                                    {timeframe?.title}
+                                </div>
                                 <Separator className={timeframe?.key === filter ? "bg-[#E45664]" : undefined} />
                             </div>
-                            <Separator orientation="vertical" />
+                            {timeframe?.separator && <Separator orientation="vertical" />}
+
                         </>
                     ))}
                 </div>

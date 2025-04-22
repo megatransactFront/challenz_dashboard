@@ -26,7 +26,6 @@ export function TransactionHistoryTable({ transactions }: { transactions: any })
     const [timeframe, setTimeFrame] = useState('');
     const handleTimeFrameChange = (value: string) => {
         setTimeFrame(value);
-        console.log(`Fetching data for ${value} timeframe`);
     };
     // No data state
     if (!transactions) {
@@ -36,9 +35,9 @@ export function TransactionHistoryTable({ transactions }: { transactions: any })
         <>
             {/* Transactions Table */}
             <div className="bg-white p-1 rounded-lg shadow-sm mb-6">
-                <div className="flex mx-6 justify-between items-center my-3">
+                <div className="flex mx-6 justify-between gap-3 items-center my-3">
                     <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
-                        <SelectTrigger className="w-[200px] min-h-[45px] rounded-[30px]" >
+                        <SelectTrigger className="max-w-[200px] min-h-[20px] rounded-[30px]" >
                             <SelectValue placeholder="Filter" />
                         </SelectTrigger>
                         <SelectContent>
@@ -50,7 +49,7 @@ export function TransactionHistoryTable({ transactions }: { transactions: any })
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Button className="w-[200px] min-h-[50px] rounded-[30px] bg-[#E45664] font-medium">
+                    <Button className="max-w-[200px] min-h-[20px] rounded-[30px] bg-[#E45664] font-medium">
                         <Download className='w-8 h-8' />
                         Download
                     </Button>
