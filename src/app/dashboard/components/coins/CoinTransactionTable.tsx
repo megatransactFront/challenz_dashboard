@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { UserMetrics } from '@/app/types';
-import ChallenzPagination from '@/components/ChallenzPagination';
 import { Button } from '@/components/ui/button';
 
 
@@ -19,7 +18,6 @@ interface CoinTransactionTableProps {
 export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps) {
     const itemsPerPage = 8;
     const [timeframe, setTimeFrame] = useState('');
-    const [currentItems, setCurrentItems] = useState(usersMetrics.slice(0, itemsPerPage));
     const handleTimeFrameChange = (value: string) => {
         setTimeFrame(value);
         console.log(`Filtering data for ${value} timeframe`);
@@ -74,7 +72,7 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {currentItems
+                        {usersMetrics.slice(0, itemsPerPage)
                             .map((metrics: any, index: any) => (
                                 <TableRow key={index}>
                                     <TableCell className="text-center">{metrics.name}</TableCell>
