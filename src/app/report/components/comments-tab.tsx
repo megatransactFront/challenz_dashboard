@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import VideoReportDialog from "@/app/report/components/video-report-dialog";
 import { formatDate } from "@/helpers/formaters";
+import { Pagination } from "@/app/types/pagination";
 
 
 export default function CommentsTab() {
@@ -23,10 +24,8 @@ export default function CommentsTab() {
     const [commentsData, setCommentsData] = useState<CommentReport[]>([]);
     const [video, setVideo] = useState<Video | null>(null);
     const itemsPerPage = 10;
-    const [currentItems, setCurrentItems] = useState<CommentReport[]>([]);
-    const handleSetCurrentItems = useCallback((items: CommentReport[]) => {
-        setCurrentItems(items);
-    }, []);
+    const [pagination, setPagination] = useState<Pagination>();
+    const [page, setPage] = useState(1);
     const handleViewVideo = (video: Video | undefined) => {
         if (!video) return;
         setVideo(video);
@@ -35,12 +34,19 @@ export default function CommentsTab() {
     const fetchComments = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('/api/reports/comments');
+            const params = new URLSearchParams({
+                page: page.toString(),
+                limit: itemsPerPage.toString(),
+            });
+            const response = await fetch(`/api/reports/comments/?${params}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch coin data');
             }
-            const data = await response.json();
-            setCommentsData(data);
+            const res = await response.json();
+
+            setCommentsData(res?.data);
+            setPagination(res?.pagination);
+            setPage(res?.pagination?.currentPage || 1);
             setError(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
@@ -51,8 +57,7 @@ export default function CommentsTab() {
     };
     useEffect(() => {
         fetchComments();
-        setCurrentItems(commentsData.slice(0, itemsPerPage));
-    }, []);
+    }, [page]);
 
     if (error) {
         return (
@@ -85,7 +90,7 @@ export default function CommentsTab() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {currentItems?.map((report: CommentReport) => (
+                        {commentsData?.map((report: CommentReport) => (
                             <TableRow key={report?.id}>
                                 <TableCell className="font-medium text-center py-3">{report?.reporter?.username ? report?.reporter?.username : (<span className="text-gray-500">Not found</span>)}</TableCell>
                                 <TableCell className="text-center  text-red-600">{report?.reason ? report?.reason : (<span className="text-gray-500">Not found</span>)}</TableCell>
@@ -112,7 +117,7 @@ export default function CommentsTab() {
             </div>
 
             {/* Pagination */}
-            <ChallenzPagination items={commentsData} itemsPerPage={itemsPerPage} setCurrentItems={handleSetCurrentItems} />
+            <ChallenzPagination currentPage={page} setCurrentPage={setPage} totalPages={pagination?.totalPages || 0} />
 
             {/* Video Player Modal */}
             <VideoReportDialog isOpen={!!video} onClose={() => setVideo(null)} video={video} />

@@ -77,7 +77,7 @@ export function TransactionHistoryTable({ transactions }: { transactions: any })
             </div>
 
             {/* Pagination */}
-            <ChallenzPagination items={transactions} itemsPerPage={itemsPerPage} setCurrentItems={setCurrentItems} />
+            {/* <ChallenzPagination items={transactions} itemsPerPage={itemsPerPage} setCurrentItems={setCurrentItems} /> */}
         </>
     );
 }
