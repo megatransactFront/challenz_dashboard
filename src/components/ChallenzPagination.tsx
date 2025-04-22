@@ -1,6 +1,6 @@
 'use client'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Button } from '@/components/ui/button'
 
 const ChallenzPagination = ({ currentPage, totalPages, setCurrentPage }: { currentPage: number, totalPages: number, setCurrentPage: (page: number) => void }) => {
