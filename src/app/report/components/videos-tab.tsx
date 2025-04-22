@@ -15,28 +15,32 @@ import { Video, VideoReport } from "@/app/types/reports";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/helpers/formaters";
 import VideoReportDialog from "./video-report-dialog";
+import { Pagination } from "@supabase/supabase-js";
 
 
 export default function VideosTab() {
     const itemsPerPage = 10;
-    const [currentItems, setCurrentItems] = useState<VideoReport[] | []>([]);
-    const handleSetCurrentItems = useCallback((items: VideoReport[]) => {
-        setCurrentItems(items);
-    }, []);
     const [isLoading, setIsLoading] = useState(false);
     const [video, setVideo] = useState<Video | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState<Pagination>();
     const [videosData, setVideosData] = useState<VideoReport[]>([]);
     const fetchVideos = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('/api/reports/videos');
+            const params = new URLSearchParams({
+                page: page.toString(),
+                limit: itemsPerPage.toString(),
+            });
+            const response = await fetch(`/api/reports/videos/?${params}`);
 
             if (!response.ok) {
                 throw new Error('Failed to fetch videos data');
             }
-            const data = await response.json();
-            setVideosData(data);
+            const res = await response.json();
+            setVideosData(res?.data);
+            setPagination(res?.pagination);
             setError(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
@@ -52,8 +56,7 @@ export default function VideosTab() {
     };
     useEffect(() => {
         fetchVideos();
-        setCurrentItems(videosData.slice(0, itemsPerPage));
-    }, []);
+    }, [page]);
 
     if (error) {
         return (
@@ -85,7 +88,7 @@ export default function VideosTab() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {currentItems.map((report: VideoReport) => (
+                        {videosData.map((report: VideoReport) => (
                             <TableRow key={report?.id}>
                                 <TableCell className="font-medium py-3 text-center">{report?.reporter?.username ? report?.reporter?.username : (<span className="text-gray-500">Not found</span>)}</TableCell>
                                 <TableCell className="text-center">{report?.title ? report?.title : (<span className="text-gray-500">Not found</span>)}</TableCell>
@@ -109,8 +112,7 @@ export default function VideosTab() {
                     </TableBody>
                 </Table>
             </div>
-
-            <ChallenzPagination items={videosData} itemsPerPage={itemsPerPage} setCurrentItems={handleSetCurrentItems} />
+            <ChallenzPagination currentPage={page} setCurrentPage={setPage} totalPages={pagination?.totalPages || 0} />
             <VideoReportDialog isOpen={!!video} onClose={() => setVideo(null)} video={video} />
         </div>
     );
