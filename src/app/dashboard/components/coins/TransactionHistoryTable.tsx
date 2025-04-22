@@ -11,7 +11,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import ChallenzPagination from '@/components/ChallenzPagination';
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -22,7 +21,6 @@ const formatDate = (dateString: string) => {
 };
 export function TransactionHistoryTable({ transactions }: { transactions: any }) {
     const itemsPerPage = 8;
-    const [currentItems, setCurrentItems] = useState(transactions.slice(0, itemsPerPage))
     const [timeframe, setTimeFrame] = useState('');
     const handleTimeFrameChange = (value: string) => {
         setTimeFrame(value);
@@ -64,7 +62,7 @@ export function TransactionHistoryTable({ transactions }: { transactions: any })
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {currentItems
+                        {transactions.slice(0, itemsPerPage)
                             .map((transaction: any, index: any) => (
                                 <TableRow key={index}>
                                     <TableCell className="text-center">{formatDate(transaction.date)}</TableCell>
