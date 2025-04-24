@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { BarChart3, Layout, Users, Settings, ChevronRight } from "lucide-react";
+import { BarChart3, CircleDollarSign, Settings, ChartLine, ChevronRight } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { MenuItem as MenuItemType } from "./types";
 import { cn } from "@/lib/utils";
@@ -27,13 +27,13 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate }) => {
         className={cn(
           "flex items-center py-3 px-6 rounded-lg cursor-pointer transition-all duration-200",
           isActive
-            ? "bg-secondary text-white"
+            ? "bg-[#FFFFFF] text-primary"
             : "hover:bg-[#1a4d5f] text-white/90"
         )}
       >
         <div className="flex items-center gap-4">
-          {PrevIcon && <PrevIcon size={22} className={cn("text-white w-6 h-6 bold mr-2", isActive ? "opacity-100" : "opacity-75")} />}
-          <Icon size={22} className={cn("text-white", isActive ? "opacity-100" : "opacity-75")} />
+          {PrevIcon && <PrevIcon size={16} className={cn("text-white w-6 h-6 bold mr-2", isActive ? "text-primary opacity-100" : "opacity-75")} />}
+          <Icon size={16} className={cn("text-white", isActive ? "opacity-100 text-primary" : "opacity-75")} />
           <span className="text-[15px] font-medium tracking-wide">{item.title}</span>
         </div>
       </div>
@@ -49,7 +49,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, pathname, onNavigate }) => {
                 className={cn(
                   "flex items-center py-2 px-4 rounded-lg cursor-pointer transition-all duration-200",
                   "text-[15px] tracking-wide",
-                  subItemActive ? "bg-secondary text-white" : "text-white/80 hover:bg-[#1a4d5f]"
+                  subItemActive ? "bg-[#FFFFFF] text-primary font-medium" : "text-white/80 hover:bg-[#1a4d5f]"
                 )}
               >
                 {subItem.title}
@@ -83,19 +83,19 @@ const mainMenuItems: MenuItemType[] = [
   {
     title: "Challenz",
     prevIcon: ChevronRight,
-    icon: Layout,
+    icon: CircleDollarSign,
     path: "/challenz",
   },
   {
     title: "Users",
     prevIcon: ChevronRight,
-    icon: Users,
+    icon: ChartLine,
     path: "/users",
   },
   {
     title: "Report",
     prevIcon: ChevronRight,
-    icon: BarChart3,
+    icon: ChartLine,
     path: "/report",
   },
 ];
