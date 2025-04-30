@@ -93,10 +93,16 @@ const mainMenuItems: MenuItemType[] = [
     path: "/users",
   },
   {
-    title: "Report",
+    title: "Reports",
     prevIcon: ChevronRight,
     icon: ChartLine,
     path: "/report",
+  },
+  {
+    title: "PC",
+    prevIcon: ChevronRight,
+    icon: ChartLine,
+    path: "/discounts",
   },
 ];
 
