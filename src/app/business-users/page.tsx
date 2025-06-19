@@ -133,7 +133,7 @@ const BusinessUserPage = () => {
     }
   ]
 
-  const handleBusinessDetails = (businessId: number) => {
+  const handleBusinessDetails = (businessId: string) => {
     router.push(`business-users/${businessId}`)
   }
 

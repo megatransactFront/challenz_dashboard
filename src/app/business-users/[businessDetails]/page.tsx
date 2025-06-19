@@ -1,12 +1,17 @@
+'use client'
+
 import React from 'react'
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { useRouter } from 'next/navigation'
 
-const BusinessDetails = async ({ 
+const BusinessDetails = ({ 
   params
 } : {
   params: Promise<{ businessDetails: string }>
 }) => {
-  const businessId = (await params).businessDetails
+  const businessId = (React.use(params)).businessDetails
+  const router = useRouter()
 
   const users = [
     {
@@ -209,6 +214,11 @@ const BusinessDetails = async ({
           </div>
         </div>
       </Card>
+
+      <div className='flex justify-center gap-10'>
+        <Button variant="secondary" className='w-52' onClick={() => router.back()}>Back</Button>
+        <Button variant="secondary" className='w-52'>Revenue</Button>
+      </div>
     </div>
   )
 }
