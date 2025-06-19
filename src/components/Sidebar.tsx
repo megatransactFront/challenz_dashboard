@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { BarChart3, Layout, Users, Settings, ChevronRight } from "lucide-react";
+import { BarChart3, Layout, Users, Settings, ChevronRight, Building2 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { MenuItem as MenuItemType } from "./types";
 import { cn } from "@/lib/utils";
@@ -97,6 +97,12 @@ const mainMenuItems: MenuItemType[] = [
     prevIcon: ChevronRight,
     icon: BarChart3,
     path: "/report",
+  },
+  {
+    title: "Business",
+    prevIcon: ChevronRight,
+    icon: Building2,
+    path: "/business-users",
   },
 ];
 
