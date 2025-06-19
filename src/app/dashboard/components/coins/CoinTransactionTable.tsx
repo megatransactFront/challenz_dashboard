@@ -1,17 +1,12 @@
 "use client";
-import React, { useState } from 'react';
-import {
-    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-} from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, Search, ListFilter } from 'lucide-react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import Link from 'next/link';
 import { UserMetrics } from '@/app/types';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import useMobile from '@/hooks/useMobile';
-import { Button } from '@/components/ui/button';
-
-
+import { ListFilter, Search } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 interface CoinTransactionTableProps {
     usersMetrics: UserMetrics[];
@@ -116,32 +111,6 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
                             ))}
                     </TableBody>
                 </Table>
-            </div>
-            {/* Pagination */}
-            {/* <ChallenzPagination items={usersMetrics} itemsPerPage={itemsPerPage} setCurrentItems={setCurrentItems} /> */}
-            <div className="flex justify-between items-center mb-2">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                >
-                    <ChevronLeft className="h-6 w-6" />
-                </Button>
-                <div className="flex items-center">
-                    <Button
-                        variant="default"
-                        className="w-12 h-12 rounded-lg bg-primary text-white"
-                    >
-                        1
-                    </Button>
-                </div>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-12 h-12 rounded-lg bg-gray-500 hover:bg-[#707070] text-white"
-                >
-                    <ChevronRight className="h-6 w-6" />
-                </Button>
             </div>
         </>
     );

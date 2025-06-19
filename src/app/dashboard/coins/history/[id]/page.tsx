@@ -1,18 +1,13 @@
 "use client"
+import { fetchUserCoinTransactionsData, fetchUserDataById } from "@/app/api/dashboard/coins/coinDbAccess";
 import { TransactionHistoryTable } from "@/app/dashboard/components/coins/TransactionHistoryTable";
+import { CoinTransaction } from "@/app/types";
 import { Separator } from "@/components/ui/separator";
 import useMobile from "@/hooks/useMobile";
-import { useState } from "react";
-const usersTransaction =
-{
-    userId: 1,
-    name: "Jeremy Evans",
-    transactions: [
-        { date: "24 Mar 2020", partnerShop: "Apple Store", uwcSpent: 50 },
-        { date: "18 Mar 2020", partnerShop: "Spotify", uwcSpent: 50 },
-        { date: "12 Mar 2020", partnerShop: "JetStar", uwcSpent: 50 }
-    ]
-}
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
+
 const TransactionHistory = () => {
     const isMobile = useMobile();
     const timeframes = [
@@ -31,15 +26,41 @@ const TransactionHistory = () => {
             title: "Last Month",
         }
     ]
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
     const [filter, setFilter] = useState('today');
-    // const params = useParams();
-    // const userId = params?.id;
-    const firstName = usersTransaction?.name?.split(' ')[0]
+    const [userTransactions, setUserTransactions] = useState<CoinTransaction[]>([]);
+    const [userData, setUserData] = useState({ id: '', first_name: '' });
+
+    const params = useParams();
+    const userId = params?.id as string;
+
+    const fetchUserCoinTransactions = async (userId: string) => {
+        setIsLoading(true);
+        try {
+            const usersTransactionData = await fetchUserCoinTransactionsData(userId);
+            const user = await fetchUserDataById(userId);
+
+            setUserData(user[0]);
+            setUserTransactions(usersTransactionData);
+            setError(null);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
+            console.error('Error fetching coin data:', err);
+        }
+        setIsLoading(false);
+    }
+
+    useEffect(() => {
+        fetchUserCoinTransactions(userId)
+
+    }, [userId, filter]);
     return (
         <div>
             <div className="mb-3 flex flex-wrap justify-center items-center sm:justify-between md:mr-20">
                 <h1 className="font-bold text-sm md:text-2xl xl:text-4xl">
-                    {firstName}&apos;s Transaction History
+                    {userData?.first_name || ''}&apos;s Transaction History
                 </h1>
                 <div className="flex h-5 items-center space-x-4 font-medium">
                     {timeframes.map((timeframe) => (
@@ -56,7 +77,7 @@ const TransactionHistory = () => {
                     ))}
                 </div>
             </div>
-            <TransactionHistoryTable transactions={usersTransaction?.transactions} />
+            <TransactionHistoryTable transactions={userTransactions} />
         </div>
     )
 }

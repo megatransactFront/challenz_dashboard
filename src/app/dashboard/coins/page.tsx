@@ -1,13 +1,14 @@
 // app/dashboard/coins/page.tsx
 "use client";
-import React, { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CoinData } from '@/app/types/coins';
 import { CoinTransactionTable } from '@/app/dashboard/components/coins/CoinTransactionTable';
-import CoinsMetrics from '../components/coins/CoinsMetrics';
-import { useRouter } from "next/navigation";
+import { CoinData } from '@/app/types/coins';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createClient } from '@supabase/supabase-js';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react';
+import CoinsMetrics from '../components/coins/CoinsMetrics';
+import Pagination from '../components/shared/Pagination';
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -17,6 +18,8 @@ export default function CoinsPage() {
     const [coinData, setCoinData] = useState<CoinData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const limit = 10;
     const router = useRouter();
 
     useEffect(() => {
@@ -30,7 +33,7 @@ export default function CoinsPage() {
                     table: "coin_transactions",
                 },
                 async () => {
-                    await reFetchCoinData();
+                    await fetchCoinData();
                 }
             ).on(
                 "postgres_changes",
@@ -40,7 +43,7 @@ export default function CoinsPage() {
                     table: "users",
                 },
                 async () => {
-                    await reFetchCoinData();
+                    await fetchCoinData();
                 }
             )
             .subscribe();
@@ -49,28 +52,11 @@ export default function CoinsPage() {
             supabase.removeChannel(channel);
         };
     }, [supabase, router]);
+
     const fetchCoinData = async () => {
+        setIsLoading(true);
         try {
-            setIsLoading(true);
-            const response = await fetch('/api/dashboard/coins');
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch coin data');
-            }
-
-            const data = await response.json();
-            setCoinData(data);
-            setError(null);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'An error occurred');
-            console.error('Error fetching coin data:', err);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    const reFetchCoinData = async () => {
-        try {
-            const response = await fetch('/api/dashboard/coins');
+            const response = await fetch(`/api/dashboard/coins?page=${page}&limit=${limit}`);
 
             if (!response.ok) {
                 throw new Error('Failed to fetch coin data');
@@ -83,10 +69,14 @@ export default function CoinsPage() {
             setError(err instanceof Error ? err.message : 'An error occurred');
             console.error('Error fetching coin data:', err);
         }
+        setIsLoading(false);
     };
+
     useEffect(() => {
+        setIsLoading(true);
         fetchCoinData();
-    }, []);
+        setIsLoading(false);
+    }, [page]);
 
     // Loading state
     if (isLoading) {
@@ -116,6 +106,10 @@ export default function CoinsPage() {
             {/* Stat Cards */}
             <CoinsMetrics metrics={coinData?.metrics} />
             <CoinTransactionTable usersMetrics={coinData?.userMetrics} />
-        </div>
+            <Pagination
+                page={page}
+                totalPages={coinData.totalUsersPage}
+                onPageChange={setPage} />
+        </div >
     );
 }
