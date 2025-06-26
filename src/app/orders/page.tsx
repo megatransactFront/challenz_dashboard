@@ -29,8 +29,6 @@ export default function OrdersPage() {
 
       {tab === 'summary' && <OrderSummaryCards />}
 
-
-
       {tab === 'perUser' && (
         <Card className="p-4 md:p-6 space-y-4">
          <div className="flex justify-center mb-8">
@@ -52,7 +50,7 @@ export default function OrdersPage() {
             label="Status"
             value={status}
             onChange={setStatus}
-            options={['Pending', 'Processing', 'Shipped', 'Delivered', 'Completed', 'Cancelled', 'Returned']}
+            options={['PENDING_PAYMENT', 'AWAITING_FULFILLMENT' , 'FULFILLED' , 'SHIPPED' , 'DELIVERED' , 'PAYMENT_FAILED' , 'CANCELED' , 'RETURN_REQUESTED' , 'REFUNDED', 'NO_REFUND']}
             widthClass="w-full"
             />
 

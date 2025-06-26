@@ -20,20 +20,26 @@ type FilterDropdownProps = {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'Pending':
-      return 'text-yellow-500';
-    case 'Processing':
-      return 'text-blue-500';
-    case 'Shipped':
-      return 'text-indigo-500';
-    case 'Delivered':
-      return 'text-emerald-500';
-    case 'Completed':
-      return 'text-green-600';
-    case 'Cancelled':
-      return 'text-red-600';
-    case 'Returned':
-      return 'text-orange-500';
+    case 'PENDING_PAYMENT':
+      return 'text-yellow-500 font-semibold';
+    case 'AWAITING_FULFILLMENT':
+      return 'text-blue-500 font-semibold';
+    case 'FULFILLED':
+      return 'text-indigo-500 font-semibold';
+    case 'SHIPPED':
+      return 'text-purple-500 font-semibold';
+    case 'DELIVERED':
+      return 'text-emerald-500 font-semibold';
+    case 'PAYMENT_FAILED':
+      return 'text-red-500 font-semibold';
+    case 'CANCELED':
+      return 'text-red-600 font-semibold';
+    case 'RETURN_REQUESTED':
+      return 'text-orange-500 font-semibold';
+    case 'REFUNDED':
+      return 'text-green-600 font-semibold';
+    case 'NO_REFUND':
+      return 'text-gray-500 font-semibold';
     default:
       return '';
   }
