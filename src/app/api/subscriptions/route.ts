@@ -19,12 +19,7 @@ const supabase = createClient(
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
     const userId = searchParams.get('userId');
-
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
 
     if (userId) {
       const { data, error } = await supabase
@@ -36,34 +31,20 @@ export async function GET(request: Request) {
       return NextResponse.json(data);
     }
 
-    const { count, error: countError } = await supabase
-      .from('subscriptions')
-      .select('*', { count: 'exact', head: true });
-
-    if (countError) throw countError;
-
-    const { data, error: dataError } = await supabase
+    const { data, error } = await supabase
       .from('subscriptions')
       .select('*')
-      .range(from, to)
       .order('start_date', { ascending: false });
 
-    if (dataError) throw dataError;
+    if (error) throw error;
 
-    return NextResponse.json({
-      subscriptions: data,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil((count || 0) / limit),
-        totalItems: count || 0,
-        itemsPerPage: limit
-      }
-    });
+    return NextResponse.json(data);
   } catch (error) {
     console.error('GET Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
 
 
 
@@ -124,16 +105,28 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    const { id, status, end_date } = body;
+    const { id, plan_id, uwc_redeemed, amount_paid, start_date, end_date, status } = body;
 
-    if (!id) return NextResponse.json({ error: 'Missing subscription ID' }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: 'Missing subscription ID' }, { status: 400 });
+    }
+
+    const updateData: any = {
+      ...(plan_id !== undefined && { plan_id }),
+      ...(uwc_redeemed !== undefined && { uwc_redeemed }),
+      ...(amount_paid !== undefined && { amount_paid }),
+      ...(start_date !== undefined && { start_date }),
+      ...(end_date !== undefined && { end_date }),
+      ...(status !== undefined && { status }),
+    };
 
     const { data, error } = await supabase
       .from('subscriptions')
-      .update({ status, end_date })
+      .update(updateData)
       .eq('id', id);
 
     if (error) throw error;
+
     return NextResponse.json({ message: 'Subscription updated', data });
   } catch (error) {
     console.error('PATCH Error:', error);
