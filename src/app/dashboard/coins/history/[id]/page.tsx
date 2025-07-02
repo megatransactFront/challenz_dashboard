@@ -1,9 +1,11 @@
 "use client"
 import { fetchUserCoinTransactionsData, fetchUserDataById } from "@/app/api/dashboard/coins/coinDbAccess";
 import { TransactionHistoryTable } from "@/app/dashboard/components/coins/TransactionHistoryTable";
+import Pagination from "@/app/dashboard/components/shared/Pagination";
 import { CoinTransaction } from "@/app/types";
 import { Separator } from "@/components/ui/separator";
 import useMobile from "@/hooks/useMobile";
+import { Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -24,22 +26,29 @@ const TransactionHistory = () => {
         {
             key: "lastMonth",
             title: "Last Month",
+            separator: true
+        },
+        {
+            key: "allTime",
+            title: "All Times",
         }
     ]
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const itemsPerPage = 8;
 
-    const [filter, setFilter] = useState('today');
+    const [filter, setFilter] = useState('allTime');
     const [userTransactions, setUserTransactions] = useState<CoinTransaction[]>([]);
-    const [userData, setUserData] = useState({ id: '', first_name: '' });
+    const [userData, setUserData] = useState({ id: '', first_name: '', username: '' });
 
     const params = useParams();
     const userId = params?.id as string;
 
-    const fetchUserCoinTransactions = async (userId: string) => {
+    const fetchUserCoinTransactions = async (userId: string, filter: string) => {
         setIsLoading(true);
         try {
-            const usersTransactionData = await fetchUserCoinTransactionsData(userId);
+            const usersTransactionData = await fetchUserCoinTransactionsData(userId, filter);
             const user = await fetchUserDataById(userId);
 
             setUserData(user[0]);
@@ -53,7 +62,7 @@ const TransactionHistory = () => {
     }
 
     useEffect(() => {
-        fetchUserCoinTransactions(userId)
+        fetchUserCoinTransactions(userId, filter)
 
     }, [userId, filter]);
     return (
@@ -77,7 +86,23 @@ const TransactionHistory = () => {
                     ))}
                 </div>
             </div>
-            <TransactionHistoryTable transactions={userTransactions} />
+            {isLoading ?
+                <div className="flex justify-center items-center min-h-[400px]">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div> :
+                <div>
+                    <TransactionHistoryTable
+                        transactions={userTransactions}
+                        page={page}
+                        itemsPerPage={itemsPerPage}
+                        filename={`${userData.username}-transaction-history-${filter}`} />
+
+                    {!!userTransactions.length && <Pagination
+                        page={page}
+                        totalPages={Math.ceil(userTransactions.length / itemsPerPage)}
+                        onPageChange={setPage} />}
+                </div>
+            }
         </div>
     )
 }

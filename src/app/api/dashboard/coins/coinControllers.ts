@@ -2,8 +2,8 @@ import { CoinSystemSummary, CoinTransaction, CoinUserSummary, UserMetrics } from
 import { fetchSystemCoinTransactionsData, fetchUserCoinTransactionsData, fetchUsersData } from './coinDbAccess';
 import { isToday } from './helpers';
 
-export const fetchUsersAndCoinData = async (page: number, limit: number): Promise<UserMetrics[]> => {
-    const users = await fetchUsersData(page, limit);
+export const fetchUsersAndCoinData = async (page: number, limit: number, keyword: string): Promise<UserMetrics[]> => {
+    const users = await fetchUsersData(page, limit, keyword);
     return Promise.all(users.map(async (user) => {
         const coinTransactions = await fetchUserCoinTransactionsData(user.id);
 

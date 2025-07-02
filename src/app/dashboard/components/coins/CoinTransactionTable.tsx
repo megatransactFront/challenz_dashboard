@@ -1,23 +1,19 @@
 "use client";
 import { UserMetrics } from '@/app/types';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import useMobile from '@/hooks/useMobile';
-import { ListFilter, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
 
 interface CoinTransactionTableProps {
     usersMetrics: UserMetrics[];
+    handleKeywordChange: (keyword: string) => void;
+    keyword: string;
 }
 
-export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps) {
+export function CoinTransactionTable({ usersMetrics, handleKeywordChange, keyword }: CoinTransactionTableProps) {
     const itemsPerPage = 8;
-    const [timeframe, setTimeFrame] = useState('');
-    const handleTimeFrameChange = (value: string) => {
-        setTimeFrame(value);
-    };
     const isMobile = useMobile();
     // No data state
     if (!usersMetrics) {
@@ -29,51 +25,21 @@ export function CoinTransactionTable({ usersMetrics }: CoinTransactionTableProps
             <div className="bg-white p-1 pt-6 rounded-lg shadow-sm">
                 <div className="flex mx-6 md:mr-20 justify-between items-center mb-6">
                     <h2 className=" text-md sm:text-xl font-medium">Uwaci Coins</h2>
-
                     <div className='flex justify-end md:justify-between gap-4'>
                         {
-                            isMobile ? (
-                                <>
-                                    <Search className='w-8 h-8' />
-                                    <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
-                                        <SelectTrigger className="" >
-                                            <ListFilter className='w-4 h-4' />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                <SelectItem value="daily">Daily</SelectItem>
-                                                <SelectItem value="weekly">Weekly</SelectItem>
-                                                <SelectItem value="monthly">Monthly</SelectItem>
-                                                <SelectItem value="yearly">YearKy</SelectItem>
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="relative w-[150px]">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                                        <Input
-                                            type="search"
-                                            placeholder="Search..."
-                                            className="pl-10 min-h-[45px]"
-                                        />
-                                    </div>
-                                    <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
-                                        <SelectTrigger className="w-[150px] min-h-[45px]" >
-                                            <SelectValue placeholder="Filter" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                <SelectItem value="daily">Daily</SelectItem>
-                                                <SelectItem value="weekly">Weekly</SelectItem>
-                                                <SelectItem value="monthly">Monthly</SelectItem>
-                                                <SelectItem value="yearly">YearKy</SelectItem>
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                </>
-                            )
+                            isMobile ? (<Search className='w-8 h-8' />) : (
+                                <div className="relative w-[250px]">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-6 w-6" />
+                                    <Input
+                                        type="search"
+                                        placeholder="Search by username"
+                                        className="pl-10 min-h-[45px]"
+                                        value={keyword}
+                                        onChange={(e) => {
+                                            handleKeywordChange(e.target.value)
+                                        }}
+                                    />
+                                </div>)
                         }
 
                     </div>

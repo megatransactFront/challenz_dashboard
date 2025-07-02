@@ -16,3 +16,22 @@ export const isToday = (inputDate: Date): boolean => {
         inputDate.getDate() === today.getDate()
     );
 }
+
+export const downloadCSV = (data: Record<string, any>[], headers: string[], filename: string) => {
+    const rows = data.map(t => Object.values(t));
+
+    const csvContent =
+        [headers, ...rows]
+            .map(row => row.map(value => `"${value}"`).join(','))
+            .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `${filename}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};

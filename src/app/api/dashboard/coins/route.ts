@@ -12,9 +12,11 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '10');
+        const rawKeyword = searchParams.get('keyword')
+        const keyword = rawKeyword === 'undefined' || !rawKeyword ? '' : rawKeyword;
 
-        const totalUsers = await countTotalUsers()
-        const usersData = await fetchUsersAndCoinData(page, limit);
+        const totalUsers = await countTotalUsers(keyword)
+        const usersData = await fetchUsersAndCoinData(page, limit, keyword);
 
         const { totalEarned: totalCoinsEarned, totalSpent: totalCoinsSpent } = await fetchCoinSystemSummaryData();
 
