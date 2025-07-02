@@ -1,7 +1,6 @@
 'use client'
-import { CoinMetrics } from '@/app/types'
-import { Coins } from 'lucide-react'
-import React from 'react'
+import { CoinMetrics } from '@/app/types';
+import { Coins } from 'lucide-react';
 
 const CoinsMetrics = ({ metrics }: { metrics: CoinMetrics }) => {
     if (!metrics) return (
@@ -11,8 +10,7 @@ const CoinsMetrics = ({ metrics }: { metrics: CoinMetrics }) => {
     );
 
     return (
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div className="bg-white p-6 rounded-lg shadow-sm">
                 <div className="flex items-center mb-4">
                     <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center mr-4">
@@ -41,16 +39,6 @@ const CoinsMetrics = ({ metrics }: { metrics: CoinMetrics }) => {
                     <span>{metrics?.coinsSpent?.label}</span>
                 </div>
                 <div className="text-3xl font-bold text-red-500">-{metrics?.coinsSpent?.formatted}</div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center mr-4">
-                        <Coins className="h-6 w-6 text-white" />
-                    </div>
-                    <span>{metrics?.totalDifference?.label}</span>
-                </div>
-                <div className="text-3xl font-bold text-green-500">{metrics?.totalDifference?.formatted}</div>
             </div>
         </div>
     )
