@@ -126,17 +126,19 @@ export const SubscriptionManager = () => {
             className="w-full md:w-1/3"
           />
           <select
-            className="border px-2 py-1 rounded text-sm w-full md:w-1/3"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+          className="border px-2 py-1 rounded text-sm w-full md:w-1/3"
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
           >
             <option value="">By Status</option>
-            <option value="active">Active</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="expired">Expired</option>
-            <option value="pending">Pending</option>
-            <option value="refunded">Refunded</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="CANCELED">CANCELED</option>
+            <option value="PAST_DUE">PAST_DUE</option>
+            <option value="PENDING_FIRST_PAYMENT">PENDING_FIRST_PAYMENT</option>
+            <option value="REFUNDED">REFUNDED</option>
+            <option value="CANCEL_AT_PERIOD_END">CANCEL_AT_PERIOD_END</option>
           </select>
+
           <Input
             type="date"
             value={startDateFilter}
@@ -223,17 +225,18 @@ export const SubscriptionManager = () => {
                           </TableCell>
                           <TableCell>
                             <select
-                              className="border px-2 py-1 rounded text-sm"
-                              value={editForm.status}
-                              onChange={(e) =>
-                                setEditForm((f) => ({ ...f, status: e.target.value }))
+                            className="border px-2 py-1 rounded text-sm"
+                            value={editForm.status}
+                            onChange={(e) =>
+                              setEditForm((f) => ({ ...f, status: e.target.value }))
                               }
                             >
-                              <option value="active">Active</option>
-                              <option value="cancelled">Cancelled</option>
-                              <option value="expired">Expired</option>
-                              <option value="pending">Pending</option>
-                              <option value="refunded">Refunded</option>
+                              <option value="ACTIVE">ACTIVE</option>
+                              <option value="CANCELED">CANCELED</option>
+                              <option value="PAST_DUE">PAST_DUE</option>
+                              <option value="PENDING_FIRST_PAYMENT">PENDING_FIRST_PAYMENT</option>
+                              <option value="REFUNDED">REFUNDED</option>
+                              <option value="CANCEL_AT_PERIOD_END">CANCEL_AT_PERIOD_END</option>
                             </select>
                           </TableCell>
                           <TableCell>
@@ -268,11 +271,14 @@ export const SubscriptionManager = () => {
                           <TableCell>${Number(sub.amount_paid).toFixed(2)}</TableCell>
                           <TableCell>
                             <span className={`px-2 py-1 text-xs rounded-full font-medium
-                              ${sub.status === 'active' ? 'bg-green-100 text-green-700'
-                                : sub.status === 'cancelled' ? 'bg-red-100 text-red-700'
-                                : sub.status === 'refunded' ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-gray-100 text-gray-800'}`}>
-                              {sub.status}
+                            ${sub.status === 'ACTIVE' ? 'bg-green-100 text-green-700'
+                              : sub.status === 'CANCELED' ? 'bg-red-100 text-red-700'
+                              : sub.status === 'PAST_DUE' ? 'bg-orange-100 text-orange-700'
+                              : sub.status === 'PENDING_FIRST_PAYMENT' ? 'bg-yellow-100 text-yellow-800'
+                              : sub.status === 'REFUNDED' ? 'bg-purple-100 text-purple-700'
+                              : sub.status === 'CANCEL_AT_PERIOD_END' ? 'bg-blue-100 text-blue-700'
+                              : 'bg-gray-100 text-gray-800'}`}>
+                                {sub.status.replaceAll('_', ' ')}
                             </span>
                           </TableCell>
                           <TableCell>{sub.start_date}</TableCell>

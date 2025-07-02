@@ -15,12 +15,12 @@ export const SubscriptionSummaryCards = () => {
     total: number;
     active: number;
     cancelled: number;
-    expired: number;
+    past_due: number;
   }>({
     total: 0,
     active: 0,
     cancelled: 0,
-    expired: 0,
+    past_due: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -39,9 +39,9 @@ export const SubscriptionSummaryCards = () => {
 
       setSummary({
         total: allSubs.length,
-        active: allSubs.filter((s) => s.status === 'active').length,
-        cancelled: allSubs.filter((s) => s.status === 'cancelled').length,
-        expired: allSubs.filter((s) => s.status === 'expired').length,
+        active: allSubs.filter((s) => s.status === 'ACTIVE').length,
+        cancelled: allSubs.filter((s) => s.status === 'CANCELED').length,
+        past_due: allSubs.filter((s) => s.status === 'PAST_DUE').length,
       });
 
       setLoading(false);
@@ -64,8 +64,8 @@ export const SubscriptionSummaryCards = () => {
       color: 'text-green-600',
     },
     {
-      label: 'Expired Subscriptions',
-      value: summary.expired,
+      label: 'Past Due Subscriptions',
+      value: summary.past_due,
       icon: AlarmClock,
       color: 'text-yellow-600',
     },

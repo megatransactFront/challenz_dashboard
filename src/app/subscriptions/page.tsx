@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { FilterDropdown } from '../orders/components/FilterDropdown';
+import { FilterDropdown } from './components/FilterDropdown';
 import { SubscriptionSummaryCards } from './components/SubscriptionSummaryCards';
 import { SubscriptionManager } from './components/SubscriptionManager';
 import { SubscriptionTable } from './components/SubscriptionTable';
@@ -55,11 +55,12 @@ export default function SubscriptionsPage() {
         value={status}
         onChange={setStatus}
         options={[
-          'active',
-          'cancelled',
-          'expired',
-          'pending',
-          'refunded'
+          'ACTIVE',
+          'CANCELED',
+          'PAST_DUE',
+          'PENDING_FIRST_PAYMENT',
+          'REFUNDED',
+          'CANCEL_AT_PERIOD_END',
         ]}
         widthClass="w-full"
       />
@@ -111,12 +112,9 @@ export default function SubscriptionsPage() {
       startDate={startDate}
       endDate={endDate}
     />
-
-
-
-        </Card>
-      )}
-    </div>
+    </Card>
+  )}
+  </div>
   );
 }
 

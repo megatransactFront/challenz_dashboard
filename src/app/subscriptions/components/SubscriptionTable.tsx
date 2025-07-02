@@ -119,16 +119,25 @@ export const SubscriptionTable = ({
                   <TableCell>{sub.end_date}</TableCell>
                   <TableCell>
                     <span
-                      className={`px-2 py-1 text-xs rounded ${
-                        sub.status === 'active'
-                          ? 'bg-green-100 text-green-700'
-                          : sub.status === 'cancelled'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-gray-100 text-gray-800'
+                    className={`px-2 py-1 text-xs rounded-full font-medium ${
+                      sub.status === 'ACTIVE'
+                      ? 'bg-green-100 text-green-700'
+                      : sub.status === 'CANCELED'
+                      ? 'bg-red-100 text-red-700'
+                      : sub.status === 'PAST_DUE'
+                      ? 'bg-orange-100 text-orange-700'
+                      : sub.status === 'PENDING_FIRST_PAYMENT'
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : sub.status === 'REFUNDED'
+                      ? 'bg-pink-100 text-pink-700'
+                      : sub.status === 'CANCEL_AT_PERIOD_END'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-gray-100 text-gray-800'
                       }`}
-                    >
-                      {sub.status}
-                    </span>
+                      >
+                        {sub.status}
+                      </span>
+
                   </TableCell>
                 </TableRow>
               ))}

@@ -77,7 +77,7 @@ export async function POST(request: Request) {
         amount_paid,
         start_date,
         end_date,
-        status
+        status: status?.toUpperCase()
       }
     ]);
 
@@ -117,7 +117,7 @@ export async function PATCH(request: Request) {
       ...(amount_paid !== undefined && { amount_paid }),
       ...(start_date !== undefined && { start_date }),
       ...(end_date !== undefined && { end_date }),
-      ...(status !== undefined && { status }),
+      ...(status !== undefined && { status: status.toUpperCase() }),
     };
 
     const { data, error } = await supabase
