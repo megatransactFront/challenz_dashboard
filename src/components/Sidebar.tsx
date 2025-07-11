@@ -104,6 +104,18 @@ const mainMenuItems: MenuItemType[] = [
     icon: Building2,
     path: "/business-users",
   },
+  {
+    title: "PC",
+    prevIcon: ChevronRight,
+    icon: Building2,
+    path: "/Parental-Control",
+  },
+  {
+    title: "Partner Sales",
+    prevIcon: ChevronRight,
+    icon: Building2,
+    path: "/Partner_sales",
+  },
 ];
 
 const otherMenuItems: MenuItemType[] = [
