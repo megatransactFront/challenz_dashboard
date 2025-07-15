@@ -15,19 +15,25 @@ import {
 import { Loader2 } from 'lucide-react';
 
 type Subscription = {
-  id: number;
-  user_id: string;
-  plan_id: string;
-  uwc_redeemed: number;
-  amount_paid: number;
+  subscriptionid: string;
+  userid: string;
+  planid: string;
+  status: string;
   start_date: string;
   end_date: string;
-  status: string;
+  auto_renew: boolean;
+  payment_method: string;
+  created_at: string;
+  users: { username: string };
+  plans: {
+    name: string;
+    services?: { name: string };
+  };
 };
 
 export const SubscriptionManager = () => {
   const [subs, setSubs] = useState<Subscription[]>([]);
-  const [editId, setEditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -37,12 +43,9 @@ export const SubscriptionManager = () => {
   const itemsPerPage = 10;
 
   const [editForm, setEditForm] = useState({
-    plan_id: '',
-    uwc_redeemed: '',
-    amount_paid: '',
+    status: '',
     start_date: '',
     end_date: '',
-    status: '',
   });
 
   const fetchSubscriptions = async () => {
@@ -50,7 +53,11 @@ export const SubscriptionManager = () => {
     const res = await fetch('/api/subscriptions');
     const json = await res.json();
     const all = Array.isArray(json) ? json : json.subscriptions || [];
-    setSubs(all.sort((a: Subscription, b: Subscription) => b.id - a.id));
+    setSubs(
+      all.sort((a: Subscription, b: Subscription) =>
+        b.subscriptionid.localeCompare(a.subscriptionid)
+      )
+    );
     setLoading(false);
   };
 
@@ -58,25 +65,22 @@ export const SubscriptionManager = () => {
     fetchSubscriptions();
   }, []);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     const confirm = window.confirm('Are you sure you want to delete this subscription?');
     if (!confirm) return;
     await fetch(`/api/subscriptions?id=${id}`, { method: 'DELETE' });
     fetchSubscriptions();
   };
 
-  const handleUpdate = async (id: number) => {
+  const handleUpdate = async (subscriptionid: string) => {
     const res = await fetch('/api/subscriptions', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        id,
-        plan_id: editForm.plan_id,
-        uwc_redeemed: Number(editForm.uwc_redeemed),
-        amount_paid: Number(editForm.amount_paid),
+        subscriptionid,
+        status: editForm.status,
         start_date: editForm.start_date,
         end_date: editForm.end_date,
-        status: editForm.status,
       }),
     });
 
@@ -92,12 +96,15 @@ export const SubscriptionManager = () => {
   const filteredSubs = useMemo(() => {
     return subs.filter((sub) => {
       const matchSearch =
-        sub.user_id.toLowerCase().includes(search.toLowerCase()) ||
-        sub.plan_id.toLowerCase().includes(search.toLowerCase());
+        (sub.users?.username?.toLowerCase() ?? '').includes(search.toLowerCase()) ||
+        sub.subscriptionid.toLowerCase().includes(search.toLowerCase());
+
       const matchStatus = filterStatus ? sub.status === filterStatus : true;
+
       const matchStart = startDateFilter
         ? new Date(sub.start_date) >= new Date(startDateFilter)
         : true;
+
       const matchEnd = endDateFilter
         ? new Date(sub.end_date) <= new Date(endDateFilter)
         : true;
@@ -107,7 +114,10 @@ export const SubscriptionManager = () => {
   }, [subs, search, filterStatus, startDateFilter, endDateFilter]);
 
   const totalPages = Math.ceil(filteredSubs.length / itemsPerPage);
-  const paginatedSubs = filteredSubs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedSubs = filteredSubs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="space-y-6 mt-6">
@@ -120,15 +130,15 @@ export const SubscriptionManager = () => {
 
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
           <Input
-            placeholder="Search by User ID or Plan ID"
+            placeholder="Search by User ID or Sub ID"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full md:w-1/3"
           />
           <select
-          className="border px-2 py-1 rounded text-sm w-full md:w-1/3"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
+            className="border px-2 py-1 rounded text-sm w-full md:w-1/3"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
           >
             <option value="">By Status</option>
             <option value="ACTIVE">ACTIVE</option>
@@ -138,7 +148,6 @@ export const SubscriptionManager = () => {
             <option value="REFUNDED">REFUNDED</option>
             <option value="CANCEL_AT_PERIOD_END">CANCEL_AT_PERIOD_END</option>
           </select>
-
           <Input
             type="date"
             value={startDateFilter}
@@ -176,11 +185,11 @@ export const SubscriptionManager = () => {
               <Table className="min-w-full text-sm">
                 <TableHeader>
                   <TableRow className="bg-slate-100 text-slate-700">
-                    <TableHead>ID</TableHead>
+                    <TableHead>Sub ID</TableHead>
                     <TableHead>User</TableHead>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>UWC</TableHead>
-                    <TableHead>Amount Paid</TableHead>
+                    <TableHead>Plan Name</TableHead>
+                    <TableHead>Service Name</TableHead>
+                    <TableHead>Payment Method</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Start Date</TableHead>
                     <TableHead>End Date</TableHead>
@@ -188,47 +197,22 @@ export const SubscriptionManager = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedSubs.map((sub: any) => (
-                    <TableRow key={sub.id}>
-                      <TableCell>{sub.id}</TableCell>
-                      <TableCell>{sub.user_id}</TableCell>
-                      {editId === sub.id ? (
+                  {paginatedSubs.map((sub) => (
+                    <TableRow key={sub.subscriptionid}>
+                      <TableCell>{sub.subscriptionid}</TableCell>
+                      <TableCell>{sub.users?.username || sub.userid}</TableCell>
+                      <TableCell>{sub.plans?.name || 'N/A'}</TableCell>
+                      <TableCell>{sub.plans?.services?.name || 'N/A'}</TableCell>
+                      <TableCell>{sub.payment_method || 'N/A'}</TableCell>
+
+                      {editId === sub.subscriptionid ? (
                         <>
                           <TableCell>
-                            <Input
-                              type="text"
-                              value={editForm.plan_id}
-                              onChange={(e) =>
-                                setEditForm((f) => ({ ...f, plan_id: e.target.value }))
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              className="w-20"
-                              value={editForm.uwc_redeemed}
-                              onChange={(e) =>
-                                setEditForm((f) => ({ ...f, uwc_redeemed: e.target.value }))
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              className="w-24"
-                              value={editForm.amount_paid}
-                              onChange={(e) =>
-                                setEditForm((f) => ({ ...f, amount_paid: e.target.value }))
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
                             <select
-                            className="border px-2 py-1 rounded text-sm"
-                            value={editForm.status}
-                            onChange={(e) =>
-                              setEditForm((f) => ({ ...f, status: e.target.value }))
+                              className="border px-2 py-1 rounded text-sm"
+                              value={editForm.status}
+                              onChange={(e) =>
+                                setEditForm((f) => ({ ...f, status: e.target.value }))
                               }
                             >
                               <option value="ACTIVE">ACTIVE</option>
@@ -259,26 +243,36 @@ export const SubscriptionManager = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2 justify-center">
-                              <Button size="sm" onClick={() => handleUpdate(sub.id)}>Save</Button>
-                              <Button size="sm" variant="outline" onClick={() => setEditId(null)}>Cancel</Button>
+                              <Button size="sm" onClick={() => handleUpdate(sub.subscriptionid)}>
+                                Save
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setEditId(null)}>
+                                Cancel
+                              </Button>
                             </div>
                           </TableCell>
                         </>
                       ) : (
                         <>
-                          <TableCell>{sub.plan_id}</TableCell>
-                          <TableCell>{sub.uwc_redeemed}</TableCell>
-                          <TableCell>${Number(sub.amount_paid).toFixed(2)}</TableCell>
                           <TableCell>
-                            <span className={`px-2 py-1 text-xs rounded-full font-medium
-                            ${sub.status === 'ACTIVE' ? 'bg-green-100 text-green-700'
-                              : sub.status === 'CANCELED' ? 'bg-red-100 text-red-700'
-                              : sub.status === 'PAST_DUE' ? 'bg-orange-100 text-orange-700'
-                              : sub.status === 'PENDING_FIRST_PAYMENT' ? 'bg-yellow-100 text-yellow-800'
-                              : sub.status === 'REFUNDED' ? 'bg-purple-100 text-purple-700'
-                              : sub.status === 'CANCEL_AT_PERIOD_END' ? 'bg-blue-100 text-blue-700'
-                              : 'bg-gray-100 text-gray-800'}`}>
-                                {sub.status.replaceAll('_', ' ')}
+                            <span
+                              className={`px-2 py-1 text-xs rounded-full font-medium ${
+                                sub.status === 'ACTIVE'
+                                  ? 'bg-green-100 text-green-700'
+                                  : sub.status === 'CANCELED'
+                                  ? 'bg-red-100 text-red-700'
+                                  : sub.status === 'PAST_DUE'
+                                  ? 'bg-orange-100 text-orange-700'
+                                  : sub.status === 'PENDING_FIRST_PAYMENT'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : sub.status === 'REFUNDED'
+                                  ? 'bg-purple-100 text-purple-700'
+                                  : sub.status === 'CANCEL_AT_PERIOD_END'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}
+                            >
+                              {sub.status.replaceAll('_', ' ')}
                             </span>
                           </TableCell>
                           <TableCell>{sub.start_date}</TableCell>
@@ -289,14 +283,11 @@ export const SubscriptionManager = () => {
                                 size="sm"
                                 variant="secondary"
                                 onClick={() => {
-                                  setEditId(sub.id);
+                                  setEditId(sub.subscriptionid);
                                   setEditForm({
-                                    plan_id: sub.plan_id,
-                                    uwc_redeemed: sub.uwc_redeemed,
-                                    amount_paid: sub.amount_paid,
+                                    status: sub.status,
                                     start_date: sub.start_date,
                                     end_date: sub.end_date,
-                                    status: sub.status,
                                   });
                                 }}
                               >
@@ -304,8 +295,8 @@ export const SubscriptionManager = () => {
                               </Button>
                               <Button
                                 size="sm"
-                                variant="destructive"
-                                onClick={() => handleDelete(sub.id)}
+                                variant="secondary"
+                                onClick={() => handleDelete(sub.subscriptionid)}
                               >
                                 Delete
                               </Button>

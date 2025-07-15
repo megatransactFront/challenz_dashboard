@@ -21,23 +21,40 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
-    if (userId) {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', userId);
-
-      if (error) throw error;
-      return NextResponse.json(data);
-    }
-
-    const { data, error } = await supabase
+    const query = supabase
       .from('subscriptions')
-      .select('*')
+      .select(`
+        subscriptionid,
+        userid,
+        planid,
+        status,
+        start_date,
+        end_date,
+        auto_renew,
+        payment_method,
+        created_at,
+        users (
+          id,
+          username
+        ),
+        plans (
+          planid,
+          name,
+          services (
+            serviceid,
+            name
+          )
+        )
+      `)
       .order('start_date', { ascending: false });
 
-    if (error) throw error;
+    if (userId) {
+      query.eq('userid', userId);
+    }
 
+    const { data, error } = await query;
+
+    if (error) throw error;
     return NextResponse.json(data);
   } catch (error) {
     console.error('GET Error:', error);
@@ -60,24 +77,30 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const {
-      user_id,
-      plan_id,
-      uwc_redeemed,
-      amount_paid,
+      subscriptionid,
+      userid,
+      planid,
+      status,
       start_date,
       end_date,
-      status
+      auto_renew,
+      payment_method
     } = body;
+
+    if (!subscriptionid || !userid || !planid) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
 
     const { data, error } = await supabase.from('subscriptions').insert([
       {
-        user_id,
-        plan_id,
-        uwc_redeemed,
-        amount_paid,
+        subscriptionid,
+        userid,
+        planid,
+        status: status?.toUpperCase(),
         start_date,
         end_date,
-        status: status?.toUpperCase()
+        auto_renew: auto_renew ?? true,
+        payment_method
       }
     ]);
 
@@ -105,25 +128,33 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    const { id, plan_id, uwc_redeemed, amount_paid, start_date, end_date, status } = body;
+    const {
+      subscriptionid,
+      planid,
+      status,
+      start_date,
+      end_date,
+      auto_renew,
+      payment_method
+    } = body;
 
-    if (!id) {
+    if (!subscriptionid) {
       return NextResponse.json({ error: 'Missing subscription ID' }, { status: 400 });
     }
 
     const updateData: any = {
-      ...(plan_id !== undefined && { plan_id }),
-      ...(uwc_redeemed !== undefined && { uwc_redeemed }),
-      ...(amount_paid !== undefined && { amount_paid }),
+      ...(planid !== undefined && { planid }),
+      ...(status !== undefined && { status: status.toUpperCase() }),
       ...(start_date !== undefined && { start_date }),
       ...(end_date !== undefined && { end_date }),
-      ...(status !== undefined && { status: status.toUpperCase() }),
+      ...(auto_renew !== undefined && { auto_renew }),
+      ...(payment_method !== undefined && { payment_method }),
     };
 
     const { data, error } = await supabase
       .from('subscriptions')
       .update(updateData)
-      .eq('id', id);
+      .eq('subscriptionid', subscriptionid);
 
     if (error) throw error;
 
@@ -146,11 +177,16 @@ export async function PATCH(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const subscriptionid = searchParams.get('id');
 
-    if (!id) return NextResponse.json({ error: 'Missing subscription ID' }, { status: 400 });
+    if (!subscriptionid) {
+      return NextResponse.json({ error: 'Missing subscription ID' }, { status: 400 });
+    }
 
-    const { data, error } = await supabase.from('subscriptions').delete().eq('id', id);
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .delete()
+      .eq('subscriptionid', subscriptionid);
 
     if (error) throw error;
     return NextResponse.json({ message: 'Subscription deleted', data });
