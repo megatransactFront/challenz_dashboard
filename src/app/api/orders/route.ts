@@ -9,65 +9,61 @@ const supabase = createClient(
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type');
-
-  const search = searchParams.get('search') || '';
   const status = searchParams.get('status');
   const startDate = searchParams.get('startDate');
   const endDate = searchParams.get('endDate');
+  const username = searchParams.get('username');
 
   try {
     if (type === 'summary') {
-      const { data: allOrders, error } = await supabase
-        .from('orders')
+      const { data: allOrderItems, error } = await supabase
+        .from('orderitems')
         .select('status');
 
       if (error) {
         console.error('Summary fetch error:', error);
-        return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch order items' }, { status: 500 });
       }
 
-      const totalOrders = allOrders.length;
+      const totalOrders = allOrderItems.length;
       let completedOrders = 0;
       let pendingOrders = 0;
       let cancelledOrders = 0;
 
-      for (const order of allOrders) {
-        const status = order.status?.toUpperCase();
-        if (['DELIVERED', 'NO'].includes(status)) {
-          completedOrders++;
-        } else if (['PENDING_PAYMENT', 'AWAITING_FULFILLMENT', 'FULFILLED', 'SHIPPED'].includes(status)) {
-          pendingOrders++;
-        } else if (['CANCELED', 'PAYMENT_FAILED', 'REFUNDED'].includes(status)) {
-          cancelledOrders++;
-        }
+      for (const item of allOrderItems) {
+        const s = item.status?.toUpperCase();
+        if (['DELIVERED', 'NO_REFUND'].includes(s)) completedOrders++;
+        else if (['PENDING_PAYMENT', 'AWAITING_FULFILLMENT', 'FULFILLED', 'SHIPPED'].includes(s)) pendingOrders++;
+        else if (['CANCELED', 'PAYMENT_FAILED', 'REFUNDED'].includes(s)) cancelledOrders++;
       }
 
-      return NextResponse.json({
-        totalOrders,
-        completedOrders,
-        pendingOrders,
-        cancelledOrders,
-      });
+      return NextResponse.json({ totalOrders, completedOrders, pendingOrders, cancelledOrders });
     }
 
-    let query = supabase.from('orders').select('*');
+    let query = supabase
+      .from('orders')
+      .select(`
+        orderid,
+        total_price,
+        total_uwc_used,
+        created_at,
+        users:userid (
+          username
+        ),
+        orderitems (
+          id,
+          status,
+          quantity,
+          products:productid (
+            name
+          )
+        )
+      `);
 
-    if (search) query = query.ilike('customer', `%${search}%`);
-    if (status && status !== 'Any') query = query.eq('status', status);
-    if (startDate) query = query.gte('date', startDate);
-    if (endDate) query = query.lte('date', endDate);
-    if (searchParams.has('id')) {
-        const id = searchParams.get('id');
-        const { data, error } = await supabase.from('orders').select('*').eq('id', id);
-        
-        if (error) {
-            console.error('Fetch by ID failed:', error.message);
-            return NextResponse.json({ error: error.message }, { status: 500 });
-        }
-        return NextResponse.json(data);
-    }
+    if (startDate) query = query.gte('created_at', startDate);
+    if (endDate) query = query.lte('created_at', endDate);
 
-    query = query.order('date', { ascending: false });
+    query = query.order('created_at', { ascending: false });
 
     const { data, error } = await query;
 
@@ -76,44 +72,22 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
 
-    return NextResponse.json(data);
+    const filteredData = data.filter(order => {
+      const matchUser = !username || (
+        Array.isArray(order.users) &&
+        order.users[0]?.username?.toLowerCase().replace(/\s+/g, '') === username.toLowerCase()
+      );
+
+      const matchStatus = !status || status === 'Any' || order.orderitems?.some(
+        (item) => item.status?.toUpperCase() === status.toUpperCase()
+      );
+
+      return matchUser && matchStatus;
+    });
+
+    return NextResponse.json(filteredData);
   } catch (error) {
     console.error('Supabase error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
-
-
-export async function PUT(req: Request) {
-  try {
-    const { id, updates } = await req.json();
-
-    if (!id || typeof id !== 'string') {
-      return NextResponse.json({ error: 'Invalid or missing order ID' }, { status: 400 });
-    }
-
-    const allowedKeys = ['status', 'shipmentProvider', 'trackingNumber', 'expectedDelivery', 'returnDecision', 'returnReason'];
-    const sanitizedUpdates: Record<string, any> = {};
-
-    for (const key of allowedKeys) {
-      if (updates.hasOwnProperty(key)) {
-        sanitizedUpdates[key] = updates[key];
-      }
-    }
-
-    const { error } = await supabase
-      .from('orders')
-      .update(sanitizedUpdates)
-      .eq('id', id);
-
-    if (error) {
-      console.error('Supabase update error:', error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ message: 'Order updated successfully' });
-  } catch (err) {
-    console.error('PUT error:', err);
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 }
