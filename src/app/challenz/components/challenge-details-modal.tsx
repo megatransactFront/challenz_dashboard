@@ -1,5 +1,6 @@
 // app/challenz/components/video-detail-modal.tsx
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import Image from "next/image";
 import type { Challenge } from '@/app/types/challenz';
 
 interface VideoDetailModalProps {
@@ -33,9 +34,11 @@ export function VideoDetailModal({ isOpen, onClose, challenge }: VideoDetailModa
           {challenge.creator && (
             <div className="flex items-center gap-3">
               {challenge.creator.profile_picture_url && (
-                <img 
+                <Image 
                   src={challenge.creator.profile_picture_url}
                   alt={challenge.creator.username}
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-full object-cover"
                 />
               )}

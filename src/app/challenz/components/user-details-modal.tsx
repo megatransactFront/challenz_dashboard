@@ -2,6 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from 'react';
 import { Loader2, Video } from 'lucide-react';
+import Image from "next/image";
 
 import { formatDate } from "@/helpers/formaters";
 
@@ -93,9 +94,11 @@ export function UserDetailModal({ isOpen, onClose, userId }: UserDetailModalProp
             <div className="mt-6 space-y-6">
               <div className="flex items-start gap-4">
                 {user.profile_picture_url ? (
-                  <img
+                  <Image
                     src={user.profile_picture_url}
                     alt={`${user.first_name} ${user.last_name}`}
+                    width={96}
+                    height={96}
                     className="w-24 h-24 rounded-full object-cover"
                   />
                 ) : (

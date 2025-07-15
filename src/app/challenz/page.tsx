@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import Image from "next/image";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -84,9 +85,11 @@ export default function ChallenzPage() {
                               onClick={() => setSelectedUserId(challenge.creator!.id)}
                             >
                               {challenge.creator.profile_picture_url && (
-                                <img
+                                <Image
                                   src={challenge.creator.profile_picture_url}
                                   alt={challenge.creator.username}
+                                  width={32}
+                                  height={32}
                                   className="w-8 h-8 rounded-full object-cover"
                                 />
                               )}

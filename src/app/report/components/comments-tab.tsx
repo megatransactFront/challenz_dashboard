@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
     Table,
     TableBody,
@@ -31,7 +31,7 @@ export default function CommentsTab() {
         setVideo(video);
 
     };
-    const fetchComments = async () => {
+    const fetchComments = useCallback(async () => {
         try {
             setIsLoading(true);
             const params = new URLSearchParams({
@@ -54,10 +54,10 @@ export default function CommentsTab() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [page, itemsPerPage]);
     useEffect(() => {
         fetchComments();
-    }, [page]);
+    }, [page, fetchComments]);
 
     if (error) {
         return (

@@ -1,26 +1,76 @@
 // app/dashboard/coins/page.tsx
 "use client";
-import { CoinTransactionTable } from '@/app/dashboard/components/coins/CoinTransactionTable';
-import { CoinData } from '@/app/types/coins';
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { debounce } from 'lodash';
+import React, { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CoinData } from '@/app/types/coins';
+import { CoinTransactionTable } from '@/app/dashboard/components/coins/CoinTransactionTable';
 import CoinsMetrics from '../components/coins/CoinsMetrics';
-import Pagination from '../components/shared/Pagination';
+import { useRouter } from "next/navigation";
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 export default function CoinsPage() {
     // State management
     const [coinData, setCoinData] = useState<CoinData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [page, setPage] = useState(1);
-    const [keyword, setKeyword] = useState('');
+    const router = useRouter();
 
-    const limit = 10;
-    const fetchCoinData = async (keyword?: string) => {
-        setIsLoading(true);
+    useEffect(() => {
+        const channel = supabase
+            .channel("realtime coins")
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "coin_transactions",
+                },
+                async () => {
+                    await reFetchCoinData();
+                }
+            ).on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "users",
+                },
+                async () => {
+                    await reFetchCoinData();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [router]);
+    const fetchCoinData = async () => {
         try {
-            const response = await fetch(`/api/dashboard/coins?page=${page}&limit=${limit}&keyword=${keyword}`);
+            setIsLoading(true);
+            const response = await fetch('/api/dashboard/coins');
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch coin data');
+            }
+
+            const data = await response.json();
+            setCoinData(data);
+            setError(null);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
+            console.error('Error fetching coin data:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    const reFetchCoinData = async () => {
+        try {
+            const response = await fetch('/api/dashboard/coins');
 
             if (!response.ok) {
                 throw new Error('Failed to fetch coin data');
@@ -33,33 +83,19 @@ export default function CoinsPage() {
             setError(err instanceof Error ? err.message : 'An error occurred');
             console.error('Error fetching coin data:', err);
         }
-        setIsLoading(false)
     };
-
     useEffect(() => {
         fetchCoinData();
-    }, [page]);
+    }, []);
 
-    useEffect(() => {
-        if (keyword.trim()) {
-            debouncedSearch(keyword);
-        }
-        else {
-            fetchCoinData();
-        }
-
-        return () => {
-            debouncedSearch.cancel();
-        };
-    }, [keyword]);
-
-    const debouncedSearch = useMemo(
-        () =>
-            debounce((keyword: string) => {
-                fetchCoinData(keyword);
-            }, 500),
-        []
-    );
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
+            </div>
+        );
+    }
 
     // Error state
     if (error) {
@@ -79,20 +115,7 @@ export default function CoinsPage() {
         <div className="space-y-6">
             {/* Stat Cards */}
             <CoinsMetrics metrics={coinData?.metrics} />
-            {
-                isLoading ? (<div className="flex items-center justify-center min-h-[400px]">
-                    <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
-                </div>) :
-                    <CoinTransactionTable
-                        usersMetrics={coinData?.userMetrics}
-                        handleKeywordChange={setKeyword}
-                        keyword={keyword} />
-            }
-
-            <Pagination
-                page={page}
-                totalPages={coinData.totalUsersPage}
-                onPageChange={setPage} />
-        </div >
+            <CoinTransactionTable usersMetrics={coinData?.userMetrics} />
+        </div>
     );
 }
