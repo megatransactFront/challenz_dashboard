@@ -55,19 +55,23 @@ export function OrderTable({
   endDate: string | null;
 }) {
   const [flattened, setFlattened] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState(1);
   const rowsPerPage = 10;
 
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (search) params.append('search', search);
-    if (status && status !== 'Any') params.append('status', status);
-    if (startDate) params.append('startDate', startDate);
-    if (endDate) params.append('endDate', endDate);
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        if (status && status !== 'Any') params.append('status', status);
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
 
-    fetch(`/api/orders?${params.toString()}`)
-      .then((res) => res.json())
-      .then((orders: Order[]) => {
+        const res = await fetch(`/api/orders?${params.toString()}`);
+        const orders: Order[] = await res.json();
+
         const searchTerm = search.trim().toLowerCase().replace(/\s+/g, '');
 
         const filteredOrders = searchTerm
@@ -99,8 +103,14 @@ export function OrderTable({
             : expanded;
 
         setFlattened(statusFiltered);
-      })
-      .catch((err) => console.error('Failed to fetch orders:', err));
+      } catch (err) {
+        console.error('Failed to fetch orders:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
   }, [search, status, startDate, endDate]);
 
   const totalPages = Math.max(1, Math.ceil(flattened.length / rowsPerPage));
@@ -111,71 +121,79 @@ export function OrderTable({
 
   return (
     <div className="w-full bg-white rounded-xl shadow p-6 overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-gray-100 text-gray-700 uppercase text-sm">
-            <TableHead>Order ID</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Product</TableHead>
-            <TableHead>Quantity</TableHead>
-            <TableHead>Total Price</TableHead>
-            <TableHead>Total UWC</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Manage</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginated.map((item) => (
-            <TableRow key={item.id} className="hover:bg-gray-50 transition duration-200">
-              <TableCell>{item.orderid}</TableCell>
-              <TableCell>{item.username}</TableCell>
-              <TableCell>
-                <div className="relative group cursor-pointer">
-                  <span>{item.product}</span>
-                  <div className="absolute z-10 hidden group-hover:block bg-black text-white text-xs px-3 py-2 rounded shadow-lg w-max mt-2">
-                    Item ID: {item.itemId}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>{item.quantity}</TableCell>
-              <TableCell>{item.total_price}</TableCell>
-              <TableCell>{item.total_uwc_used}</TableCell>
-              <TableCell>
-                <span className={getStatusColor(item.status)}>{item.status}</span>
-              </TableCell>
-              <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
-              <TableCell>
-                <Link href={`/orders/shipment/${item.id}`}>
-                  <button className="inline-flex items-center gap-2 px-3 py-1 text-sm font-semibold text-white bg-[#1a4d5f] border border-black rounded-full shadow hover:bg-secondary hover:shadow-md transition duration-200">
-                    Manage
-                  </button>
-                </Link>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      {loading ? (
+        <div className="text-center py-10 text-gray-500 font-medium text-sm">
+          Loading orders...
+        </div>
+      ) : (
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-gray-100 text-gray-700 uppercase text-sm">
+                <TableHead>Order ID</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Product</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Total Price</TableHead>
+                <TableHead>Total UWC</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Manage</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginated.map((item) => (
+                <TableRow key={item.id} className="hover:bg-gray-50 transition duration-200">
+                  <TableCell>{item.orderid}</TableCell>
+                  <TableCell>{item.username}</TableCell>
+                  <TableCell>
+                    <div className="relative group cursor-pointer">
+                      <span>{item.product}</span>
+                      <div className="absolute z-10 hidden group-hover:block bg-black text-white text-xs px-3 py-2 rounded shadow-lg w-max mt-2">
+                        Item ID: {item.itemId}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{item.quantity}</TableCell>
+                  <TableCell>{item.total_price}</TableCell>
+                  <TableCell>{item.total_uwc_used}</TableCell>
+                  <TableCell>
+                    <span className={getStatusColor(item.status)}>{item.status}</span>
+                  </TableCell>
+                  <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <Link href={`/orders/shipment/${item.id}`}>
+                      <button className="inline-flex items-center gap-2 px-3 py-1 text-sm font-semibold text-white bg-[#1a4d5f] border border-black rounded-full shadow hover:bg-secondary hover:shadow-md transition duration-200">
+                        Manage
+                      </button>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-      <div className="flex items-center justify-between mt-4 px-2 text-sm">
-        <button
-          onClick={goToPrev}
-          disabled={page === 1}
-          className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
-        >
-          ← Prev
-        </button>
-        <span className="text-gray-600">
-          Page {page} of {totalPages}
-        </span>
-        <button
-          onClick={goToNext}
-          disabled={page === totalPages}
-          className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
-        >
-          Next →
-        </button>
-      </div>
+          <div className="flex items-center justify-between mt-4 px-2 text-sm">
+            <button
+              onClick={goToPrev}
+              disabled={page === 1}
+              className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+            >
+              ← Prev
+            </button>
+            <span className="text-gray-600">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={goToNext}
+              disabled={page === totalPages}
+              className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+            >
+              Next →
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
