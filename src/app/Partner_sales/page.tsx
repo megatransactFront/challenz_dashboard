@@ -11,16 +11,6 @@ import {
   Legend,
 } from "recharts"
 
-interface PartnerSalesEntry {
-  merchant_id: string
-  region: string
-  list_price: number
-  tax_collected: number
-  net_before_commission: number
-  sale_timestamp: string
-  status: string
-}
-
 interface SummaryEntry {
   merchant_id: string
   region: string
@@ -40,7 +30,6 @@ const COLORS = {
 }
 
 export default function PartnerSalesPage() {
-  const [allEntries, setAllEntries] = useState<PartnerSalesEntry[]>([])
   const [filteredSummary, setFilteredSummary] = useState<SummaryEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -70,7 +59,6 @@ export default function PartnerSalesPage() {
 
       if (!res.ok) throw new Error(result.error || 'Failed to fetch partner sales')
 
-      setAllEntries(result.all_entries || [])
       const filtered = (result.date_summary || []).filter((entry: SummaryEntry) => entry.region === selectedRegion)
       setFilteredSummary(filtered)
     } catch (err) {

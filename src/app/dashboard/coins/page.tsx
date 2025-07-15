@@ -48,7 +48,7 @@ export default function CoinsPage() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [supabase, router]);
+    }, [router]);
     const fetchCoinData = async () => {
         try {
             setIsLoading(true);
