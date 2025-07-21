@@ -1,4 +1,4 @@
-// app/api/users/route.ts
+// app/api/products/route.ts
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
           stock,
           uwc_discount_enabled,
           image_url,
-          manufacturer_id,
+          is_active,
           created_at
         `)
         .eq('id', productId)
@@ -60,6 +60,7 @@ export async function GET(request: Request) {
         stock,
         uwc_discount_enabled,
         image_url,
+        is_active,
         created_at
       `)
       .range(from, to)
@@ -83,5 +84,50 @@ export async function GET(request: Request) {
       { error: 'Internal Server Error' },
       { status: 500 }
     );
+  }
+}
+
+
+
+
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+
+    // Basic server-side validation
+    if (!body.name || !body.description || !body.type) {
+      return NextResponse.json(
+        { error: "Name, description, and type are required." },
+        { status: 400 }
+      );
+    }
+
+    // You can expand this validation as needed
+    const insertData = {
+      name: body.name,
+      description: body.description,
+      type: body.type,
+      price_usd: parseFloat(body.price_usd) || 0,
+      stock: parseInt(body.stock) || 0,
+      image_url: body.image_url || null,
+      uwc_discount_enabled: !!body.uwc_discount_enabled,
+      is_active: body.is_active !== undefined ? !!body.is_active : true,
+    };
+
+    const { data, error } = await supabase
+      .from('products')
+      .insert([insertData])
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json(data, { status: 201 });
+  } catch (err) {
+    console.error("POST error:", err);
+    return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
   }
 }

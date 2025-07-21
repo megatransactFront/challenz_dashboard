@@ -1,7 +1,16 @@
+// src/app/api/products/[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/client' // adjust this to your actual Supabase client path
+import { createClient } from '@supabase/supabase-js';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+export async function GET(
+  req: NextRequest, 
+  { params }: { params: { id: string } }
+) {
   const { id } = params
 
   const { data, error } = await supabase
@@ -16,4 +25,40 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 
   return NextResponse.json(data)
+}
+
+export async function PUT(
+  req: NextRequest, 
+  { params }: { params: { id: string } }
+) {
+  const { id } = params
+  const body = await req.json()
+
+  const { data, error } = await supabase
+    .from('products')
+    .update(body)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating product:', error)
+    return NextResponse.json({ error: 'Failed to update product' }, { status: 400 })
+  }
+
+  return NextResponse.json(data)
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const { error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ success: true });
 }

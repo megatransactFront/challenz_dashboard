@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Loader2, BadgePercent } from 'lucide-react'
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { SimpleSwitch } from "@/components/ui/simple-switch"
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
@@ -44,7 +45,7 @@ export default function ProductsPage() {
 
   const [formData, setFormData] = useState<Partial<Product>>({})
   const [saving, setSaving] = useState(false)
-  const [editMode, setEditMode] = useState(false) // <-- track edit mode
+  const [editMode, setEditMode] = useState(false)
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -52,7 +53,6 @@ export default function ProductsPage() {
       const params = new URLSearchParams({ page: page.toString(), limit: '10' })
       const response = await fetch(`/api/products?${params}`)
       if (!response.ok) throw new Error('Failed to fetch products')
-
       const data = await response.json()
       setProducts(data.products || [])
       setPagination(data.pagination)
@@ -71,7 +71,7 @@ export default function ProductsPage() {
       const data = await response.json()
       setSelectedProduct(data)
       setFormData(data)
-      setEditMode(false) // reset to view mode on open
+      setEditMode(false)
     } catch (err) {
       console.error('Error fetching product details:', err)
     } finally {
@@ -79,32 +79,49 @@ export default function ProductsPage() {
     }
   }
 
-  const handleSave = async () => {
-    if (!selectedProduct) return
-    if (!['edible', 'non-edible'].includes(formData.type || '')) {
-      alert("Type must be either 'edible' or 'non-edible'")
-      return
-    }
-
-    setSaving(true)
-    try {
-      const response = await fetch(`/api/products/${selectedProduct.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-      if (!response.ok) throw new Error('Failed to update product')
-
-      await fetchProducts()
-      setSelectedProduct(null)
-      setEditMode(false)
-    } catch (err) {
-      console.error(err)
-      alert('Update failed.')
-    } finally {
-      setSaving(false)
-    }
+const handleSave = async () => {
+  if (!selectedProduct) return
+  if (!['edible', 'non-edible'].includes(formData.type || '')) {
+    alert("Type must be either 'edible' or 'non-edible'")
+    return
   }
+  setSaving(true)
+  try {
+    const response = await fetch(`/api/products/${selectedProduct.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+    if (!response.ok) throw new Error('Failed to update product')
+    await fetchProducts()
+    setSelectedProduct(null)
+    setEditMode(false)
+  } catch (err) {
+    console.error(err)
+    alert('Update failed.')
+  } finally {
+    setSaving(false)
+  }
+}
+
+const handleDelete = async () => {
+  if (!selectedProduct) return;
+  if (!confirm("Are you sure you want to delete this product?")) return;
+
+  try {
+    const response = await fetch(`/api/products/${selectedProduct.id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error('Failed to delete product');
+    await fetchProducts();
+    setSelectedProduct(null);
+  } catch (err) {
+    alert("Delete failed.");
+    console.error(err);
+  }
+};
+
+
 
   useEffect(() => {
     fetchProducts()
@@ -114,7 +131,7 @@ export default function ProductsPage() {
     <div className="p-6">
       <Card>
         <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-6">Product List</h2>
+          <h2 className="text-xl font-semibold mb-6 text-center">Product List</h2>
 
           {loading ? (
             <div className="flex justify-center items-center min-h-[400px]">
@@ -134,6 +151,7 @@ export default function ProductsPage() {
                       <th className="text-left py-4 px-4 font-semibold">STOCK</th>
                       <th className="text-left py-4 px-4 font-semibold">DISCOUNT</th>
                       <th className="text-left py-4 px-4 font-semibold">ACTIONS</th>
+                      <th className="text-left py-4 px-4 font-semibold">STATUS</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -164,7 +182,7 @@ export default function ProductsPage() {
                               <BadgePercent className="w-4 h-4" /> Enabled
                             </span>
                           ) : (
-                            <span className="text-gray-400 text-sm">-</span>
+                            <span className="text-gray-400 text-sm"> Disabled</span>
                           )}
                         </td>
                         <td className="py-4 px-4">
@@ -172,9 +190,33 @@ export default function ProductsPage() {
                             variant="outline"
                             onClick={() => fetchProductDetails(product.id)}
                           >
-                            View / Edit
+                            Edit / Delete
                           </Button>
                         </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3">
+                            <span className={product.is_active ? "text-green-600 font-medium" : "text-gray-400 font-medium"}>
+                              {product.is_active ? "Active" : "Inactive"}
+                            </span>
+                          <SimpleSwitch
+                          checked={!!product.is_active}
+                          onChange={async (checked) => {
+                            setProducts(curr => curr.map(p =>
+                              p.id === product.id ? { ...p, _updating: true } : p
+                            ));
+                            await fetch(`/api/products/${product.id}`, {
+                              method: "PUT",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ is_active: checked }),
+                            });
+                            await fetchProducts();
+                          }}
+                          />
+                         {product._updating && (
+                          <div className="absolute inset-0 bg-black/30 z-10 rounded-lg animate-pulse" />
+                          )}
+                          </div>
+                          </td>
                       </tr>
                     ))}
                   </tbody>
@@ -216,9 +258,12 @@ export default function ProductsPage() {
             </div>
           ) : selectedProduct ? (
             <>
-              <DialogHeader>
-                <DialogTitle>{editMode ? 'Edit Product' : 'Product Details'}</DialogTitle>
-              </DialogHeader>
+            <DialogHeader>
+              <DialogTitle className="text-center">
+                {editMode ? 'Edit Product' : 'Product Details'}
+              </DialogTitle>
+            </DialogHeader>
+
 
               <div className="space-y-4 mt-4">
                 {/* Name */}
@@ -320,29 +365,48 @@ export default function ProductsPage() {
                     </p>
                   )}
                 </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <div className="flex items-center gap-4">
+                    <span className={formData.is_active ? "text-green-600 font-medium" : "text-gray-400 font-medium"}>
+                      {formData.is_active ? "Active" : "Inactive"}
+                    </span>
+                    {editMode ? (
+                      <SimpleSwitch
+                      checked={!!formData.is_active}
+                      onChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                      />
+                      ) : null}
+                  </div>
+                </div>
+
               </div>
 
               <div className="mt-6 flex justify-end gap-4">
                 {editMode ? (
                   <>
-                    <Button variant="outline" onClick={() => {
-                      setEditMode(false)
-                      setFormData(selectedProduct) // Reset changes on cancel
+                  <Button variant="outline" onClick={() => {
+                    setEditMode(false);
+                    setFormData(selectedProduct); 
                     }}>
                       Cancel
-                    </Button>
-                    <Button onClick={handleSave} disabled={saving}>
-                      {saving ? 'Saving...' : 'Save'}
-                    </Button>
+                  </Button>
+                  <Button onClick={handleSave} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save'}
+                  </Button>
                   </>
-                ) : (
+                  ) : (
                   <Button onClick={() => setEditMode(true)}>
                     Edit
                   </Button>
                 )}
-                <Button variant="ghost" onClick={() => setSelectedProduct(null)}>
-                  Close
-                </Button>
+                 <Button variant="destructive" onClick={handleDelete}>
+                    Delete
+                 </Button>
+                 <Button variant="ghost" onClick={() => setSelectedProduct(null)}>
+                    Close
+                 </Button>
               </div>
             </>
           ) : null}
