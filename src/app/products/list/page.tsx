@@ -20,6 +20,7 @@ type Product = {
   is_active: boolean | null
   manufacturer_id: string
   created_at: string
+  region: string  
 }
 
 type PaginationData = {
@@ -29,7 +30,7 @@ type PaginationData = {
   itemsPerPage: number
 }
 
-export default function ProductsPage() {
+export default function Page({ region }: { region: string }) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -51,6 +52,7 @@ export default function ProductsPage() {
     try {
       setLoading(true)
       const params = new URLSearchParams({ page: page.toString(), limit: '10' })
+      if (region) params.append('region', region) 
       const response = await fetch(`/api/products?${params}`)
       if (!response.ok) throw new Error('Failed to fetch products')
       const data = await response.json()
@@ -61,7 +63,7 @@ export default function ProductsPage() {
     } finally {
       setLoading(false)
     }
-  }, [page])
+  }, [page, region])
 
   const fetchProductDetails = async (productId: string) => {
     try {
@@ -128,9 +130,9 @@ const handleDelete = async () => {
   }, [fetchProducts])
 
   return (
-    <div className="p-6">
+    <div className="p-2">
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-2">
           <h2 className="text-xl font-semibold mb-6 text-center">Product List</h2>
 
           {loading ? (
@@ -265,7 +267,7 @@ const handleDelete = async () => {
             </DialogHeader>
 
 
-              <div className="space-y-4 mt-4">
+              <div className="space-y-1 mt-2">
                 {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Name</label>
@@ -341,6 +343,32 @@ const handleDelete = async () => {
                     <p className="p-2 bg-gray-100 rounded">{formData.stock ?? 'N/A'}</p>
                   )}
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Country</label>
+                  {editMode ? (
+                    <select
+                    value={formData.region || ''}
+                    onChange={e => setFormData({ ...formData, region: e.target.value })}
+                    className="border p-2 rounded w-full"
+                    required
+                    >
+                      <option value="">Select Country</option>
+                      <option value="NZ">New Zealand</option>
+                      <option value="AU">Australia</option>
+                      <option value="US">United States</option>
+                    </select>
+                  ) : (
+                  <p className="p-2 bg-gray-100 rounded">
+                    {
+                    formData.region === 'NZ' ? 'New Zealand'
+                    : formData.region === 'AU' ? 'Australia'
+                    : formData.region === 'US' ? 'United States'
+                    : '-'
+                    }
+                  </p>
+              )}
+              </div>
 
                 {/* Discount */}
                 <div>

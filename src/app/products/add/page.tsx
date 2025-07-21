@@ -19,6 +19,7 @@ export default function AddProductPage() {
     image_url: '',
     uwc_discount_enabled: false,
     is_active: true,
+    region: '',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -135,6 +136,19 @@ setLoading(false);
               required
               className="w-full"
             />
+            <select
+            name="region"
+            value={formData.region}
+            onChange={handleChange}
+            required
+            className="w-full p-2 border rounded"
+            >
+              <option value="">Select Country</option>
+              <option value="NZ">NZ</option>
+              <option value="AU">AU</option>
+              <option value="US">US</option>
+            </select>
+
             <Input
               name="image_url"
               value={formData.image_url}

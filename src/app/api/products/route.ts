@@ -13,6 +13,7 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const productId = searchParams.get('productId');
+    const region = searchParams.get('region');
 
     // If productId is provided, return single product details
     if (productId) {
@@ -27,6 +28,7 @@ export async function GET(request: Request) {
           stock,
           uwc_discount_enabled,
           image_url,
+          region,
           is_active,
           created_at
         `)
@@ -41,15 +43,15 @@ export async function GET(request: Request) {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
-    // Get total count
-    const { count, error: countError } = await supabase
+    let countQuery = supabase
       .from('products')
       .select('*', { count: 'exact', head: true });
+    if (region) countQuery = countQuery.eq('region', region);
 
+    const { count, error: countError } = await countQuery;
     if (countError) throw countError;
 
-    // Get paginated products
-    const { data: products, error: dataError } = await supabase
+    let productsQuery = supabase
       .from('products')
       .select(`
         id,
@@ -60,12 +62,16 @@ export async function GET(request: Request) {
         stock,
         uwc_discount_enabled,
         image_url,
+        region,
         is_active,
         created_at
       `)
-      .range(from, to)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
+    if (region) productsQuery = productsQuery.eq('region', region);
+
+    const { data: products, error: dataError } = await productsQuery;
     if (dataError) throw dataError;
 
     return NextResponse.json({
@@ -91,11 +97,11 @@ export async function GET(request: Request) {
 
 
 
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Basic server-side validation
     if (!body.name || !body.description || !body.type) {
       return NextResponse.json(
         { error: "Name, description, and type are required." },
@@ -103,7 +109,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // You can expand this validation as needed
     const insertData = {
       name: body.name,
       description: body.description,
@@ -113,6 +118,7 @@ export async function POST(request: Request) {
       image_url: body.image_url || null,
       uwc_discount_enabled: !!body.uwc_discount_enabled,
       is_active: body.is_active !== undefined ? !!body.is_active : true,
+      region: body.region || null,
     };
 
     const { data, error } = await supabase
