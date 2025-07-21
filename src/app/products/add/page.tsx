@@ -84,11 +84,11 @@ setLoading(false);
     <div className="max-w-2xl mx-auto p-6">
       <Card>
         <CardContent className="p-8">
-          <h1 className="text-2xl font-semibold mb-6 text-center">
+          <h1 className="text-2xl font-semibold mb-1 text-center">
             Add a New Product
             </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <Input
               name="name"
               value={formData.name}
