@@ -31,7 +31,6 @@ export default function AddProductPage() {
     }
 
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
