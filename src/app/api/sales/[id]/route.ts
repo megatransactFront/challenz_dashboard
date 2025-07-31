@@ -23,3 +23,25 @@ export async function GET(
 
   return NextResponse.json({ data });
 }
+
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const body = await req.json();
+
+  const { data, error } = await supabase
+    .from("flashsales")
+    .update({
+      name: body.name,
+      description: body.description,
+      start_time: body.start_time,
+      end_time: body.end_time,
+    })
+    .eq("flashsalesid", params.id);
+
+  if (error)
+    return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ message: "Flash Sale updated", data });
+}
