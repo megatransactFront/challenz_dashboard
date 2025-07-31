@@ -4,6 +4,7 @@ import { useState } from "react"
 
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import FlashSalesListPage from "./list/page"
 
 const regionOptions = [
   { value: "", label: "All Countries" },
@@ -40,6 +41,9 @@ export default function FlashSalesPage() {
           Add Flash Sale
         </Button>
       </div>
+      <>
+      <FlashSalesListPage/>
+      </>
 
     </div>
   )
