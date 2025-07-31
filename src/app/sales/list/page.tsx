@@ -3,15 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-
-type FlashSale = {
-  flashsalesid: string;
-  name: string;
-  description: string;
-  start_time: string;
-  end_time: string;
-  created_at: string;
-};
+import { FlashSale } from '@/app/types/flashsale';
 
 export default function FlashSalesPage() {
   const [flashSales, setFlashSales] = useState<FlashSale[]>([]);
@@ -36,12 +28,12 @@ export default function FlashSalesPage() {
     fetchFlashSales();
   }, []);
 
-if (loading)
-  return (
-    <div className="flex items-center justify-center h-screen">
-      <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-    </div>
-  );  if (error) return <p className="p-4 text-red-600">Error: {error}</p>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    ); if (error) return <p className="p-4 text-red-600">Error: {error}</p>;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
