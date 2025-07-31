@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 type FlashSale = {
   flashsalesid: string;
@@ -35,8 +36,12 @@ export default function FlashSalesPage() {
     fetchFlashSales();
   }, []);
 
-  if (loading) return <p className="p-4">Loading flash sales...</p>;
-  if (error) return <p className="p-4 text-red-600">Error: {error}</p>;
+if (loading)
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+    </div>
+  );  if (error) return <p className="p-4 text-red-600">Error: {error}</p>;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
