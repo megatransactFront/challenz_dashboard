@@ -44,6 +44,22 @@ export async function POST(request: Request) {
   }
 }
 
+export async function GET() {
+  try {
+    const { data, error } = await supabase
+      .from('flashsales')
+      .select('*')
+      .order('start_time', { ascending: true });
+
+    if (error) throw error;
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    console.error('GET Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
 
 
 
