@@ -55,6 +55,23 @@ export default function FlashSalesPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!selectedFlashSale) return;
+    if (!confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      const response = await fetch(`/api/sales/${selectedFlashSale.flashsalesid}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error('Failed to delete product');
+      fetchFlashSales();
+      setSelectedFlashSale(null)
+    } catch (err) {
+      alert("Delete failed.");
+      console.error(err);
+    }
+  };
+
   if (loading)
     return (
       <div className="flex items-center justify-center h-screen">
@@ -129,6 +146,9 @@ export default function FlashSalesPage() {
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="outline" onClick={() => setSelectedFlashSale(null)}>
               Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
             </Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? 'Saving...' : 'Save'}

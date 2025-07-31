@@ -109,6 +109,23 @@ export default function FlashSaleDetailPage() {
     setEditModalOpen(true);
   };
 
+  const handleDelete = async () => {
+    if (!editingProduct) return;
+    if (!confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      const response = await fetch(`/api/sales/${id}/products/${editingProduct.flashsaleproductsid}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error('Failed to delete product');
+      fetchFlashSaleProducts();
+      setEditModalOpen(false);
+    } catch (err) {
+      alert("Delete failed.");
+      console.error(err);
+    }
+  };
+
   const saveEdit = async () => {
     if (!editingProduct) return;
     try {
@@ -283,6 +300,9 @@ export default function FlashSaleDetailPage() {
             <div className="flex justify-end gap-4 mt-4">
               <Button variant="ghost" onClick={() => setEditModalOpen(false)}>
                 Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                Delete
               </Button>
               <Button onClick={saveEdit}>Save</Button>
             </div>
