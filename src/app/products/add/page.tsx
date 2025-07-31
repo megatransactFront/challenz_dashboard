@@ -88,7 +88,10 @@ setLoading(false);
             Add a New Product
             </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
+              Product Name <span className="text-red-500">*</span>
+            </label>
             <Input
               name="name"
               value={formData.name}
@@ -97,6 +100,9 @@ setLoading(false);
               required
               className="w-full"
             />
+            <label className="block text-sm font-medium text-gray-700">
+              Description <span className="text-red-500">*</span>
+              </label>
             <Textarea
               name="description"
               value={formData.description}
@@ -105,6 +111,9 @@ setLoading(false);
               required
               className="w-full"
             />
+            <label className="block text-sm font-medium text-gray-700">
+              Type <span className="text-red-500">*</span>
+            </label>
             <select
               name="type"
               value={formData.type}
@@ -116,6 +125,9 @@ setLoading(false);
               <option value="edible">Edible</option>
               <option value="non-edible">Non-edible</option>
             </select>
+            <label className="block text-sm font-medium text-gray-700">
+              Price (USD) <span className="text-red-500">*</span>
+            </label>
             <Input
               name="price_usd"
               value={formData.price_usd}
@@ -127,6 +139,9 @@ setLoading(false);
               required
               className="w-full"
             />
+            <label className="block text-sm font-medium text-gray-700">
+              Stock <span className="text-red-500">*</span>
+            </label>
             <Input
               name="stock"
               value={formData.stock}
@@ -137,6 +152,9 @@ setLoading(false);
               required
               className="w-full"
             />
+            <label className="block text-sm font-medium text-gray-700">
+              Country <span className="text-red-500">*</span>
+            </label>
             <select
             name="region"
             value={formData.region}
@@ -149,7 +167,6 @@ setLoading(false);
               <option value="AU">AU</option>
               <option value="US">US</option>
             </select>
-
             <Input
               name="image_url"
               value={formData.image_url}
@@ -177,13 +194,21 @@ setLoading(false);
               <div className="text-green-600 text-sm text-center">{success}</div>
             )}
             
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-4">
               <Button
-              type="submit"
-              disabled={loading}
+                type="button"
+                variant="outline"
+                onClick={() => router.push('/products')}
+                disabled={loading}
               >
-                {loading ? 'Saving...' : 'Submit'}
-                </Button>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+                >
+                  {loading ? 'Saving...' : 'Submit'}
+              </Button>
             </div>
 
           </form>
