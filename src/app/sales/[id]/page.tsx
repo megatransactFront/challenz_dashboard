@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Car, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/app/types/products";
 import { FlashSale, FlashSaleProduct } from "@/app/types/flashsale";
@@ -136,8 +136,7 @@ export default function FlashSaleDetailPage() {
     <div className="max-w-2xl mx-auto p-6">
       {flashSale && (
         <div className="border p-4 rounded bg-gray-50 mb-6">
-          <h1 className="text-3xl font-bold">Flash Sale Details:</h1>
-          <h2 className="text-2xl">{flashSale.name}</h2>
+          <h2 className="text-3xl font-bold">{flashSale.name}</h2>
           <p className="text-gray-700">{flashSale.description}</p>
           <p className="text-sm text-gray-500 mt-2">
             {new Date(flashSale.start_time).toLocaleString()} →{" "}

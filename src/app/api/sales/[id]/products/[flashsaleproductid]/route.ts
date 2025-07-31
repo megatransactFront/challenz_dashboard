@@ -31,3 +31,18 @@ export async function PUT(
 
   return NextResponse.json({ message: "Updated", data });
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { flashsaleproductid: string } }
+) {
+  const id = params.flashsaleproductid;
+  const { error } = await supabase
+    .from("flashsaleproducts")
+    .delete()
+    .eq("flashsaleproductsid", id);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json({ message: "Flash Sale Product Deleted" });
+}
