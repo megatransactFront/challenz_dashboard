@@ -14,7 +14,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const regionOptions = [
   { value: "All", label: "All Countries" },
@@ -34,21 +39,23 @@ export default function FlashSaleDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [flashSale, setFlashSale] = useState<FlashSale | null>(null);
 
-
   const [formData, setFormData] = useState({
     product_id: "",
     bonus_promo_discount: "",
     region: "",
   });
 
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<FlashSaleProduct | null>(null);
+  const [editDiscount, setEditDiscount] = useState("");
+  const [editRegion, setEditRegion] = useState("");
+
   const fetchFlashSaleDetails = async () => {
     const res = await fetch(`/api/sales/${id}`);
     const json = await res.json();
-    console.log("Im here: ", json)
     setFlashSale(json.data);
   };
 
-  // Fetch all products for current flash sale
   const fetchFlashSaleProducts = async () => {
     const res = await fetch(`/api/sales/${id}/products?limit=100000`);
     const json = await res.json();
@@ -56,25 +63,21 @@ export default function FlashSaleDetailPage() {
     setLoading(false);
   };
 
-  //Fetch all products for the drop-down menu
   const fetchAllProducts = async () => {
-    const res = await fetch("/api/products");
+    const res = await fetch("/api/products?limit=100000");
     const json = await res.json();
     setAllProducts(json.products);
   };
 
-  // Fetch it when the id changes
   useEffect(() => {
     fetchFlashSaleProducts();
     fetchAllProducts();
-    fetchFlashSaleDetails()
+    fetchFlashSaleDetails();
   }, [id]);
 
-  // Add a product
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-
       const res = await fetch(`/api/sales/${id}/products`, {
         method: "POST",
         body: JSON.stringify({
@@ -91,13 +94,41 @@ export default function FlashSaleDetailPage() {
         setSelectedProductLabel("Select a product");
         fetchFlashSaleProducts();
         setSuccess("Product added to flash sale!");
-      }
-      else {
+      } else {
         setError("Failed to add flash sale event.");
       }
-    }
-    catch (err: any) {
+    } catch (err: any) {
       setError("Failed to add product to flash sale: " + err.message);
+    }
+  };
+
+  const handleEdit = (product: FlashSaleProduct) => {
+    setEditingProduct(product);
+    setEditDiscount(product.bonus_promo_discount.toString());
+    setEditRegion(product.region);
+    setEditModalOpen(true);
+  };
+
+  const saveEdit = async () => {
+    if (!editingProduct) return;
+    try {
+      const res = await fetch(`/api/sales/${id}/products/${editingProduct.flashsaleproductsid}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          bonus_promo_discount: Number(editDiscount),
+          region: editRegion,
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) throw new Error("Failed to update");
+
+      setEditModalOpen(false);
+      setEditingProduct(null);
+      fetchFlashSaleProducts();
+      setSuccess("Product updated!");
+    } catch (err) {
+      setError("Failed to update product.");
     }
   };
 
@@ -114,111 +145,151 @@ export default function FlashSaleDetailPage() {
           </p>
         </div>
       )}
+
       <Card>
         <CardContent>
-          <div>
-            <form onSubmit={handleAddProduct} className="space-y-3">
-              <h2 className="text-lg font-semibold">
-                Add Product to Flash Sale
-              </h2>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between">
-                    {selectedProductLabel}
-                  </Button>
-                </DropdownMenuTrigger>
+          <form onSubmit={handleAddProduct} className="space-y-3">
+            <h2 className="text-lg font-semibold">Add Product to Flash Sale</h2>
 
-                <DropdownMenuContent className="w-full max-h-60 overflow-y-auto">
-                  {allProducts.map((product) => (
-                    <DropdownMenuItem
-                      key={product.id}
-                      onSelect={() => {
-                        setFormData({
-                          ...formData,
-                          product_id: product.id,
-                        });
-                        setSelectedProductLabel(`${product.name}`);
-                      }}
-                    >
-                      {product.name} ({product.id})
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Input
-                type="number"
-                name="bonus_promo_discount"
-                placeholder="Discount (i.e 20 = 20% additional discount)"
-                value={formData.bonus_promo_discount}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    bonus_promo_discount: e.target.value,
-                  })
-                }
-                className="border p-2 w-full"
-                required
-              />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between">
-                    {selectedRegion}
-                  </Button>
-                </DropdownMenuTrigger>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-between">
+                  {selectedProductLabel}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full max-h-60 overflow-y-auto">
+                {allProducts.map((product) => (
+                  <DropdownMenuItem
+                    key={product.id}
+                    onSelect={() => {
+                      setFormData({ ...formData, product_id: product.id });
+                      setSelectedProductLabel(`${product.name} (${product.id})`);
+                    }}
+                  >
+                    {product.name} ({product.id})
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-                <DropdownMenuContent className="w-full max-h-60 overflow-y-auto">
-                  {regionOptions.map((region) => (
-                    <DropdownMenuItem
-                      key={region.label}
-                      onSelect={() => {
-                        setFormData({
-                          ...formData,
-                          region: region.value,
-                        });
-                        setSelectedRegion(`${region.label}`);
-                      }}
-                    >
-                      {region.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <Input
+              type="number"
+              value={formData.bonus_promo_discount}
+              onChange={(e) =>
+                setFormData({ ...formData, bonus_promo_discount: e.target.value })
+              }
+              placeholder="Discount %"
+              required
+            />
 
-              <Button type="submit">Add Product</Button>
-            </form>
-          </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-between">
+                  {selectedRegion}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full max-h-60 overflow-y-auto">
+                {regionOptions.map((region) => (
+                  <DropdownMenuItem
+                    key={region.label}
+                    onSelect={() => {
+                      setFormData({ ...formData, region: region.value });
+                      setSelectedRegion(region.label);
+                    }}
+                  >
+                    {region.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button type="submit">Add Product</Button>
+          </form>
         </CardContent>
       </Card>
-      {error && (
-        <div className="text-red-500 text-sm text-center">{error}</div>
-      )}
-      {success && (
-        <div className="text-green-600 text-sm text-center">
-          {success}
+
+      {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+      {success && <div className="text-green-600 text-sm text-center">{success}</div>}
+
+      <h2 className="text-lg font-semibold mt-6">Linked Products</h2>
+      {loading ? (
+        <div className="flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
         </div>
+      ) : products.length === 0 ? (
+        <p>No products yet.</p>
+      ) : (
+        <ul className="space-y-2">
+          {products.map((item) => (
+            <Card>
+              <div>
+                <li
+                  key={item.flashsaleproductsid}
+                  className="border p-4 rounded cursor-pointer hover:bg-gray-200"
+                  onClick={() => handleEdit(item)}
+                >
+                  <div>
+                    <p><strong>{item.products?.name}</strong></p>
+                    <p>Region: {item.region}</p>
+                    <p>Discount: {item.bonus_promo_discount}%</p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      handleEdit(item);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                </li>
+              </div>
+            </Card>
+          ))}
+        </ul>
       )}
-      <div>
-        <h2 className="text-lg font-semibold mt-6">Linked Products</h2>
-        {loading ? (
-          <div className="flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+
+      {/* Edit Dialog */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Flash Sale Product</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              type="number"
+              placeholder="Discount %"
+              value={editDiscount}
+              onChange={(e) => setEditDiscount(e.target.value)}
+              required
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-between">
+                  {editRegion}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full max-h-60 overflow-y-auto">
+                {regionOptions.map((region) => (
+                  <DropdownMenuItem
+                    key={region.label}
+                    onSelect={() => {
+                      setEditRegion(region.value);
+                    }}
+                    className="cursor-pointer hover:bg-gray-100"
+                  >
+                    {region.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <div className="flex justify-end gap-4 mt-4">
+              <Button variant="ghost" onClick={() => setEditModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={saveEdit}>Save</Button>
+            </div>
           </div>
-        ) : products.length === 0 ? (
-          <p>No products yet.</p>
-        ) : (
-          <ul className="space-y-2">
-            {products.map((item) => (
-              <li key={item.flashsaleproductsid} className="border p-4 rounded">
-                <p>
-                  <strong>{item.products?.name}</strong>
-                </p>
-                <p>Region: {item.region}</p>
-                <p>Discount: {item.bonus_promo_discount}%</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
