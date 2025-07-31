@@ -106,15 +106,6 @@ setLoading(false);
               type="date"
               className="w-full"
             />
-            <label className="created_at">Created</label> 
-            <Input
-              name="created_at"
-              value={formData.created_at}
-              placeholder="Created"
-              onChange={handleChange}
-              type="date"
-              className="w-full"
-            />
             {error && (
               <div className="text-red-500 text-sm text-center">{error}</div>
             )}
