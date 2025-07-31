@@ -15,7 +15,6 @@ export default function AddProductPage() {
     description: "",
     start_time: "",
     end_time: "",
-    created_at: "",
   });
 
   const [loading, setLoading] = useState(false);
