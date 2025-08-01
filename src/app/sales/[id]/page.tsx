@@ -10,6 +10,7 @@ import { Product } from "@/app/types/products";
 import { FlashSale, FlashSaleProduct } from "@/app/types/flashsale";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Notification from "@/components/ui/notification";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -237,11 +238,22 @@ export default function FlashSaleDetailPage() {
           </form>
         </CardContent>
       </Card>
-
-      {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-      {success && (
-        <div className="text-green-600 text-sm text-center">{success}</div>
+      {error && (
+        <Notification
+          message={error}
+          type="error"
+          onClose={() => setError(null)}
+        />
       )}
+
+      {success && (
+        <Notification
+          message={success}
+          type="success"
+          onClose={() => setSuccess(null)}
+        />
+      )}
+
 
       <h2 className="text-lg font-semibold mt-6">Linked Products</h2>
       {loading ? (
