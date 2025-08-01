@@ -273,22 +273,25 @@ export default function FlashSaleDetailPage() {
       ) : (
         <ul className="space-y-2">
           {products.map((item) => (
-            <Card>
+            <Card key={item.flashsaleproductsid}>
               <li
-                key={item.flashsaleproductsid}
                 className="border p-4 rounded cursor-pointer hover:bg-gray-200"
                 onClick={() => handleEdit(item)}
               >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p>
-                      <strong>{item.products?.name}</strong>
-                    </p>
+                <div className="flex justify-between items-center gap-4">
+                  <img
+                    src={item.products?.image_url ?? undefined}
+                    alt={item.products?.name || "Product image"}
+                    className="h-20 w-20 object-cover rounded"
+                  />
+                  <div className="flex-1">
+                    <p><strong>{item.products?.name}</strong></p>
                     <p>Region: {item.region}</p>
                     <p>Discount: {item.bonus_promo_discount}%</p>
                   </div>
                   <Button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation(); // prevent li click
                       handleEdit(item);
                     }}
                   >
@@ -297,6 +300,7 @@ export default function FlashSaleDetailPage() {
                 </div>
               </li>
             </Card>
+
           ))}
         </ul>
       )}
