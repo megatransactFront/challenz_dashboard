@@ -50,11 +50,15 @@ export default function FlashSaleDetailPage() {
   );
   const [editDiscount, setEditDiscount] = useState("");
 
+
   const fetchFlashSaleDetails = async () => {
     const res = await fetch(`/api/sales/${id}`);
     const json = await res.json();
     setFlashSale(json.data);
   };
+
+  const fixDiscount = (value: number, min: number, max: number) =>
+    Math.max(min, Math.min(max, value));
 
   const fetchFlashSaleProducts = async () => {
     const res = await fetch(`/api/sales/${id}/products?limit=100000`);
@@ -121,6 +125,7 @@ export default function FlashSaleDetailPage() {
       );
       if (!response.ok) throw new Error("Failed to delete product");
       fetchFlashSaleProducts();
+      setSuccess("Deleted product!")
       setEditModalOpen(false);
     } catch (err) {
       alert("Delete failed.");
@@ -215,12 +220,14 @@ export default function FlashSaleDetailPage() {
             <Input
               type="number"
               value={formData.bonus_promo_discount}
-              onChange={(e) =>
+              onChange={(e) => {
+                const raw = e.target.value;
+                const value = fixDiscount(Number(raw), 0, 100);
                 setFormData({
                   ...formData,
-                  bonus_promo_discount: e.target.value,
-                })
-              }
+                  bonus_promo_discount: raw === "" ? "" : String(value),
+                });
+              }}
               placeholder="Discount %"
               min={0}
               max={100}
@@ -305,7 +312,11 @@ export default function FlashSaleDetailPage() {
               type="number"
               placeholder="Discount %"
               value={editDiscount}
-              onChange={(e) => setEditDiscount(e.target.value)}
+              onChange={(e) => {
+                const raw = e.target.value;
+                const value = fixDiscount(Number(raw), 0, 100);
+                setEditDiscount(raw === "" ? "" : String(value));
+              }}
               min={0}
               max={100}
               required

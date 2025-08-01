@@ -62,7 +62,7 @@ export default function FlashSalesPage() {
 
   const handleDelete = async () => {
     if (!selectedFlashSale) return;
-    if (!confirm("Are you sure you want to delete this product?")) return;
+    if (!confirm("Are you sure you want to delete this flash sale")) return;
 
     try {
       const response = await fetch(`/api/sales/${selectedFlashSale.flashsalesid}`, {
