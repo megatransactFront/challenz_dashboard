@@ -162,11 +162,12 @@ export default function FlashSaleDetailPage() {
     <div className="max-w-2xl mx-auto p-10">
       <Button
         variant="ghost"
-        size="icon"
+        size="sm"
         onClick={() => router.push("/sales")}
-        className="mb-6"
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
       >
-        <ArrowLeft className="h-8 w-8" />
+        <ArrowLeft className="h-4 w-4" />
+        Back
       </Button>
       {flashSale && (
         <div className="border p-4 rounded bg-gray-50 mb-6">
@@ -215,7 +216,7 @@ export default function FlashSaleDetailPage() {
               </DropdownMenuContent>
             </DropdownMenu>
             <label className="block text-sm font-medium text-gray-700">
-              Discount <span className="text-red-500">*</span>
+              Additional discount (%)<span className="text-red-500">*</span>
             </label>
             <Input
               type="number"
@@ -311,10 +312,13 @@ export default function FlashSaleDetailPage() {
           <DialogHeader>
             <DialogTitle>Edit Flash Sale Product</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Additional discount (%)<span className="text-red-500">*</span>
+            </label>
             <Input
               type="number"
-              placeholder="Discount %"
+              placeholder="Extra Discount %"
               value={editDiscount}
               onChange={(e) => {
                 const raw = e.target.value;
