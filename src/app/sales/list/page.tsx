@@ -8,14 +8,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import Notification from '@/components/ui/notification';
 
 export default function FlashSalesPage() {
   const [flashSales, setFlashSales] = useState<FlashSale[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null)
   const [selectedFlashSale, setSelectedFlashSale] = useState<FlashSale | null>(null);
   const [formData, setFormData] = useState<Partial<FlashSale>>({});
   const [saving, setSaving] = useState(false);
+
 
   const fetchFlashSales = async () => {
     try {
@@ -48,6 +51,7 @@ export default function FlashSalesPage() {
       if (!res.ok) throw new Error('Update failed');
       await fetchFlashSales();
       setSelectedFlashSale(null);
+      setSuccess("Successfully saved flash sale.")
     } catch (err) {
       alert('Failed to save flash sale');
       console.error(err);
@@ -66,9 +70,10 @@ export default function FlashSalesPage() {
       });
       if (!response.ok) throw new Error('Failed to delete product');
       fetchFlashSales();
+      setSuccess("Successfully deleted flash sale.")
       setSelectedFlashSale(null)
     } catch (err) {
-      alert("Delete failed.");
+      setError("Delete failed.")
       console.error(err);
     }
   };
@@ -116,7 +121,20 @@ export default function FlashSalesPage() {
           </Card>
         ))}
       </ul>
-
+      {error && (
+        <Notification
+          message={error}
+          type="error"
+          onClose={() => setError(null)}
+        />
+      )}
+      {success && (
+        <Notification
+          message={success}
+          type="success"
+          onClose={() => setSuccess(null)}
+        />
+      )}
       <Dialog open={!!selectedFlashSale} onOpenChange={(open) => !open && setSelectedFlashSale(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
