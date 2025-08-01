@@ -42,7 +42,6 @@ export default function FlashSaleDetailPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<FlashSaleProduct | null>(null);
   const [editDiscount, setEditDiscount] = useState("");
-  const [editRegion, setEditRegion] = useState("");
 
   const fetchFlashSaleDetails = async () => {
     const res = await fetch(`/api/sales/${id}`);
@@ -99,7 +98,6 @@ export default function FlashSaleDetailPage() {
   const handleEdit = (product: FlashSaleProduct) => {
     setEditingProduct(product);
     setEditDiscount(product.bonus_promo_discount.toString());
-    setEditRegion(product.region);
     setEditModalOpen(true);
   };
 
@@ -127,7 +125,6 @@ export default function FlashSaleDetailPage() {
         method: "PUT",
         body: JSON.stringify({
           bonus_promo_discount: Number(editDiscount),
-          region: editRegion,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -265,26 +262,6 @@ export default function FlashSaleDetailPage() {
               onChange={(e) => setEditDiscount(e.target.value)}
               required
             />
-            {/* <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
-                  {editRegion}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-full max-h-60 overflow-y-auto">
-                {regionOptions.map((region) => (
-                  <DropdownMenuItem
-                    key={region.label}
-                    onSelect={() => {
-                      setEditRegion(region.value);
-                    }}
-                    className="cursor-pointer hover:bg-gray-100"
-                  >
-                    {region.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu> */}
             <div className="flex justify-end gap-4 mt-4">
               <Button variant="ghost" onClick={() => setEditModalOpen(false)}>
                 Cancel

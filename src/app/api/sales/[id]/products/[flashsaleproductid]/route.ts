@@ -14,13 +14,12 @@ export async function PUT(
     params: { flashSaleId: string; flashsaleproductid: string };
   }
 ) {
-  const { bonus_promo_discount, region } = await req.json();
+  const { bonus_promo_discount } = await req.json();
 
   const { data, error } = await supabase
     .from("flashsaleproducts")
     .update({
       bonus_promo_discount,
-      region,
     })
     .eq("flashsaleproductsid", params.flashsaleproductid)
     .select();
