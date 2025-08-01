@@ -39,11 +39,24 @@ export default function AddProductPage() {
     }));
   };
 
+  const today = new Date().toISOString().split("T")[0];
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
     setLoading(true);
+
+    if (formData.start_time < today) {
+      setError("Start time cannot be before today.");
+      return;
+    }
+
+    if (formData.end_time <= formData.start_time) {
+      setError("End time must be after start time.");
+      return;
+    }
 
     try {
       formData.name.charAt(0).toUpperCase();
@@ -111,7 +124,9 @@ export default function AddProductPage() {
               placeholder="Start Time"
               onChange={handleChange}
               type="date"
+              min={today}
               required
+
               className="w-full"
             />
             <label className="block text-sm font-medium text-gray-700">
@@ -123,6 +138,7 @@ export default function AddProductPage() {
               placeholder="End Time"
               onChange={handleChange}
               type="date"
+              min={formData.start_time || today}
               className="w-full"
             />
             {error && (
