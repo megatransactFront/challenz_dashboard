@@ -79,7 +79,10 @@ export default function AddProductPage() {
             Add a Flash Sale
           </h1>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Name <span className="text-red-500">*</span>
+            </label>
             <Input
               name="name"
               value={formData.name}
@@ -88,6 +91,9 @@ export default function AddProductPage() {
               required
               className="w-full"
             />
+            <label className="block text-sm font-medium text-gray-700">
+              Description <span className="text-red-500">*</span>
+            </label>
             <Textarea
               name="description"
               value={formData.description}
@@ -96,7 +102,9 @@ export default function AddProductPage() {
               required
               className="w-full"
             />
-            <label className="start_time">Start Time</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Start Time <span className="text-red-500">*</span>
+            </label>
             <Input
               name="start_time"
               value={formData.start_time}
@@ -106,7 +114,9 @@ export default function AddProductPage() {
               required
               className="w-full"
             />
-            <label className="end_time">End Time</label>
+            <label className="block text-sm font-medium text-gray-700">
+              End Time <span className="text-red-500">*</span>
+            </label>
             <Input
               name="end_time"
               value={formData.end_time}

@@ -21,12 +21,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const regionOptions = [
-  { value: "All", label: "All Countries" },
-  { value: "NZ", label: "New Zealand" },
-  { value: "AU", label: "Australia" },
-  { value: "US", label: "United States" },
-];
 
 export default function FlashSaleDetailPage() {
   const { id } = useParams();
@@ -164,9 +158,11 @@ export default function FlashSaleDetailPage() {
 
       <Card>
         <CardContent>
-          <form onSubmit={handleAddProduct} className="space-y-3">
+          <form onSubmit={handleAddProduct} className="space-y-2">
             <h2 className="text-lg font-semibold">Add Product to Flash Sale</h2>
-
+            <label className="block text-sm font-medium text-gray-700">
+              Product <span className="text-red-500">*</span>
+            </label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full justify-between">
@@ -178,16 +174,19 @@ export default function FlashSaleDetailPage() {
                   <DropdownMenuItem
                     key={product.id}
                     onSelect={() => {
-                      setFormData({ ...formData, product_id: product.id });
-                      setSelectedProductLabel(`${product.name} (${product.id})`);
+                      setFormData({ ...formData, product_id: product.id, region: product.region });
+                      setSelectedProductLabel(`${product.name} (${product.region})`);
+                      setSelectedRegion(product.region)
                     }}
                   >
-                    {product.name}
+                    {`${product.name} (${product.region})`}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-
+            <label className="block text-sm font-medium text-gray-700">
+              Discount <span className="text-red-500">*</span>
+            </label>
             <Input
               type="number"
               value={formData.bonus_promo_discount}
@@ -195,30 +194,19 @@ export default function FlashSaleDetailPage() {
                 setFormData({ ...formData, bonus_promo_discount: e.target.value })
               }
               placeholder="Discount %"
+              min={0}
+              max={100}
               required
             />
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
-                  {selectedRegion}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-full max-h-60 overflow-y-auto">
-                {regionOptions.map((region) => (
-                  <DropdownMenuItem
-                    key={region.label}
-                    onSelect={() => {
-                      setFormData({ ...formData, region: region.value });
-                      setSelectedRegion(region.label);
-                    }}
-                  >
-                    {region.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
+            <label className="block text-sm font-medium text-gray-700">
+              Region <span className="text-red-500">*</span>
+            </label>
+            <Input
+              placeholder="Region"
+              value={selectedRegion}
+              key={selectedRegion}
+              disabled
+            />
             <Button type="submit">Add Product</Button>
           </form>
         </CardContent>
@@ -277,7 +265,7 @@ export default function FlashSaleDetailPage() {
               onChange={(e) => setEditDiscount(e.target.value)}
               required
             />
-            <DropdownMenu>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full justify-between">
                   {editRegion}
@@ -296,7 +284,7 @@ export default function FlashSaleDetailPage() {
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
             <div className="flex justify-end gap-4 mt-4">
               <Button variant="ghost" onClick={() => setEditModalOpen(false)}>
                 Cancel

@@ -7,6 +7,7 @@ import { FlashSale } from '@/app/types/flashsale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 export default function FlashSalesPage() {
   const [flashSales, setFlashSales] = useState<FlashSale[]>([]);
@@ -86,31 +87,33 @@ export default function FlashSalesPage() {
       <h1 className="text-2xl font-bold mb-4">Flash Sales</h1>
       <ul className="space-y-4">
         {flashSales.map((sale) => (
-          <li
-            key={sale.flashsalesid}
-            className="border p-4 rounded shadow hover:bg-gray-100 transition"
-          >
-            <div className="flex justify-between items-center">
-              <Link href={`/sales/${sale.flashsalesid}`} className="flex-1">
-                <div className="cursor-pointer">
-                  <h2 className="text-lg font-semibold">{sale.name}</h2>
-                  <p className="text-sm text-gray-600">{sale.description}</p>
-                  <p className="text-sm mt-1">
-                    {new Date(sale.start_time).toLocaleString()} →{' '}
-                    {new Date(sale.end_time).toLocaleString()}
-                  </p>
-                </div>
-              </Link>
-              <Button
-                onClick={() => {
-                  setSelectedFlashSale(sale);
-                  setFormData(sale);
-                }}
-              >
-                Edit
-              </Button>
-            </div>
-          </li>
+          <Card>
+            <li
+              key={sale.flashsalesid}
+              className="border p-4 rounded shadow hover:bg-gray-100 transition"
+            >
+              <div className="flex justify-between items-center">
+                <Link href={`/sales/${sale.flashsalesid}`} className="flex-1">
+                  <div className="cursor-pointer">
+                    <h2 className="text-lg font-semibold">{sale.name}</h2>
+                    <p className="text-sm text-gray-600">{sale.description}</p>
+                    <p className="text-sm mt-1">
+                      {new Date(sale.start_time).toLocaleString()} →{' '}
+                      {new Date(sale.end_time).toLocaleString()}
+                    </p>
+                  </div>
+                </Link>
+                <Button
+                  onClick={() => {
+                    setSelectedFlashSale(sale);
+                    setFormData(sale);
+                  }}
+                >
+                  Edit
+                </Button>
+              </div>
+            </li>
+          </Card>
         ))}
       </ul>
 
