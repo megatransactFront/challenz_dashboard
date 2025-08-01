@@ -182,7 +182,7 @@ export default function FlashSaleDetailPage() {
                       setSelectedProductLabel(`${product.name} (${product.id})`);
                     }}
                   >
-                    {product.name} ({product.id})
+                    {product.name}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
