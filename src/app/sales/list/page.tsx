@@ -38,8 +38,31 @@ export default function FlashSalesPage() {
     fetchFlashSales();
   }, []);
 
+  const today = new Date().toISOString().split("T")[0];
+
+  function formatDate(date: string | Date) {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
   const handleSave = async () => {
     if (!selectedFlashSale) return;
+
+    if (formData.start_time && formData.start_time < today) {
+      setError("Start time cannot be before today.");
+      return;
+    }
+    if (
+      formData.start_time &&
+      formData.end_time &&
+      formData.end_time <= formData.start_time
+    ) {
+      setError("End time must be after start time.");
+      return;
+    }
 
     try {
       setSaving(true);
@@ -84,8 +107,6 @@ export default function FlashSalesPage() {
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </div>
     );
-
-  if (error) return <p className="p-4 text-red-600">Error: {error}</p>;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -152,15 +173,28 @@ export default function FlashSalesPage() {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Description"
             />
+            <label className="block text-sm font-medium text-gray-700">
+              Start Time <span className="text-red-500">*</span>
+            </label>
             <Input
-              type="datetime-local"
-              value={formData.start_time?.slice(0, 16) || ''}
+              name="start_time"
+              value={formData.start_time ? formatDate(formData.start_time) : ""}
+              placeholder="Start Time"
               onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+              min={today}
+              type='date'
             />
+            <label className="block text-sm font-medium text-gray-700">
+              End Time <span className="text-red-500">*</span>
+            </label>
             <Input
-              type="datetime-local"
-              value={formData.end_time?.slice(0, 16) || ''}
-              onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+              type="date"
+              value={formData.end_time ? formatDate(formData.end_time) : ""}
+              onChange={
+                (e) => setFormData(
+                  { ...formData, end_time: e.target.value }
+                )}
+              min={formData.start_time || today}
             />
           </div>
 
