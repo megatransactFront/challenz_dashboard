@@ -8,6 +8,8 @@ import { Car, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/app/types/products";
 import { FlashSale, FlashSaleProduct } from "@/app/types/flashsale";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -21,17 +23,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-
 export default function FlashSaleDetailPage() {
   const { id } = useParams();
   const [products, setProducts] = useState<FlashSaleProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [selectedProductLabel, setSelectedProductLabel] = useState<string>("Select a product");
-  const [selectedRegion, setSelectedRegion] = useState<string>("Select a region");
+  const [selectedProductLabel, setSelectedProductLabel] =
+    useState<string>("Select a product");
+  const [selectedRegion, setSelectedRegion] =
+    useState<string>("Select a region");
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [flashSale, setFlashSale] = useState<FlashSale | null>(null);
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     product_id: "",
@@ -40,7 +44,9 @@ export default function FlashSaleDetailPage() {
   });
 
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<FlashSaleProduct | null>(null);
+  const [editingProduct, setEditingProduct] = useState<FlashSaleProduct | null>(
+    null
+  );
   const [editDiscount, setEditDiscount] = useState("");
 
   const fetchFlashSaleDetails = async () => {
@@ -106,10 +112,13 @@ export default function FlashSaleDetailPage() {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
     try {
-      const response = await fetch(`/api/sales/${id}/products/${editingProduct.flashsaleproductsid}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error('Failed to delete product');
+      const response = await fetch(
+        `/api/sales/${id}/products/${editingProduct.flashsaleproductsid}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!response.ok) throw new Error("Failed to delete product");
       fetchFlashSaleProducts();
       setEditModalOpen(false);
     } catch (err) {
@@ -121,13 +130,16 @@ export default function FlashSaleDetailPage() {
   const saveEdit = async () => {
     if (!editingProduct) return;
     try {
-      const res = await fetch(`/api/sales/${id}/products/${editingProduct.flashsaleproductsid}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          bonus_promo_discount: Number(editDiscount),
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await fetch(
+        `/api/sales/${id}/products/${editingProduct.flashsaleproductsid}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            bonus_promo_discount: Number(editDiscount),
+          }),
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to update");
 
@@ -141,7 +153,15 @@ export default function FlashSaleDetailPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-2xl mx-auto p-10">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => router.push("/sales")}
+        className="mb-6"
+      >
+        <ArrowLeft className="h-8 w-8" />
+      </Button>
       {flashSale && (
         <div className="border p-4 rounded bg-gray-50 mb-6">
           <h2 className="text-3xl font-bold">{flashSale.name}</h2>
@@ -171,9 +191,15 @@ export default function FlashSaleDetailPage() {
                   <DropdownMenuItem
                     key={product.id}
                     onSelect={() => {
-                      setFormData({ ...formData, product_id: product.id, region: product.region });
-                      setSelectedProductLabel(`${product.name} (${product.region})`);
-                      setSelectedRegion(product.region)
+                      setFormData({
+                        ...formData,
+                        product_id: product.id,
+                        region: product.region,
+                      });
+                      setSelectedProductLabel(
+                        `${product.name} (${product.region})`
+                      );
+                      setSelectedRegion(product.region);
                     }}
                   >
                     {`${product.name} (${product.region})`}
@@ -188,7 +214,10 @@ export default function FlashSaleDetailPage() {
               type="number"
               value={formData.bonus_promo_discount}
               onChange={(e) =>
-                setFormData({ ...formData, bonus_promo_discount: e.target.value })
+                setFormData({
+                  ...formData,
+                  bonus_promo_discount: e.target.value,
+                })
               }
               placeholder="Discount %"
               min={0}
@@ -210,7 +239,9 @@ export default function FlashSaleDetailPage() {
       </Card>
 
       {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-      {success && <div className="text-green-600 text-sm text-center">{success}</div>}
+      {success && (
+        <div className="text-green-600 text-sm text-center">{success}</div>
+      )}
 
       <h2 className="text-lg font-semibold mt-6">Linked Products</h2>
       {loading ? (
@@ -223,14 +254,16 @@ export default function FlashSaleDetailPage() {
         <ul className="space-y-2">
           {products.map((item) => (
             <Card>
-              <div>
-                <li
-                  key={item.flashsaleproductsid}
-                  className="border p-4 rounded cursor-pointer hover:bg-gray-200"
-                  onClick={() => handleEdit(item)}
-                >
+              <li
+                key={item.flashsaleproductsid}
+                className="border p-4 rounded cursor-pointer hover:bg-gray-200"
+                onClick={() => handleEdit(item)}
+              >
+                <div className="flex justify-between items-center">
                   <div>
-                    <p><strong>{item.products?.name}</strong></p>
+                    <p>
+                      <strong>{item.products?.name}</strong>
+                    </p>
                     <p>Region: {item.region}</p>
                     <p>Discount: {item.bonus_promo_discount}%</p>
                   </div>
@@ -241,8 +274,8 @@ export default function FlashSaleDetailPage() {
                   >
                     Edit
                   </Button>
-                </li>
-              </div>
+                </div>
+              </li>
             </Card>
           ))}
         </ul>
