@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import Notification from "@/components/ui/notification";
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -92,14 +93,13 @@ export default function AddProductPage() {
               className="w-full"
             />
             <label className="block text-sm font-medium text-gray-700">
-              Description <span className="text-red-500">*</span>
+              Description
             </label>
             <Textarea
               name="description"
               value={formData.description}
               placeholder="Description"
               onChange={handleChange}
-              required
               className="w-full"
             />
             <label className="block text-sm font-medium text-gray-700">
@@ -126,12 +126,19 @@ export default function AddProductPage() {
               className="w-full"
             />
             {error && (
-              <div className="text-red-500 text-sm text-center">{error}</div>
+              <Notification
+                message={error}
+                type="error"
+                onClose={() => setError(null)}
+              />
             )}
+
             {success && (
-              <div className="text-green-600 text-sm text-center">
-                {success}
-              </div>
+              <Notification
+                message={success}
+                type="success"
+                onClose={() => setSuccess(null)}
+              />
             )}
 
             <div className="flex justify-center">

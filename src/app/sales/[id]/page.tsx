@@ -188,24 +188,25 @@ export default function FlashSaleDetailPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full max-h-60 overflow-y-auto">
-                {allProducts.map((product) => (
-                  <DropdownMenuItem
-                    key={product.id}
-                    onSelect={() => {
-                      setFormData({
-                        ...formData,
-                        product_id: product.id,
-                        region: product.region,
-                      });
-                      setSelectedProductLabel(
-                        `${product.name} (${product.region})`
-                      );
-                      setSelectedRegion(product.region);
-                    }}
-                  >
-                    {`${product.name} (${product.region})`}
-                  </DropdownMenuItem>
-                ))}
+                {loading ? (
+                  <div className="flex items-center justify-center px-4 py-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <span className="ml-2 text-sm text-muted-foreground">Loading products...</span>
+                  </div>
+                ) : (
+                  allProducts.map((product) => (
+                    <DropdownMenuItem
+                      key={product.id}
+                      onSelect={() => {
+                        setFormData({ ...formData, product_id: product.id, region: product.region });
+                        setSelectedProductLabel(`${product.name} (${product.region})`);
+                        setSelectedRegion(product.region);
+                      }}
+                    >
+                      {`${product.name} (${product.region})`}
+                    </DropdownMenuItem>
+                  ))
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
             <label className="block text-sm font-medium text-gray-700">
@@ -305,6 +306,8 @@ export default function FlashSaleDetailPage() {
               placeholder="Discount %"
               value={editDiscount}
               onChange={(e) => setEditDiscount(e.target.value)}
+              min={0}
+              max={100}
               required
             />
             <div className="flex justify-end gap-4 mt-4">
