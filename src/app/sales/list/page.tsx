@@ -129,15 +129,22 @@ export default function FlashSalesPage() {
                     </p>
                   </div>
                 </Link>
-                <Button
-                  onClick={() => {
-                    setSelectedFlashSale(sale);
-                    setFormData(sale);
-                  }}
-                >
-                  Edit
-                </Button>
+                <div className='gap-5'>
+                </div>
               </div>
+              <Button className="mr-2">
+                <Link href={`/sales/${sale.flashsalesid}`} className="flex-1">
+                  Add Product
+                </Link>
+              </Button>
+              <Button
+                onClick={() => {
+                  setSelectedFlashSale(sale);
+                  setFormData(sale);
+                }}
+              >
+                Edit
+              </Button>
             </li>
           </Card>
         ))}
