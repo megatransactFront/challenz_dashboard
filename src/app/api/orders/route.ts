@@ -12,29 +12,29 @@ export async function GET(request: Request) {
   const status = searchParams.get('status');
   const startDate = searchParams.get('startDate');
   const endDate = searchParams.get('endDate');
-  const username = searchParams.get('username');
+  const search = (searchParams.get('search') || '').trim().toLowerCase();
 
   try {
     if (type === 'summary') {
-      const { data: allOrderItems, error } = await supabase
-        .from('orderitems')
+      const { data, error } = await supabase
+        .from('orders')
         .select('status');
 
       if (error) {
         console.error('Summary fetch error:', error);
-        return NextResponse.json({ error: 'Failed to fetch order items' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
       }
 
-      const totalOrders = allOrderItems.length;
+      const totalOrders = data.length;
       let completedOrders = 0;
       let pendingOrders = 0;
       let cancelledOrders = 0;
 
-      for (const item of allOrderItems) {
-        const s = item.status?.toUpperCase();
-        if (['DELIVERED', 'NO_REFUND'].includes(s)) completedOrders++;
-        else if (['PENDING_PAYMENT', 'AWAITING_FULFILLMENT', 'FULFILLED', 'SHIPPED'].includes(s)) pendingOrders++;
-        else if (['CANCELED', 'PAYMENT_FAILED', 'REFUNDED'].includes(s)) cancelledOrders++;
+      for (const row of data) {
+        const s = String(row.status || '').toUpperCase();
+        if (['DELIVERED', 'FULFILLED'].includes(s)) completedOrders++;
+        else if (['PENDING_PAYMENT', 'AWAITING_FULFILLMENT', 'SHIPPED'].includes(s)) pendingOrders++;
+        else if (['CANCELED', 'REFUNDED'].includes(s)) cancelledOrders++;
       }
 
       return NextResponse.json({ totalOrders, completedOrders, pendingOrders, cancelledOrders });
@@ -43,18 +43,15 @@ export async function GET(request: Request) {
     let query = supabase
       .from('orders')
       .select(`
-        orderid,
-        total_price,
-        total_uwc_used,
+        id,
+        status,
+        total_usd,
+        uwc_held,
         created_at,
-        users:userid (
-          username
-        ),
-        orderitems (
+        order_items (
           id,
-          status,
           quantity,
-          products:productid (
+          product:products!order_items_product_id_fkey (
             name
           )
         )
@@ -62,30 +59,21 @@ export async function GET(request: Request) {
 
     if (startDate) query = query.gte('created_at', startDate);
     if (endDate) query = query.lte('created_at', endDate);
+    if (status && status !== 'Any') query = query.eq('status', status);
 
     query = query.order('created_at', { ascending: false });
 
     const { data, error } = await query;
-
     if (error) {
       console.error('Orders fetch error:', error.message);
       return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
 
-    const filteredData = data.filter(order => {
-      const matchUser = !username || (
-        Array.isArray(order.users) &&
-        order.users[0]?.username?.toLowerCase().replace(/\s+/g, '') === username.toLowerCase()
-      );
+    const filtered = search
+      ? (data || []).filter((o) => String(o.id).toLowerCase().includes(search))
+      : (data || []);
 
-      const matchStatus = !status || status === 'Any' || order.orderitems?.some(
-        (item) => item.status?.toUpperCase() === status.toUpperCase()
-      );
-
-      return matchUser && matchStatus;
-    });
-
-    return NextResponse.json(filteredData);
+    return NextResponse.json(filtered);
   } catch (error) {
     console.error('Supabase error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

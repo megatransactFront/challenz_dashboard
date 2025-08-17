@@ -1,104 +1,78 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import clsx from 'clsx';
 import Link from 'next/link';
 
-const pink = 'bg-pink-400 text-white';
+const pink = 'bg-pink-500 text-white';
 const blue = 'bg-slate-800 text-white';
 
-type OrderItem = {
+type ItemPayload = {
   id: string;
+  quantity: number;
+  created_at: string;
+  region: string;
   productName: string;
-  status: string;
-  shipmentProvider?: string;
-  trackingNumber?: string;
-  expectedDelivery?: string;
-  returnDecision?: 'approve' | 'reject' | null;
-  returnReason?: string;
+  order: { id: string; status: string; shipping_address?: string | null } | null;
 };
+
+const ORDER_FLOW = [
+  'PENDING_PAYMENT',
+  'AWAITING_FULFILLMENT',
+  'FULFILLED',
+  'SHIPPED',
+  'DELIVERED',
+] as const;
 
 export default function ShipmentDetailPage() {
   const { id } = useParams() as { id: string };
-  const [items, setItems] = useState<OrderItem[]>([]);
+
+  const [item, setItem] = useState<ItemPayload | null>(null);
+  const [status, setStatus] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchItem = async () => {
       try {
         const res = await fetch(`/api/orders/item?id=${id}`);
-        const data = await res.json();
-
-        if (!data || data.error) throw new Error(data.error || 'Not found');
-
-        const item: OrderItem = {
-          id: data.id,
-          productName: data.products?.name || 'Unnamed Product',
-          status: data.status || '',
-          shipmentProvider: data.shipmentProvider || '',
-          trackingNumber: data.trackingNumber || '',
-          expectedDelivery: data.expectedDelivery || '',
-          returnDecision: data.returnDecision || null,
-          returnReason: data.returnReason || '',
-        };
-
-        setItems([item]);
+        const data: ItemPayload | { error: string } = await res.json();
+        if ('error' in data) throw new Error(data.error);
+        setItem(data);
+        setStatus(data.order?.status ?? '');
       } catch (err) {
         console.error('Failed to fetch item:', err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchItem();
   }, [id]);
 
-  const updateItem = (id: string, changes: Partial<OrderItem>) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, ...changes } : item)));
-  };
+  const updateStatus = (next: string) => setStatus(next);
 
   const handleSave = async () => {
-    const updates = items.map((item) => {
-      const update: any = {
-        id: item.id,
-        status: item.status,
-        shipmentProvider: item.shipmentProvider || null,
-        trackingNumber: item.trackingNumber || null,
-        expectedDelivery: item.expectedDelivery || null,
-        returnReason: item.returnReason || null,
-        returnDecision: item.returnDecision || null,
-      };
-
-      if (item.status === 'RETURN_REQUESTED') {
-        if (item.returnDecision === 'approve') update.status = 'REFUNDED';
-        else if (item.returnDecision === 'reject') update.status = 'NO_REFUND';
-      }
-
-      return update;
-    });
-
+    if (!item) return;
     const res = await fetch('/api/orders/item', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: updates }),
+      body: JSON.stringify({ itemId: item.id, status }),
     });
-
-    const result = await res.json();
-
+    const out = await res.json();
     if (res.ok) {
-      alert(result.message || 'Changes saved!');
-      window.location.reload();
+      alert(out.message || 'Order status updated');
+      location.reload();
     } else {
-      console.error('Save error:', result);
-      alert(result.error || 'Failed to save changes.');
+      alert(out.error || 'Failed to update');
     }
   };
 
   if (loading) {
     return <div className="text-center text-gray-500 mt-20">Loading order item...</div>;
+  }
+  if (!item) {
+    return <div className="text-center text-red-500 mt-20">Item not found</div>;
   }
 
   return (
@@ -109,231 +83,97 @@ export default function ShipmentDetailPage() {
         </span>
       </div>
 
-      {items.map((item) => {
-        const knownProviders = ['DHL', 'AusPost', 'FedEx', 'TNT', 'Aramex'];
-        const isKnown = knownProviders.includes(item.shipmentProvider || '');
-        const selectValue = isKnown ? item.shipmentProvider : 'Other';
+      <div className="w-[800px] mx-auto bg-white border border-gray-300 rounded-2xl shadow-lg p-8">
+        <div className="flex justify-center mb-6">
+          <span className="bg-pink-100 text-pink-700 px-8 py-3 rounded-full text-xl font-semibold shadow-sm border border-pink-300">
+            Order Status Flow for {item.productName || 'Unnamed Product'}
+          </span>
+        </div>
 
-        return (
-          <div
-            key={item.id}
-            className="w-[800px] mx-auto bg-white border border-gray-300 rounded-2xl shadow-lg p-8"
-          >
-            <div className="flex justify-center mb-6">
-              <span className="bg-pink-100 text-pink-700 px-8 py-3 rounded-full text-xl font-semibold shadow-sm border border-pink-300">
-                Order Status Flow for {item.productName}
-              </span>
-            </div>
+        <div className="mb-6 text-sm text-slate-700">
+          <div className="font-semibold text-slate-900">
+            Product: <span className="font-bold">{item.productName || 'Unnamed Product'}</span>
+          </div>
+          <div className="mt-1">
+            Quantity: {item.quantity} • Region: {item.region} • Placed:{' '}
+            {new Date(item.created_at).toLocaleString()}
+          </div>
+          <div className="mt-1">
+            Current Status:{' '}
+            <span className="font-semibold text-slate-900">{status || '—'}</span>
+          </div>
+        </div>
 
-            <div className="relative flex gap-20">
-              {/* Left vertical flow */}
-              <div className="flex flex-col items-center gap-6">
-                {['PENDING_PAYMENT', 'AWAITING_FULFILLMENT', 'FULFILLED', 'SHIPPED', 'DELIVERED'].map(
-                  (status, i, arr) => (
-                    <div key={status} className="flex flex-col items-center">
-                      <Button
-                        onClick={() => updateItem(item.id, { status })}
-                        className={clsx('w-56', item.status === status ? pink : blue, 'rounded-lg shadow-md')}
-                      >
-                        {status.replace('_', ' ')}
-                      </Button>
-                      {i < arr.length - 1 && <span className="text-2xl text-gray-500">↓</span>}
-                    </div>
-                  )
-                )}
-              </div>
-
-              <div className="absolute left-[15rem] space-y-8">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl text-gray-500">→</span>
-                  <Button
-                    onClick={() => updateItem(item.id, { status: 'PAYMENT_FAILED' })}
-                    className={clsx('w-52', item.status === 'PAYMENT_FAILED' ? pink : blue, 'rounded-lg shadow-md')}
-                  >
-                    PAYMENT FAILED
-                  </Button>
-                  <span className="text-xl text-gray-500">→</span>
-                  <Button
-                    onClick={() => updateItem(item.id, { status: 'CANCELED' })}
-                    className={clsx('w-52', item.status === 'CANCELED' ? pink : blue, 'rounded-lg shadow-md')}
-                  >
-                    CANCELED
-                  </Button>
-                </div>
-              </div>
-
-              <div className="absolute bottom-4 right-6 flex flex-col items-center gap-4">
+        <div className="relative flex gap-20">
+          <div className="flex flex-col items-center gap-6">
+            {ORDER_FLOW.map((s, i, arr) => (
+              <div key={s} className="flex flex-col items-center">
                 <Button
-                  onClick={() => updateItem(item.id, { status: 'RETURN_REQUESTED' })}
-                  className={clsx('w-56', item.status === 'RETURN_REQUESTED' ? pink : blue, 'rounded-lg shadow-md')}
+                  onClick={() => updateStatus(s)}
+                  className={clsx('w-56 rounded-lg shadow-md', status === s ? pink : blue)}
                 >
-                  RETURN REQUESTED
+                  {s.replace(/_/g, ' ')}
                 </Button>
-                <span className="text-2xl text-gray-500">↓</span>
-                <div className="flex gap-4">
-                  <Button
-                    onClick={() =>
-                      updateItem(item.id, {
-                        status: 'REFUNDED',
-                        returnDecision: 'approve',
-                      })
-                    }
-                    className={clsx('w-40', item.status === 'REFUNDED' ? pink : blue, 'rounded-lg shadow-md')}
-                  >
-                    REFUNDED
-                  </Button>
-                  <Button
-                    onClick={() =>
-                      updateItem(item.id, {
-                        status: 'NO_REFUND',
-                        returnDecision: 'reject',
-                      })
-                    }
-                    className={clsx('w-40', item.status === 'NO_REFUND' ? pink : blue, 'rounded-lg shadow-md')}
-                  >
-                    NO REFUND
-                  </Button>
-                </div>
+                {i < arr.length - 1 && <span className="text-2xl text-gray-500">↓</span>}
               </div>
-            </div>
+            ))}
+          </div>
 
-            {item.status === 'SHIPPED' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-slate-700 mb-1">Shipment Provider</label>
-                  <select
-                    value={selectValue}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      updateItem(item.id, {
-                        shipmentProvider: val === 'Other' ? '' : val,
-                      });
-                    }}
-                    className="rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-pink-400"
-                  >
-                    <option value="" disabled>
-                      Select provider
-                    </option>
-                    {knownProviders.map((p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
-                    ))}
-                    <option value="Other">Other</option>
-                  </select>
-
-                  {!isKnown && (
-                    <div className="mt-2">
-                      <Input
-                        placeholder="Enter custom provider name"
-                        value={item.shipmentProvider || ''}
-                        onChange={(e) =>
-                          updateItem(item.id, { shipmentProvider: e.target.value })
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-slate-700 mb-1">Tracking Number</label>
-                  <Input
-                    placeholder="e.g., 1234567890"
-                    value={item.trackingNumber}
-                    onChange={(e) =>
-                      updateItem(item.id, { trackingNumber: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="flex flex-col md:col-span-2">
-                  <label className="text-sm font-medium text-slate-700 mb-1">Expected Delivery</label>
-                  <Input
-                    type="date"
-                    value={item.expectedDelivery || ''}
-                    onChange={(e) =>
-                      updateItem(item.id, { expectedDelivery: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-            )}
-
-            {item.status === 'RETURN_REQUESTED' && (
-              <div className="space-y-4 mt-6">
-                <h3 className="text-xl font-semibold text-slate-800">Return Request Handling</h3>
-                <div className="flex gap-4">
-                  <Button
-                    onClick={() => updateItem(item.id, { returnDecision: 'approve' })}
-                    className={clsx(
-                      'w-32 rounded-md shadow',
-                      item.returnDecision === 'approve' ? 'bg-green-500 text-white' : blue
-                    )}
-                  >
-                    Approve
-                  </Button>
-                  <Button
-                    onClick={() => updateItem(item.id, { returnDecision: 'reject' })}
-                    className={clsx(
-                      'w-32 rounded-md shadow',
-                      item.returnDecision === 'reject' ? 'bg-red-500 text-white' : blue
-                    )}
-                  >
-                    Reject
-                  </Button>
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-slate-700 mb-1">
-                    Reason for Return (optional)
-                  </label>
-                  <Input
-                    placeholder="e.g., Wrong item delivered"
-                    value={item.returnReason}
-                    onChange={(e) => updateItem(item.id, { returnReason: e.target.value })}
-                  />
-                </div>
-              </div>
-            )}
-
-            {['REFUNDED', 'NO_REFUND'].includes(item.status) && (
-              <div className="mt-6 space-y-2 border-t pt-4">
-                <h3 className="text-lg font-semibold text-slate-800">Return Summary</h3>
-                {item.returnDecision && (
-                  <p className="text-sm text-slate-700">
-                    <strong>Decision:</strong>{' '}
-                    <span
-                      className={clsx(
-                        'font-semibold',
-                        item.returnDecision === 'approve' ? 'text-green-600' : 'text-red-600'
-                      )}
-                    >
-                      {item.returnDecision.toUpperCase()}
-                    </span>
-                  </p>
-                )}
-                {item.returnReason && (
-                  <p className="text-sm text-slate-700">
-                    <strong>Reason:</strong> {item.returnReason}
-                  </p>
-                )}
-              </div>
-            )}
-            <div className="flex justify-center gap-6 mt-8">
-            <Button onClick={handleSave} className="bg-red-500 hover:bg-red-900 text-white px-6 py-3">
-              Save Changes
-            </Button>
+          <div className="absolute left-[15rem] space-y-8">
+            <div className="flex items-center gap-3">
+              <span className="text-xl text-gray-500">→</span>
+              <Button
+                onClick={() => updateStatus('PAYMENT_FAILED')}
+                className={clsx('w-52 rounded-lg shadow-md', status === 'PAYMENT_FAILED' ? pink : blue)}
+              >
+                PAYMENT FAILED
+              </Button>
+              <span className="text-xl text-gray-500">→</span>
+              <Button
+                onClick={() => updateStatus('CANCELED')}
+                className={clsx('w-52 rounded-lg shadow-md', status === 'CANCELED' ? pink : blue)}
+              >
+                CANCELED
+              </Button>
             </div>
           </div>
-        );
-      })}
 
-      <div className="flex justify-center gap-6 mt-10">
-        <Link
-          href="/orders"
-          className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-[#1a4d5f] border border-black rounded-full shadow hover:bg-secondary hover:shadow-md transition duration-200"
-        >
-          Back to Orders
-        </Link>
+          <div className="absolute bottom-4 right-6 flex flex-col items-center gap-4">
+            <Button
+              onClick={() => updateStatus('RETURN_REQUESTED')}
+              className={clsx('w-56 rounded-lg shadow-md', status === 'RETURN_REQUESTED' ? pink : blue)}
+            >
+              RETURN REQUESTED
+            </Button>
+            <span className="text-2xl text-gray-500">↓</span>
+            <div className="flex gap-4">
+              <Button
+                onClick={() => updateStatus('REFUNDED')}
+                className={clsx('w-40 rounded-lg shadow-md', status === 'REFUNDED' ? pink : blue)}
+              >
+                REFUNDED
+              </Button>
+              <Button
+                onClick={() => updateStatus('NO_REFUND')}
+                className={clsx('w-40 rounded-lg shadow-md', status === 'NO_REFUND' ? pink : blue)}
+              >
+                NO REFUND
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-center gap-6 mt-12">
+          <Button onClick={handleSave} className="bg-red-500 hover:bg-red-900 text-white px-6 py-3">
+            Save Changes
+          </Button>
+          <Link
+            href="/orders"
+            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-[#1a4d5f] border border-black rounded-full shadow hover:bg-secondary hover:shadow-md transition duration-200"
+          >
+            Back to Orders
+          </Link>
+        </div>
       </div>
     </div>
   );
