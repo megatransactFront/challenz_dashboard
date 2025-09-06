@@ -44,6 +44,7 @@ export default function StockPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState<number>(Number(params.get('page') || 1));
+  const [onlyActive, setOnlyActive] = useState<boolean>(false); 
   const [pagination, setPagination] = useState<Pagination>({
     currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: 10
   });
@@ -58,11 +59,12 @@ export default function StockPage() {
     if (region) sp.set('region', region);
     if (q) sp.set('q', q);
     if (onlyLow) {
-      sp.set('onlyLow', '0');
+      sp.set('onlyLow', '1');
       sp.set('lowThreshold', String(lowThreshold));
     }
+    if (onlyActive) sp.set('onlyActive', '1');
     return sp.toString();
-  }, [page, region, q, onlyLow, lowThreshold]);
+  }, [page, region, q, onlyLow, lowThreshold, onlyActive]);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -96,7 +98,6 @@ export default function StockPage() {
   const saveOne = async (id: string) => {
     const value = edits[id];
     if (value == null) return;
-    // Keep your rule: don't set to 0 via Save; use Mark Inactive
     if (value === 0) {
       alert('Stock 0 not allowed. Use "Mark Inactive" or delete.');
       return;
@@ -115,6 +116,7 @@ export default function StockPage() {
         const { [id]: _, ...rest } = prev;
         return rest;
       });
+       alert("Stock updated successfully ✅");
     } catch (e) {
       alert('Save failed. Please try again.');
     } finally {
@@ -135,6 +137,7 @@ export default function StockPage() {
       if (!res.ok) throw new Error('Bulk update failed');
       await fetchProducts();
       setEdits({});
+      alert("All stock changes saved successfully ✅");
     } catch (e) {
       alert('Bulk save failed.');
     } finally {
@@ -189,7 +192,7 @@ export default function StockPage() {
                   id="onlyLow"
                   type="checkbox"
                   checked={onlyLow}
-                  onChange={(e) => setOnlyLow(e.target.checked)}
+                  onChange={(e) => { setOnlyLow(e.target.checked); setPage(1); }}
                 />
                 <label htmlFor="onlyLow" className="text-sm">Only low-stock</label>
                 <Input
@@ -198,10 +201,19 @@ export default function StockPage() {
                 onChange={(e) => {
                     const val = parseInt(e.target.value);
                     setLowThreshold(isNaN(val) ? 0 : Math.max(0, val));
+                    setPage(1);
                 }}
                 className="w-20"
                 />
-
+                <div className="flex items-center gap-2">
+                <input
+                  id="onlyActive"
+                  type="checkbox"
+                  checked={onlyActive}
+                  onChange={(e) => { setOnlyActive(e.target.checked); setPage(1); }}
+                />
+                <label htmlFor="onlyActive" className="text-sm">Only active</label>
+              </div>
               </div>
             </div>
 

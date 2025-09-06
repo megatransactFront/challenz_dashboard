@@ -17,7 +17,8 @@ export async function GET(request: Request) {
     const q = searchParams.get('q') || '';
     const onlyLow = searchParams.get('onlyLow') === '1';
     const lowThreshold = parseInt(searchParams.get('lowThreshold') || '20', 10);
-
+    const onlyActive = searchParams.get('onlyActive') === '1'; 
+    
     // If productId is provided, return single product details
     if (productId) {
       const { data: product, error } = await supabase
@@ -43,9 +44,8 @@ export async function GET(request: Request) {
 
     if (region) countQuery = countQuery.eq('region', region);
     if (q) countQuery = countQuery.ilike('name', `%${q}%`);
-    if (onlyLow) {
-      countQuery = countQuery.or(`stock.lte.${lowThreshold},stock.is.null`);
-    }
+    if (onlyLow) countQuery = countQuery.or(`stock.lte.${lowThreshold},stock.is.null`);
+    if (onlyActive) countQuery = countQuery.eq('is_active', true);
 
     const { count, error: countError } = await countQuery;
     if (countError) throw countError;
@@ -61,9 +61,8 @@ export async function GET(request: Request) {
 
     if (region) productsQuery = productsQuery.eq('region', region);
     if (q) productsQuery = productsQuery.ilike('name', `%${q}%`);
-    if (onlyLow) {
-      productsQuery = productsQuery.or(`stock.lte.${lowThreshold},stock.is.null`);
-    }
+    if (onlyLow) productsQuery = productsQuery.or(`stock.lte.${lowThreshold},stock.is.null`);
+    if (onlyActive) productsQuery = productsQuery.eq('is_active', true); 
 
     const { data: products, error: dataError } = await productsQuery;
     if (dataError) throw dataError;
