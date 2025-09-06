@@ -43,7 +43,9 @@ export async function GET(request: Request) {
 
     if (region) countQuery = countQuery.eq('region', region);
     if (q) countQuery = countQuery.ilike('name', `%${q}%`);
-    if (onlyLow) countQuery = countQuery.lte('stock', lowThreshold);
+    if (onlyLow) {
+      countQuery = countQuery.or(`stock.lte.${lowThreshold},stock.is.null`);
+    }
 
     const { count, error: countError } = await countQuery;
     if (countError) throw countError;
@@ -59,7 +61,9 @@ export async function GET(request: Request) {
 
     if (region) productsQuery = productsQuery.eq('region', region);
     if (q) productsQuery = productsQuery.ilike('name', `%${q}%`);
-    if (onlyLow) productsQuery = productsQuery.lte('stock', lowThreshold);
+    if (onlyLow) {
+      productsQuery = productsQuery.or(`stock.lte.${lowThreshold},stock.is.null`);
+    }
 
     const { data: products, error: dataError } = await productsQuery;
     if (dataError) throw dataError;

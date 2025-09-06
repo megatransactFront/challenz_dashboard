@@ -48,6 +48,9 @@ export default function StockPage() {
     currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: 10
   });
 
+  const isLow = (value: number) => value <= lowThreshold;
+  const isOut = (value: number) => value === 0;
+
   const queryString = useMemo(() => {
     const sp = new URLSearchParams();
     sp.set('page', String(page));
@@ -55,7 +58,7 @@ export default function StockPage() {
     if (region) sp.set('region', region);
     if (q) sp.set('q', q);
     if (onlyLow) {
-      sp.set('onlyLow', '1');
+      sp.set('onlyLow', '0');
       sp.set('lowThreshold', String(lowThreshold));
     }
     return sp.toString();
@@ -76,7 +79,7 @@ export default function StockPage() {
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
-  // reflect URL (so refresh / sharing keeps filters)
+  // reflect URL
   useEffect(() => {
     router.replace(`/products/stock?${queryString}`);
   }, [queryString, router]);
@@ -93,8 +96,11 @@ export default function StockPage() {
   const saveOne = async (id: string) => {
     const value = edits[id];
     if (value == null) return;
-    // Optional business rule: prevent setting to 0 → suggest Mark Inactive instead
-    // if (value === 0) { alert('Stock 0 not allowed. Use "Mark Inactive" or delete.'); return; }
+    // Keep your rule: don't set to 0 via Save; use Mark Inactive
+    if (value === 0) {
+      alert('Stock 0 not allowed. Use "Mark Inactive" or delete.');
+      return;
+    }
 
     setSaving(true);
     try {
@@ -187,11 +193,15 @@ export default function StockPage() {
                 />
                 <label htmlFor="onlyLow" className="text-sm">Only low-stock</label>
                 <Input
-                  type="number"
-                  value={lowThreshold}
-                  onChange={(e) => setLowThreshold(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-20"
+                type="number"
+                value={lowThreshold}
+                onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    setLowThreshold(isNaN(val) ? 0 : Math.max(0, val));
+                }}
+                className="w-20"
                 />
+
               </div>
             </div>
 
@@ -226,7 +236,8 @@ export default function StockPage() {
                       const original = p.stock ?? 0;
                       const edited = edits[p.id];
                       const value = edited == null ? original : edited;
-                      const isLow = value <= lowThreshold;
+                      const low = isLow(value);
+                      const out = isOut(value);
 
                       return (
                         <tr key={p.id} className="border-b hover:bg-gray-50">
@@ -260,11 +271,16 @@ export default function StockPage() {
                               <Button variant="outline" size="icon" onClick={() => applyDelta(p.id, +1)}>
                                 <Plus className="w-4 h-4" />
                               </Button>
-                              {isLow && (
+
+                              {out ? (
+                                <span className="inline-flex items-center text-red-600 text-xs ml-2">
+                                  Out
+                                </span>
+                              ) : low ? (
                                 <span className="inline-flex items-center text-amber-600 text-xs ml-2">
                                   <AlertTriangle className="w-4 h-4 mr-1" /> Low
                                 </span>
-                              )}
+                              ) : null}
                             </div>
                           </td>
                           <td className="py-3 px-4">
