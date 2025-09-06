@@ -6,6 +6,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+export async function GET(
   _req: Request,
   ctx: { params: Promise<{ id: string }> } 
 ) {
@@ -62,6 +63,7 @@ const supabase = createClient(
 }
 
 
+export async function PUT(
   request: Request,
   ctx: { params: Promise<{ id: string }> } 
 ) {
