@@ -13,7 +13,8 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Calendar, Package2, ImageIcon, Info, CheckCircle2, XCircle } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 type ReturnStatus = 'RETURN_REQUESTED' | 'REFUNDED' | 'NO_REFUND';
 
@@ -39,7 +40,7 @@ type ReturnDetail = ReturnListItem & {
   admin_notes?: string | null;
 };
 
-const STATUS_BADGE: Record<ReturnStatus, { label: string; variant: string }> = {
+const STATUS_BADGE: Record<ReturnStatus, { label: string; variant: 'default' | 'outline' | 'destructive' }> = {
   RETURN_REQUESTED: { label: 'Requested', variant: 'outline' },
   REFUNDED: { label: 'Refunded', variant: 'default' },
   NO_REFUND: { label: 'No refund', variant: 'destructive' },
@@ -105,9 +106,7 @@ export default function AdminReturnsPage() {
         body: JSON.stringify({ status }),
       });
       if (!res.ok) throw new Error('Failed to update');
-      // update table row
       setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
-      // update dialog data
       setSelected((d) => (d && d.id === id ? { ...d, status } : d));
     } catch (e) {
       console.error(e);
@@ -205,7 +204,7 @@ export default function AdminReturnsPage() {
                     {r.reason || '—'}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={STATUS_BADGE[r.status].variant as any}>
+                    <Badge variant={STATUS_BADGE[r.status].variant}>
                       {STATUS_BADGE[r.status].label}
                     </Badge>
                   </TableCell>
@@ -216,82 +215,144 @@ export default function AdminReturnsPage() {
                           View
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Return #{r.id.slice(0, 8)}</DialogTitle>
+
+                      <DialogContent className="max-w-3xl">
+                        <DialogHeader className="pb-2">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <DialogTitle className="flex items-center gap-2">
+                                Return <span className="font-mono text-sm px-1.5 py-0.5 rounded bg-muted">{r.id.slice(0, 8)}</span>
+                              </DialogTitle>
+                              <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1">
+                                  <Package2 className="h-3.5 w-3.5" />
+                                  Order <span className="font-mono">{r.order_id.slice(0, 8)}</span>
+                                </span>
+                                <span>•</span>
+                                <span className="inline-flex items-center gap-1">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  {new Date(r.created_at).toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                            <Badge variant={STATUS_BADGE[(selected?.id === r.id ? selected.status : r.status) as ReturnStatus].variant}>
+                              {STATUS_BADGE[(selected?.id === r.id ? selected.status : r.status) as ReturnStatus].label}
+                            </Badge>
+                          </div>
                         </DialogHeader>
 
                         {!selected || selected.id !== r.id ? (
-                          <div className="flex items-center justify-center py-10">
+                          <div className="flex items-center justify-center py-12">
                             <Loader2 className="h-5 w-5 animate-spin mr-2" />
                             Loading details…
                           </div>
                         ) : (
-                          <div className="space-y-4">
-                            <div className="text-sm text-muted-foreground">
-                              Order <span className="font-mono">{selected.order_id.slice(0, 8)}</span> •
-                              &nbsp;Created {new Date(selected.created_at).toLocaleString()}
-                            </div>
+                          <>
+                            <Separator className="mb-3" />
+                            <div className="max-h-[70vh] overflow-y-auto pr-1">
+                              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                {/* Left: Items */}
+                                <div className="md:col-span-3 space-y-3">
+                                  <div className="text-sm font-medium">Items</div>
+                                  {selected.items.length === 0 ? (
+                                    <div className="text-sm text-muted-foreground border rounded-md p-3">
+                                      No items.
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      {selected.items.map((it) => (
+                                        <div
+                                          key={it.id}
+                                          className="flex items-center gap-3 p-2 border rounded-md"
+                                        >
+                                          {it.product?.image_url ? (
+                                            <img
+                                              src={it.product.image_url}
+                                              alt={String(it.product?.name ?? 'Item')}
+                                              className="w-12 h-12 rounded object-cover"
+                                            />
+                                          ) : (
+                                            <div className="w-12 h-12 rounded bg-gray-200 flex items-center justify-center text-xs text-muted-foreground">
+                                              IMG
+                                            </div>
+                                          )}
+                                          <div className="min-w-0">
+                                            <div className="text-sm font-medium truncate">
+                                              {it.product?.name ?? it.order_item_id}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground">
+                                              Qty: {it.quantity}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
 
-                            <div className="space-y-2">
-                              <div className="font-medium">Items</div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {selected.items.map((it) => (
-                                  <div key={it.id} className="flex gap-3 items-center p-2 border rounded-md">
-                                    {it.product?.image_url ? (
-                                      <img
-                                        src={it.product.image_url}
-                                        alt={it.product?.name ?? 'Item'}
-                                        className="w-12 h-12 rounded object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-12 h-12 rounded bg-gray-200" />
-                                    )}
-                                    <div className="text-sm">
-                                      <div className="font-medium">{it.product?.name ?? it.order_item_id}</div>
-                                      <div className="text-muted-foreground">Qty: {it.quantity}</div>
+                                {/* Right: Reason & Photos */}
+                                <div className="md:col-span-2 space-y-3">
+                                  <div className="space-y-2">
+                                    <div className="text-sm font-medium flex items-center gap-2">
+                                      <Info className="h-4 w-4" /> Reason
+                                    </div>
+                                    <div className="text-sm whitespace-pre-wrap border rounded-md p-3 bg-muted/30">
+                                      {selected.reason || '—'}
                                     </div>
                                   </div>
-                                ))}
+
+                                  <div className="space-y-2">
+                                    <div className="text-sm font-medium flex items-center gap-2">
+                                      <ImageIcon className="h-4 w-4" /> Photos
+                                    </div>
+                                    {selected.photos.length ? (
+                                      <div className="grid grid-cols-3 gap-2">
+                                        {selected.photos.map((p) => (
+                                          <img
+                                            key={p.id}
+                                            src={p.url}
+                                            alt="Return photo"
+                                            className="w-full aspect-square object-cover rounded-md border"
+                                          />
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <div className="text-sm text-muted-foreground border rounded-md p-3">
+                                        No photos
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
                             </div>
 
-                            <div className="space-y-2">
-                              <div className="font-medium">Reason</div>
-                              <div className="text-sm whitespace-pre-wrap">{selected.reason || '—'}</div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <div className="font-medium">Photos</div>
-                              {selected.photos.length ? (
-                                <div className="flex flex-wrap gap-2">
-                                  {selected.photos.map((p) => (
-                                    <img key={p.id} src={p.url} alt="Return photo" className="w-24 h-24 rounded object-cover" />
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="text-sm text-muted-foreground">No photos</div>
-                              )}
-                            </div>
-
-                            <div className="flex justify-end gap-2 pt-2">
+                            <Separator className="mt-4" />
+                            <div className="flex justify-end gap-2 pt-3">
                               <Button
                                 variant="outline"
                                 disabled={saving || selected.status === 'NO_REFUND'}
                                 onClick={() => updateStatus(selected.id, 'NO_REFUND')}
                               >
-                                {saving && selected.status !== 'NO_REFUND' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                {saving && selected.status !== 'NO_REFUND' ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                )}
                                 Mark No refund
                               </Button>
                               <Button
                                 disabled={saving || selected.status === 'REFUNDED'}
                                 onClick={() => updateStatus(selected.id, 'REFUNDED')}
                               >
-                                {saving && selected.status !== 'REFUNDED' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                {saving && selected.status !== 'REFUNDED' ? (
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                ) : (
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                )}
                                 Approve refund
                               </Button>
                             </div>
-                          </div>
+                          </>
                         )}
                       </DialogContent>
                     </Dialog>

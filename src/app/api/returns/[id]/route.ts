@@ -6,9 +6,11 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+  _req: Request,
+  ctx: { params: Promise<{ id: string }> } 
+) {
   try {
-    const id = params.id;
+    const { id } = await ctx.params; 
 
     const { data, error } = await supabase
       .from('return_requests')
@@ -19,14 +21,12 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
         reason,
         status,
         created_at,
-        updated_at,
-        admin_notes,
         items:return_request_items (
           id,
           quantity,
           order_item_id,
           order_item:order_items (
-            product_id,
+            id,
             product:products ( id, name, image_url )
           )
         ),
@@ -42,7 +42,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
       id: it.id,
       quantity: it.quantity,
       order_item_id: it.order_item_id,
-      product: it.order_item?.product || null,
+      product: it.order_item?.product ?? null,
     }));
 
     return NextResponse.json({
@@ -52,7 +52,6 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
       reason: data.reason,
       status: data.status,
       created_at: data.created_at,
-      admin_notes: data.admin_notes ?? null,
       items,
       photos: data.photos || [],
     });
@@ -62,11 +61,15 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+
+  request: Request,
+  ctx: { params: Promise<{ id: string }> } 
+) {
   try {
-    const id = params.id;
+    const { id } = await ctx.params;
     const body = await request.json();
-    const nextStatus = body?.status;
+    const nextStatus = body?.status as string;
+
     if (!['RETURN_REQUESTED', 'REFUNDED', 'NO_REFUND'].includes(nextStatus)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
