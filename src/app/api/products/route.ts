@@ -10,27 +10,21 @@ const supabase = createClient(
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
     const productId = searchParams.get('productId');
-    const region = searchParams.get('region');
+    const region = searchParams.get('region') || '';
+    const q = searchParams.get('q') || '';
+    const onlyLow = searchParams.get('onlyLow') === '1';
+    const lowThreshold = parseInt(searchParams.get('lowThreshold') || '20', 10);
 
     // If productId is provided, return single product details
     if (productId) {
       const { data: product, error } = await supabase
         .from('products')
         .select(`
-          id,
-          name,
-          description,
-          type,
-          price_usd,
-          stock,
-          uwc_discount_enabled,
-          image_url,
-          region,
-          is_active,
-          created_at
+          id, name, description, type, price_usd, stock,
+          uwc_discount_enabled, image_url, region, is_active, created_at
         `)
         .eq('id', productId)
         .single();
@@ -45,8 +39,11 @@ export async function GET(request: Request) {
 
     let countQuery = supabase
       .from('products')
-      .select('*', { count: 'exact', head: true });
+      .select('id', { count: 'exact', head: true });
+
     if (region) countQuery = countQuery.eq('region', region);
+    if (q) countQuery = countQuery.ilike('name', `%${q}%`);
+    if (onlyLow) countQuery = countQuery.lte('stock', lowThreshold);
 
     const { count, error: countError } = await countQuery;
     if (countError) throw countError;
@@ -54,22 +51,15 @@ export async function GET(request: Request) {
     let productsQuery = supabase
       .from('products')
       .select(`
-        id,
-        name,
-        description,
-        type,
-        price_usd,
-        stock,
-        uwc_discount_enabled,
-        image_url,
-        region,
-        is_active,
-        created_at
+        id, name, description, type, price_usd, stock,
+        uwc_discount_enabled, image_url, region, is_active, created_at
       `)
       .order('created_at', { ascending: false })
       .range(from, to);
 
     if (region) productsQuery = productsQuery.eq('region', region);
+    if (q) productsQuery = productsQuery.ilike('name', `%${q}%`);
+    if (onlyLow) productsQuery = productsQuery.lte('stock', lowThreshold);
 
     const { data: products, error: dataError } = await productsQuery;
     if (dataError) throw dataError;
@@ -80,18 +70,15 @@ export async function GET(request: Request) {
         currentPage: page,
         totalPages: Math.ceil((count || 0) / limit),
         totalItems: count || 0,
-        itemsPerPage: limit
-      }
+        itemsPerPage: limit,
+      },
     });
-
   } catch (error) {
     console.error('API Error:', error);
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
 
 
 
