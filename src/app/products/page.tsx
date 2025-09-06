@@ -33,12 +33,20 @@ export default function ProductsPage() {
             )}
           </select>
         </div>
-        <Button
-          onClick={() => router.push('/products/add')}
-          className="py-1 px-6 text-lg font-bold rounded-xl w-full sm:w-auto"
-        >
-          Add Product
-        </Button>
+                <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
+          <Button
+            onClick={() => router.push('/products/stock')}
+            className="h-10 px-4 text-base font-semibold rounded-xl w-full sm:w-auto"
+          >
+            Update Stock
+          </Button>
+          <Button
+            onClick={() => router.push('/products/add')}
+            className="h-10 px-5 text-base font-semibold rounded-xl w-full sm:w-auto"
+          >
+            Add Product
+          </Button>
+        </div>
       </div>
       <Page region={region} />
     </div>
