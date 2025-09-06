@@ -6,6 +6,9 @@ import {
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+const shortId = (id: string | number) => `#${String(id).slice(0, 8)}`;
+const money = (n?: number) => `$${Number(n ?? 0).toFixed(2)}`;
+
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'PENDING_PAYMENT': return 'text-yellow-500 font-semibold';
@@ -75,7 +78,7 @@ export function OrderTable({
             id: it.id,
             product: it.product?.name ?? 'N/A',
             quantity: it.quantity,
-            status: order.status, // from parent order
+            status: order.status,
           }))
         );
 
@@ -125,15 +128,25 @@ export function OrderTable({
             <TableBody>
               {paginated.map((row) => (
                 <TableRow key={row.id} className="hover:bg-gray-50 transition duration-200">
-                  <TableCell>{row.orderid}</TableCell>
+                  <TableCell className="font-mono text-xs sm:text-sm">
+                    {shortId(row.orderid)}
+                  </TableCell>
+
                   <TableCell>{row.product}</TableCell>
                   <TableCell>{row.quantity}</TableCell>
-                  <TableCell>{row.total_price}</TableCell>
+                  <TableCell>{money(row.total_price)}</TableCell>
                   <TableCell>{row.total_uwc_used}</TableCell>
-                  <TableCell><span className={getStatusColor(row.status)}>{row.status}</span></TableCell>
-                  <TableCell>{new Date(row.created_at).toLocaleDateString()}</TableCell>
+
                   <TableCell>
-                    <Link href={`/orders/shipment/${row.id}`}>
+                    <span className={getStatusColor(row.status)}>
+                      {row.status.replace(/_/g, ' ')}
+                    </span>
+                  </TableCell>
+
+                  <TableCell>{new Date(row.created_at).toLocaleString()}</TableCell>
+
+                  <TableCell>
+                    <Link href={`/orders/shipment/${row.orderid}`}>
                       <button className="inline-flex items-center gap-2 px-3 py-1 text-sm font-semibold text-white bg-[#1a4d5f] border border-black rounded-full shadow hover:bg-secondary hover:shadow-md transition duration-200">
                         Manage
                       </button>
