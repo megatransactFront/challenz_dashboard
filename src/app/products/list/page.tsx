@@ -101,7 +101,7 @@ export default function Page({ region }: { region: string }) {
 
 const handleSave = async () => {
   if (!selectedProduct) return
-  if (!['edible', 'non-edible'].includes(formData.type || '')) {
+  if (!['edible', 'non-edible', 'branded'].includes(formData.type || '')) {
     alert("Type must be either 'edible' or 'non-edible'")
     return
   }
@@ -485,6 +485,7 @@ const saveSelectedManufacturers = async () => {
                       <option value="">Select Type</option>
                       <option value="edible">Edible</option>
                       <option value="non-edible">Non-edible</option>
+                      <option value="branded">Branded</option>
                     </select>
                   ) : (
                     <p className="p-2 bg-gray-100 rounded">{formData.type}</p>

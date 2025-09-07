@@ -47,7 +47,7 @@ export default function AddProductPage() {
     setSuccess(null)
     setLoading(true)
 
-    if (!['edible', 'non-edible'].includes(formData.type)) {
+    if (!['edible', 'non-edible', 'branded'].includes(formData.type)) {
       setError("Type must be 'edible' or 'non-edible'")
       setLoading(false)
       return
@@ -123,6 +123,7 @@ setLoading(false);
             >
               <option value="">Select Type</option>
               <option value="edible">Edible</option>
+              <option value="branded">Branded</option>
               <option value="non-edible">Non-edible</option>
             </select>
             <label className="block text-sm font-medium text-gray-700">

@@ -1,14 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { OrderSummaryCards } from './components/OrderSummaryCards';
 import { OrderTable } from './components/OrderTable';
 import { FilterDropdown } from './components/FilterDropdown';
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [tab, setTab] = useState<'summary' | 'perUser'>('summary');
   const [status, setStatus] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -17,25 +20,32 @@ export default function OrdersPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-6">
-      
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-3">
         <Tabs value={tab} onValueChange={(val) => setTab(val as any)}>
           <TabsList>
             <TabsTrigger value="summary">Total Order Summary</TabsTrigger>
             <TabsTrigger value="perUser">Order Per User</TabsTrigger>
           </TabsList>
         </Tabs>
+
+        <Button
+          onClick={() => router.push('orders/returns')}
+          className="whitespace-nowrap"
+        >
+          Return Requests
+        </Button>
       </div>
 
       {tab === 'summary' && <OrderSummaryCards />}
 
       {tab === 'perUser' && (
         <Card className="p-4 md:p-6 space-y-4">
-         <div className="flex justify-center mb-8">
-          <span className="bg-white text-black px-6 py-2 rounded-full text-xl font-semibold border border-gray-400 shadow">
-            Order Per User
-          </span>
-        </div>
+          <div className="flex justify-center mb-8">
+            <span className="bg-white text-black px-6 py-2 rounded-full text-xl font-semibold border border-gray-400 shadow">
+              Order Per User
+            </span>
+          </div>
+
           <div className="flex flex-col md:flex-row flex-wrap gap-4 w-full items-end">
             <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
               <label className="text-sm text-gray-600">Search</label>
@@ -47,13 +57,23 @@ export default function OrdersPage() {
             </div>
 
             <FilterDropdown
-            label="Status"
-            value={status}
-            onChange={setStatus}
-            options={['PENDING_PAYMENT', 'AWAITING_FULFILLMENT' , 'FULFILLED' , 'SHIPPED' , 'DELIVERED' , 'PAYMENT_FAILED' , 'CANCELED' , 'RETURN_REQUESTED' , 'REFUNDED', 'NO_REFUND']}
-            widthClass="w-full"
+              label="Status"
+              value={status}
+              onChange={setStatus}
+              options={[
+                'PENDING_PAYMENT',
+                'AWAITING_FULFILLMENT',
+                'FULFILLED',
+                'SHIPPED',
+                'DELIVERED',
+                'PAYMENT_FAILED',
+                'CANCELED',
+                'RETURN_REQUESTED',
+                'REFUNDED',
+                'NO_REFUND',
+              ]}
+              widthClass="w-full"
             />
-
 
             <div className="flex flex-col gap-1 flex-1 min-w-[150px]">
               <label className="text-sm text-gray-600">Start Date</label>
