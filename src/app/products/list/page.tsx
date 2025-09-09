@@ -8,19 +8,18 @@ import { SimpleSwitch } from "@/components/ui/simple-switch"
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
-type Product = {
+type Service = {
   id: string
   name: string
   description: string
-  type: string
-  price_usd: number
-  stock: number | null
-  uwc_discount_enabled: boolean | null
-  image_url: string | null
+  region: string
+  standardPrice: number
+  discountedPrice: number | null
+  duration_months: number
+  uwaciCoinsRequired: number
+  minimum_term: number
   is_active: boolean | null
-  manufacturer_id: string
   created_at: string
-  region: string  
 }
 
 type PaginationData = {
@@ -31,12 +30,17 @@ type PaginationData = {
 }
 
 export default function Page({ region }: { region: string }) {
-  const [products, setProducts] = useState<Product[]>([])
+  const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-  const [productDetailsLoading, setProductDetailsLoading] = useState(false)
+
+  const [selected, setSelected] = useState<Service | null>(null)
+  const [detailsLoading, setDetailsLoading] = useState(false)
+  const [formData, setFormData] = useState<Partial<Service>>({})
+  const [saving, setSaving] = useState(false)
+  const [editMode, setEditMode] = useState(false)
+
   const [pagination, setPagination] = useState<PaginationData>({
     currentPage: 1,
     totalPages: 1,
@@ -44,20 +48,19 @@ export default function Page({ region }: { region: string }) {
     itemsPerPage: 10
   })
 
-  const [formData, setFormData] = useState<Partial<Product>>({})
-  const [saving, setSaving] = useState(false)
-  const [editMode, setEditMode] = useState(false)
-
-  const fetchProducts = useCallback(async () => {
+  const fetchServices = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({ page: page.toString(), limit: '10' })
-      if (region) params.append('region', region) 
-      const response = await fetch(`/api/products?${params}`)
-      if (!response.ok) throw new Error('Failed to fetch products')
-      const data = await response.json()
-      setProducts(data.products || [])
-      setPagination(data.pagination)
+      if (region) params.append('region', region)
+      const res = await fetch(`/api/services_ID?${params}`)
+      if (!res.ok) throw new Error('Failed to fetch services')
+      const data = await res.json()
+      setServices((data.services || []).map((s: any) => ({
+        ...s,
+        is_active: s.is_active ?? true,
+      })))
+      setPagination(data.pagination ?? { currentPage: 1, totalPages: 1, totalItems: (data.services || []).length, itemsPerPage: 10 })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -65,75 +68,83 @@ export default function Page({ region }: { region: string }) {
     }
   }, [page, region])
 
-  const fetchProductDetails = async (productId: string) => {
+  const fetchServiceDetails = async (id: string) => {
     try {
-      setProductDetailsLoading(true)
-      const response = await fetch(`/api/products/${productId}`)
-      if (!response.ok) throw new Error('Failed to fetch product details')
-      const data = await response.json()
-      setSelectedProduct(data)
-      setFormData(data)
+      setDetailsLoading(true)
+      const res = await fetch(`/api/services_ID/${id}`)
+      if (!res.ok) throw new Error('Failed to fetch service details')
+      const data = await res.json()
+      // expect { service: {...} } or raw object
+      const service = data.service ?? data
+      setSelected(service)
+      setFormData(service)
       setEditMode(false)
-    } catch (err) {
-      console.error('Error fetching product details:', err)
+    } catch (e) {
+      console.error(e)
     } finally {
-      setProductDetailsLoading(false)
+      setDetailsLoading(false)
     }
   }
 
-const handleSave = async () => {
-  if (!selectedProduct) return
-  if (!['edible', 'non-edible'].includes(formData.type || '')) {
-    alert("Type must be either 'edible' or 'non-edible'")
-    return
+  const handleSave = async () => {
+    if (!selected) return
+    setSaving(true)
+    try {
+      const body = {
+        ...formData,
+        standardPrice: Number(formData.standardPrice ?? 0),
+        discountedPrice:
+          formData.discountedPrice === null || formData.discountedPrice === undefined || formData.discountedPrice === ('' as any)
+            ? null
+            : Number(formData.discountedPrice),
+        duration_months: Number(formData.duration_months ?? 0),
+        uwaciCoinsRequired: Number(formData.uwaciCoinsRequired ?? 0),
+        minimum_term: Number(formData.minimum_term ?? 0),
+      }
+      const res = await fetch(`/api/services_ID/${selected.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) throw new Error('Failed to update service')
+      await fetchServices()
+      setSelected(null)
+      setEditMode(false)
+    } catch (e) {
+      console.error(e)
+      alert('Update failed.')
+    } finally {
+      setSaving(false)
+    }
   }
-  setSaving(true)
-  try {
-    const response = await fetch(`/api/products/${selectedProduct.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    })
-    if (!response.ok) throw new Error('Failed to update product')
-    await fetchProducts()
-    setSelectedProduct(null)
-    setEditMode(false)
-  } catch (err) {
-    console.error(err)
-    alert('Update failed.')
-  } finally {
-    setSaving(false)
+
+  const handleDelete = async () => {
+    if (!selected) return
+    if (!confirm("Are you sure you want to delete this service?")) return
+    try {
+      const res = await fetch(`/api/services_ID/${selected.id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to delete service')
+      await fetchServices()
+      setSelected(null)
+    } catch (e) {
+      console.error(e)
+      alert('Delete failed.')
+    }
   }
-}
-
-const handleDelete = async () => {
-  if (!selectedProduct) return;
-  if (!confirm("Are you sure you want to delete this product?")) return;
-
-  try {
-    const response = await fetch(`/api/products/${selectedProduct.id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) throw new Error('Failed to delete product');
-    await fetchProducts();
-    setSelectedProduct(null);
-  } catch (err) {
-    alert("Delete failed.");
-    console.error(err);
-  }
-};
-
-
 
   useEffect(() => {
-    fetchProducts()
-  }, [fetchProducts])
+    fetchServices()
+  }, [fetchServices])
+
+  const money = (n: number | null | undefined) => `$${Number(n ?? 0).toFixed(2)}`
+  const discountEnabled = (s: Service) =>
+    s.discountedPrice != null && Number(s.discountedPrice) < Number(s.standardPrice)
 
   return (
     <div className="p-2">
       <Card>
         <CardContent className="p-2">
-          <h2 className="text-xl font-semibold mb-6 text-center">Product List</h2>
+          <h2 className="text-xl font-semibold mb-6 text-center">Service List</h2>
 
           {loading ? (
             <div className="flex justify-center items-center min-h-[400px]">
@@ -147,78 +158,70 @@ const handleDelete = async () => {
                 <table className="min-w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-4 px-4 font-semibold">PRODUCT</th>
+                      <th className="text-left py-4 px-4 font-semibold">SERVICE</th>
                       <th className="text-left py-4 px-4 font-semibold">DESCRIPTION</th>
                       <th className="text-left py-4 px-4 font-semibold">PRICE (USD)</th>
-                      <th className="text-left py-4 px-4 font-semibold">STOCK</th>
+                      <th className="text-left py-4 px-4 font-semibold">DURATION</th>
                       <th className="text-left py-4 px-4 font-semibold">DISCOUNT</th>
                       <th className="text-left py-4 px-4 font-semibold">ACTIONS</th>
                       <th className="text-left py-4 px-4 font-semibold">STATUS</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {products.map((product) => (
-                      <tr key={product.id} className="border-b hover:bg-gray-50">
+                    {services.map((svc) => (
+                      <tr key={svc.id} className="border-b hover:bg-gray-50">
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
-                            {product.image_url ? (
-                              <img
-                                src={product.image_url}
-                                alt={product.name}
-                                className="w-10 h-10 object-cover rounded-md"
-                              />
-                            ) : (
-                              <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center text-sm text-gray-600">
-                                N/A
-                              </div>
-                            )}
-                            <span className="font-medium">{product.name}</span>
+                            <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center text-sm text-gray-600">
+                              SVC
+                            </div>
+                            <span className="font-medium">{svc.name}</span>
                           </div>
                         </td>
-                        <td className="py-4 px-4 text-sm text-gray-700">{product.description}</td>
-                        <td className="py-4 px-4">${product.price_usd.toFixed(2)}</td>
-                        <td className="py-4 px-4">{product.stock ?? 'N/A'}</td>
+                        <td className="py-4 px-4 text-sm text-gray-700">
+                          <div className="max-w-md">{svc.description}</div>
+                          <div className="text-xs text-gray-400 mt-1">Region: {svc.region}</div>
+                        </td>
+                        <td className="py-4 px-4">{money(svc.discountedPrice ?? svc.standardPrice)}</td>
+                        <td className="py-4 px-4">{svc.duration_months} months</td>
                         <td className="py-4 px-4">
-                          {product.uwc_discount_enabled ? (
+                          {discountEnabled(svc) ? (
                             <span className="inline-flex items-center gap-1 text-green-600 text-sm">
                               <BadgePercent className="w-4 h-4" /> Enabled
                             </span>
                           ) : (
-                            <span className="text-gray-400 text-sm"> Disabled</span>
+                            <span className="text-gray-400 text-sm">Disabled</span>
                           )}
                         </td>
                         <td className="py-4 px-4">
-                          <Button
-                            variant="outline"
-                            onClick={() => fetchProductDetails(product.id)}
-                          >
+                          <Button variant="outline" onClick={() => fetchServiceDetails(svc.id)}>
                             Edit / Delete
                           </Button>
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
-                            <span className={product.is_active ? "text-green-600 font-medium" : "text-gray-400 font-medium"}>
-                              {product.is_active ? "Active" : "Inactive"}
+                            <span className={svc.is_active ? "text-green-600 font-medium" : "text-gray-400 font-medium"}>
+                              {svc.is_active ? "Active" : "Inactive"}
                             </span>
-                          <SimpleSwitch
-                          checked={!!product.is_active}
-                          onChange={async (checked) => {
-                            setProducts(curr => curr.map(p =>
-                              p.id === product.id ? { ...p, _updating: true } : p
-                            ));
-                            await fetch(`/api/products/${product.id}`, {
-                              method: "PUT",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ is_active: checked }),
-                            });
-                            await fetchProducts();
-                          }}
-                          />
-                         {product._updating && (
-                          <div className="absolute inset-0 bg-black/30 z-10 rounded-lg animate-pulse" />
-                          )}
+                            <SimpleSwitch
+                              checked={!!svc.is_active}
+                              onChange={async (checked) => {
+                                setServices(curr => curr.map(p =>
+                                  p.id === svc.id ? { ...p, _updating: true as any } : p
+                                ))
+                                await fetch(`/api/services_ID/${svc.id}/status`, {
+                                  method: "PATCH",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ is_active: checked }),
+                                })
+                                await fetchServices()
+                              }}
+                            />
+                            {(svc as any)._updating && (
+                              <div className="absolute inset-0 bg-black/30 z-10 rounded-lg animate-pulse" />
+                            )}
                           </div>
-                          </td>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -252,148 +255,102 @@ const handleDelete = async () => {
       </Card>
 
       {/* Edit / View Modal */}
-      <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
         <DialogContent className="sm:max-w-2xl">
-          {productDetailsLoading ? (
+          {detailsLoading ? (
             <div className="flex justify-center items-center min-h-[200px]">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
-          ) : selectedProduct ? (
+          ) : selected ? (
             <>
-            <DialogHeader>
-              <DialogTitle className="text-center">
-                {editMode ? 'Edit Product' : 'Product Details'}
-              </DialogTitle>
-            </DialogHeader>
+              <DialogHeader>
+                <DialogTitle className="text-center">
+                  {editMode ? 'Edit Service' : 'Service Details'}
+                </DialogTitle>
+              </DialogHeader>
 
-
-              <div className="space-y-1 mt-2">
-                {/* Name */}
+              <div className="space-y-2 mt-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Name</label>
                   {editMode ? (
-                    <Input
-                      value={formData.name || ''}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    />
-                  ) : (
-                    <p className="p-2 bg-gray-100 rounded">{formData.name}</p>
-                  )}
+                    <Input value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                  ) : <p className="p-2 bg-gray-100 rounded">{formData.name}</p>}
                 </div>
 
-                {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Description</label>
                   {editMode ? (
-                    <Input
-                      value={formData.description || ''}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    />
-                  ) : (
-                    <p className="p-2 bg-gray-100 rounded">{formData.description}</p>
-                  )}
+                    <Input value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+                  ) : <p className="p-2 bg-gray-100 rounded">{formData.description}</p>}
                 </div>
 
-                {/* Type */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Type</label>
-                  {editMode ? (
-                    <select
-                      value={formData.type || ''}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="border p-2 rounded w-full"
-                    >
-                      <option value="">Select Type</option>
-                      <option value="edible">Edible</option>
-                      <option value="non-edible">Non-edible</option>
-                    </select>
-                  ) : (
-                    <p className="p-2 bg-gray-100 rounded">{formData.type}</p>
-                  )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Standard Price (USD)</label>
+                    {editMode ? (
+                      <Input type="number" value={String(formData.standardPrice ?? '')}
+                        onChange={(e) => setFormData({ ...formData, standardPrice: parseFloat(e.target.value) || 0 })} />
+                    ) : <p className="p-2 bg-gray-100 rounded">${Number(formData.standardPrice ?? 0).toFixed(2)}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Discounted Price</label>
+                    {editMode ? (
+                      <Input type="number" value={formData.discountedPrice as any ?? ''}
+                        onChange={(e) => setFormData({ ...formData, discountedPrice: e.target.value === '' ? null : (parseFloat(e.target.value) || 0) })} />
+                    ) : <p className="p-2 bg-gray-100 rounded">{formData.discountedPrice == null ? '-' : `$${Number(formData.discountedPrice).toFixed(2)}`}</p>}
+                  </div>
                 </div>
 
-                {/* Price */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Price (USD)</label>
-                  {editMode ? (
-                    <Input
-                      type="number"
-                      value={formData.price_usd || ''}
-                      onChange={(e) =>
-                        setFormData({ ...formData, price_usd: parseFloat(e.target.value) || 0 })
-                      }
-                    />
-                  ) : (
-                    <p className="p-2 bg-gray-100 rounded">${formData.price_usd?.toFixed(2)}</p>
-                  )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Duration (months)</label>
+                    {editMode ? (
+                      <Input type="number" value={String(formData.duration_months ?? '')}
+                        onChange={(e) => setFormData({ ...formData, duration_months: parseInt(e.target.value) || 0 })} />
+                    ) : <p className="p-2 bg-gray-100 rounded">{formData.duration_months}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">UWC Coins</label>
+                    {editMode ? (
+                      <Input type="number" value={String(formData.uwaciCoinsRequired ?? '')}
+                        onChange={(e) => setFormData({ ...formData, uwaciCoinsRequired: parseInt(e.target.value) || 0 })} />
+                    ) : <p className="p-2 bg-gray-100 rounded">{formData.uwaciCoinsRequired}</p>}
+                  </div>
                 </div>
 
-                {/* Stock */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Stock</label>
-                  {editMode ? (
-                    <Input
-                      type="number"
-                      value={formData.stock ?? ''}
-                      onChange={(e) =>
-                        setFormData({ ...formData, stock: parseInt(e.target.value) || null })
-                      }
-                    />
-                  ) : (
-                    <p className="p-2 bg-gray-100 rounded">{formData.stock ?? 'N/A'}</p>
-                  )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Minimum Term</label>
+                    {editMode ? (
+                      <Input type="number" value={String(formData.minimum_term ?? '')}
+                        onChange={(e) => setFormData({ ...formData, minimum_term: parseInt(e.target.value) || 0 })} />
+                    ) : <p className="p-2 bg-gray-100 rounded">{formData.minimum_term}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Country</label>
+                    {editMode ? (
+                      <select
+                        value={formData.region || ''}
+                        onChange={e => setFormData({ ...formData, region: e.target.value })}
+                        className="border p-2 rounded w-full"
+                        required
+                      >
+                        <option value="">Select Country</option>
+                        <option value="NZ">New Zealand</option>
+                        <option value="AU">Australia</option>
+                        <option value="US">United States</option>
+                      </select>
+                    ) : (
+                      <p className="p-2 bg-gray-100 rounded">
+                        {formData.region === 'NZ' ? 'New Zealand'
+                          : formData.region === 'AU' ? 'Australia'
+                          : formData.region === 'US' ? 'United States' : '-'}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Country</label>
-                  {editMode ? (
-                    <select
-                    value={formData.region || ''}
-                    onChange={e => setFormData({ ...formData, region: e.target.value })}
-                    className="border p-2 rounded w-full"
-                    required
-                    >
-                      <option value="">Select Country</option>
-                      <option value="NZ">New Zealand</option>
-                      <option value="AU">Australia</option>
-                      <option value="US">United States</option>
-                    </select>
-                  ) : (
-                  <p className="p-2 bg-gray-100 rounded">
-                    {
-                    formData.region === 'NZ' ? 'New Zealand'
-                    : formData.region === 'AU' ? 'Australia'
-                    : formData.region === 'US' ? 'United States'
-                    : '-'
-                    }
-                  </p>
-              )}
-              </div>
-
-                {/* Discount */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Discount</label>
-                  {editMode ? (
-                    <select
-                      value={formData.uwc_discount_enabled ? 'true' : 'false'}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          uwc_discount_enabled: e.target.value === 'true'
-                        })
-                      }
-                      className="border p-2 rounded w-full"
-                    >
-                      <option value="false">Disabled</option>
-                      <option value="true">Enabled</option>
-                    </select>
-                  ) : (
-                    <p className="p-2 bg-gray-100 rounded">
-                      {formData.uwc_discount_enabled ? 'Enabled' : 'Disabled'}
-                    </p>
-                  )}
-                </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <div className="flex items-center gap-4">
@@ -402,39 +359,29 @@ const handleDelete = async () => {
                     </span>
                     {editMode ? (
                       <SimpleSwitch
-                      checked={!!formData.is_active}
-                      onChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                        checked={!!formData.is_active}
+                        onChange={(checked) => setFormData({ ...formData, is_active: checked })}
                       />
-                      ) : null}
+                    ) : null}
                   </div>
                 </div>
-
               </div>
 
               <div className="mt-6 flex justify-end gap-4">
                 {editMode ? (
                   <>
-                  <Button variant="outline" onClick={() => {
-                    setEditMode(false);
-                    setFormData(selectedProduct); 
-                    }}>
+                    <Button variant="outline" onClick={() => { setEditMode(false); setFormData(selected) }}>
                       Cancel
-                  </Button>
-                  <Button onClick={handleSave} disabled={saving}>
-                    {saving ? 'Saving...' : 'Save'}
-                  </Button>
+                    </Button>
+                    <Button onClick={handleSave} disabled={saving}>
+                      {saving ? 'Saving...' : 'Save'}
+                    </Button>
                   </>
-                  ) : (
-                  <Button onClick={() => setEditMode(true)}>
-                    Edit
-                  </Button>
+                ) : (
+                  <Button onClick={() => setEditMode(true)}>Edit</Button>
                 )}
-                 <Button variant="destructive" onClick={handleDelete}>
-                    Delete
-                 </Button>
-                 <Button variant="ghost" onClick={() => setSelectedProduct(null)}>
-                    Close
-                 </Button>
+                <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+                <Button variant="ghost" onClick={() => setSelected(null)}>Close</Button>
               </div>
             </>
           ) : null}

@@ -12,7 +12,7 @@ const regionOptions = [
   { value: "US", label: "United States" }
 ]
 
-export default function ProductsPage() {
+export default function ServicesPage() {
   const router = useRouter()
   const [region, setRegion] = useState("")
 
@@ -34,10 +34,10 @@ export default function ProductsPage() {
           </select>
         </div>
         <Button
-          onClick={() => router.push('/products/add')}
+          onClick={() => router.push('/services_ID/add')}
           className="py-1 px-6 text-lg font-bold rounded-xl w-full sm:w-auto"
         >
-          Add Product
+          Add Service
         </Button>
       </div>
       <Page region={region} />
