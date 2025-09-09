@@ -14,51 +14,63 @@ import {
 } from '@/components/ui/table';
 import { Loader2 } from 'lucide-react';
 
+type SubscriptionStatus =
+  | 'PENDING_FIRST_PAYMENT'
+  | 'ACTIVE'
+  | 'PAST_DUE'
+  | 'CANCELED'
+  | 'REFUNDED';
+
 type Subscription = {
-  subscriptionid: string;
-  userid: string;
-  planid: string;
-  status: string;
-  start_date: string;
-  end_date: string;
-  auto_renew: boolean;
-  payment_method: string;
+  id: string;
+  user_id: string;
+  service_id: string | null;
+  status: SubscriptionStatus;
+  start_date: string;      // YYYY-MM-DD
+  renewal_date: string;    // YYYY-MM-DD
+  uwc_held: number;
+  price_usd: number;
   created_at: string;
-  users: { username: string };
-  plans: {
-    name: string;
-    services?: { name: string };
-  };
+  updated_at: string | null;
+  services?: { id: string; name: string; image_url?: string } | null; // joined
 };
 
 export const SubscriptionManager = () => {
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [editId, setEditId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // filters + paging
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'' | SubscriptionStatus>('');
   const [startDateFilter, setStartDateFilter] = useState('');
-  const [endDateFilter, setEndDateFilter] = useState('');
+  const [endDateFilter, setEndDateFilter] = useState(''); // used as "renewal before/at"
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const [editForm, setEditForm] = useState({
+  // edit form
+  const [editForm, setEditForm] = useState<{
+    status: SubscriptionStatus | '';
+    start_date: string;
+    renewal_date: string;
+  }>({
     status: '',
     start_date: '',
-    end_date: '',
+    renewal_date: '',
   });
 
   const fetchSubscriptions = async () => {
-    setLoading(true);
-    const res = await fetch('/api/subscriptions');
-    const json = await res.json();
-    const all = Array.isArray(json) ? json : json.subscriptions || [];
-    setSubs(
-      all.sort((a: Subscription, b: Subscription) =>
-        b.subscriptionid.localeCompare(a.subscriptionid)
-      )
-    );
-    setLoading(false);
+    try {
+      setLoading(true);
+      const res = await fetch('/api/subscriptions');
+      const json = await res.json();
+      const all: Subscription[] = Array.isArray(json) ? json : json.subscriptions || [];
+      setSubs(all);
+    } catch (e) {
+      console.error('Failed to load subscriptions:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -68,23 +80,28 @@ export const SubscriptionManager = () => {
   const handleDelete = async (id: string) => {
     const confirm = window.confirm('Are you sure you want to delete this subscription?');
     if (!confirm) return;
-    await fetch(`/api/subscriptions?id=${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/subscriptions?id=${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      alert(j.error || 'Failed to delete subscription');
+      return;
+    }
     fetchSubscriptions();
   };
 
-  const handleUpdate = async (subscriptionid: string) => {
+  const handleUpdate = async (id: string) => {
     const res = await fetch('/api/subscriptions', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        subscriptionid,
+        id,
         status: editForm.status,
         start_date: editForm.start_date,
-        end_date: editForm.end_date,
+        renewal_date: editForm.renewal_date,
       }),
     });
 
-    const json = await res.json();
+    const json = await res.json().catch(() => ({}));
     if (!res.ok) {
       alert(json.error || 'Failed to update subscription');
     } else {
@@ -95,9 +112,12 @@ export const SubscriptionManager = () => {
 
   const filteredSubs = useMemo(() => {
     return subs.filter((sub) => {
+      const q = search.toLowerCase().trim();
       const matchSearch =
-        (sub.users?.username?.toLowerCase() ?? '').includes(search.toLowerCase()) ||
-        sub.subscriptionid.toLowerCase().includes(search.toLowerCase());
+        !q ||
+        sub.id.toLowerCase().includes(q) ||
+        sub.user_id.toLowerCase().includes(q) ||
+        (sub.services?.name?.toLowerCase().includes(q) ?? false);
 
       const matchStatus = filterStatus ? sub.status === filterStatus : true;
 
@@ -105,8 +125,9 @@ export const SubscriptionManager = () => {
         ? new Date(sub.start_date) >= new Date(startDateFilter)
         : true;
 
+      // Treat endDateFilter as "renewal date before/at"
       const matchEnd = endDateFilter
-        ? new Date(sub.end_date) <= new Date(endDateFilter)
+        ? new Date(sub.renewal_date) <= new Date(endDateFilter)
         : true;
 
       return matchSearch && matchStatus && matchStart && matchEnd;
@@ -130,15 +151,22 @@ export const SubscriptionManager = () => {
 
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-4">
           <Input
-            placeholder="Search by User ID or Sub ID"
+            placeholder="Search by Sub ID, User ID, or Service"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full md:w-1/3"
           />
+
           <select
-            className="border px-2 py-1 rounded text-sm w-full md:w-1/3"
+            className="border px-2 py-1 rounded text-sm w-full md:w-1/4"
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => {
+              setFilterStatus(e.target.value as SubscriptionStatus | '');
+              setCurrentPage(1);
+            }}
           >
             <option value="">By Status</option>
             <option value="ACTIVE">ACTIVE</option>
@@ -146,20 +174,27 @@ export const SubscriptionManager = () => {
             <option value="PAST_DUE">PAST_DUE</option>
             <option value="PENDING_FIRST_PAYMENT">PENDING_FIRST_PAYMENT</option>
             <option value="REFUNDED">REFUNDED</option>
-            <option value="CANCEL_AT_PERIOD_END">CANCEL_AT_PERIOD_END</option>
           </select>
+
           <Input
             type="date"
             value={startDateFilter}
-            onChange={(e) => setStartDateFilter(e.target.value)}
-            className="w-full md:w-1/3"
+            onChange={(e) => {
+              setStartDateFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full md:w-1/4"
           />
           <Input
             type="date"
             value={endDateFilter}
-            onChange={(e) => setEndDateFilter(e.target.value)}
-            className="w-full md:w-1/3"
+            onChange={(e) => {
+              setEndDateFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full md:w-1/4"
           />
+
           <Button
             variant="outline"
             className="text-sm"
@@ -168,6 +203,7 @@ export const SubscriptionManager = () => {
               setFilterStatus('');
               setStartDateFilter('');
               setEndDateFilter('');
+              setCurrentPage(1);
             }}
           >
             Clear Filters
@@ -186,126 +222,129 @@ export const SubscriptionManager = () => {
                 <TableHeader>
                   <TableRow className="bg-slate-100 text-slate-700">
                     <TableHead>Sub ID</TableHead>
-                    <TableHead>User</TableHead>
-                    <TableHead>Plan Name</TableHead>
-                    <TableHead>Service Name</TableHead>
-                    <TableHead>Payment Method</TableHead>
+                    <TableHead>User ID</TableHead>
+                    <TableHead>Service</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>UWC Held</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Start Date</TableHead>
-                    <TableHead>End Date</TableHead>
+                    <TableHead>Start</TableHead>
+                    <TableHead>Renewal</TableHead>
                     <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedSubs.map((sub) => (
-                    <TableRow key={sub.subscriptionid}>
-                      <TableCell>{sub.subscriptionid}</TableCell>
-                      <TableCell>{sub.users?.username || sub.userid}</TableCell>
-                      <TableCell>{sub.plans?.name || 'N/A'}</TableCell>
-                      <TableCell>{sub.plans?.services?.name || 'N/A'}</TableCell>
-                      <TableCell>{sub.payment_method || 'N/A'}</TableCell>
+                  {paginatedSubs.map((sub) => {
+                    const isEditing = editId === sub.id;
+                    return (
+                      <TableRow key={sub.id}>
+                        <TableCell className="font-mono">{sub.id}</TableCell>
+                        <TableCell className="font-mono">{sub.user_id}</TableCell>
+                        <TableCell>{sub.services?.name ?? '—'}</TableCell>
+                        <TableCell>${Number(sub.price_usd ?? 0).toFixed(2)}/mo</TableCell>
+                        <TableCell>{sub.uwc_held}</TableCell>
 
-                      {editId === sub.subscriptionid ? (
-                        <>
-                          <TableCell>
-                            <select
-                              className="border px-2 py-1 rounded text-sm"
-                              value={editForm.status}
-                              onChange={(e) =>
-                                setEditForm((f) => ({ ...f, status: e.target.value }))
-                              }
-                            >
-                              <option value="ACTIVE">ACTIVE</option>
-                              <option value="CANCELED">CANCELED</option>
-                              <option value="PAST_DUE">PAST_DUE</option>
-                              <option value="PENDING_FIRST_PAYMENT">PENDING_FIRST_PAYMENT</option>
-                              <option value="REFUNDED">REFUNDED</option>
-                              <option value="CANCEL_AT_PERIOD_END">CANCEL_AT_PERIOD_END</option>
-                            </select>
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="date"
-                              value={editForm.start_date}
-                              onChange={(e) =>
-                                setEditForm((f) => ({ ...f, start_date: e.target.value }))
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="date"
-                              value={editForm.end_date}
-                              onChange={(e) =>
-                                setEditForm((f) => ({ ...f, end_date: e.target.value }))
-                              }
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2 justify-center">
-                              <Button size="sm" onClick={() => handleUpdate(sub.subscriptionid)}>
-                                Save
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={() => setEditId(null)}>
-                                Cancel
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </>
-                      ) : (
-                        <>
-                          <TableCell>
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full font-medium ${
-                                sub.status === 'ACTIVE'
-                                  ? 'bg-green-100 text-green-700'
-                                  : sub.status === 'CANCELED'
-                                  ? 'bg-red-100 text-red-700'
-                                  : sub.status === 'PAST_DUE'
-                                  ? 'bg-orange-100 text-orange-700'
-                                  : sub.status === 'PENDING_FIRST_PAYMENT'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : sub.status === 'REFUNDED'
-                                  ? 'bg-purple-100 text-purple-700'
-                                  : sub.status === 'CANCEL_AT_PERIOD_END'
-                                  ? 'bg-blue-100 text-blue-700'
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}
-                            >
-                              {sub.status.replaceAll('_', ' ')}
-                            </span>
-                          </TableCell>
-                          <TableCell>{sub.start_date}</TableCell>
-                          <TableCell>{sub.end_date}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-2 justify-center">
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                onClick={() => {
-                                  setEditId(sub.subscriptionid);
-                                  setEditForm({
-                                    status: sub.status,
-                                    start_date: sub.start_date,
-                                    end_date: sub.end_date,
-                                  });
-                                }}
+                        {isEditing ? (
+                          <>
+                            <TableCell>
+                              <select
+                                className="border px-2 py-1 rounded text-sm"
+                                value={editForm.status}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({
+                                    ...f,
+                                    status: e.target.value as SubscriptionStatus,
+                                  }))
+                                }
                               >
-                                Edit
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                onClick={() => handleDelete(sub.subscriptionid)}
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="CANCELED">CANCELED</option>
+                                <option value="PAST_DUE">PAST_DUE</option>
+                                <option value="PENDING_FIRST_PAYMENT">PENDING_FIRST_PAYMENT</option>
+                                <option value="REFUNDED">REFUNDED</option>
+                              </select>
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="date"
+                                value={editForm.start_date}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({ ...f, start_date: e.target.value }))
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="date"
+                                value={editForm.renewal_date}
+                                onChange={(e) =>
+                                  setEditForm((f) => ({ ...f, renewal_date: e.target.value }))
+                                }
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2 justify-center">
+                                <Button size="sm" onClick={() => handleUpdate(sub.id)}>
+                                  Save
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={() => setEditId(null)}>
+                                  Cancel
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </>
+                        ) : (
+                          <>
+                            <TableCell>
+                              <span
+                                className={`px-2 py-1 text-xs rounded-full font-medium ${
+                                  sub.status === 'ACTIVE'
+                                    ? 'bg-green-100 text-green-700'
+                                    : sub.status === 'CANCELED'
+                                    ? 'bg-red-100 text-red-700'
+                                    : sub.status === 'PAST_DUE'
+                                    ? 'bg-orange-100 text-orange-700'
+                                    : sub.status === 'PENDING_FIRST_PAYMENT'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : sub.status === 'REFUNDED'
+                                    ? 'bg-purple-100 text-purple-700'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}
                               >
-                                Delete
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </>
-                      )}
-                    </TableRow>
-                  ))}
+                                {sub.status.replaceAll('_', ' ')}
+                              </span>
+                            </TableCell>
+                            <TableCell>{sub.start_date}</TableCell>
+                            <TableCell>{sub.renewal_date}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2 justify-center">
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => {
+                                    setEditId(sub.id);
+                                    setEditForm({
+                                      status: sub.status,
+                                      start_date: sub.start_date,
+                                      renewal_date: sub.renewal_date,
+                                    });
+                                  }}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  onClick={() => handleDelete(sub.id)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </>
+                        )}
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -325,7 +364,7 @@ export const SubscriptionManager = () => {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={currentPage === totalPages}
+                disabled={currentPage === totalPages || totalPages === 0}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               >
                 Next

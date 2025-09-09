@@ -2,37 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 
 type Subscription = {
-  subscriptionid: string;
-  userid: string;
-  planid: string;
-  status: string;
-  start_date: string;
-  end_date: string;
-  auto_renew: boolean;
-  payment_method: string;
+  id: string;
+  user_id: string;
+  service_id: string | null;
+  status: 'PENDING_FIRST_PAYMENT' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'REFUNDED';
+  start_date: string;      
+  renewal_date: string;   
+  uwc_held: number;
+  price_usd: number;
   created_at: string;
-  users: { username: string };
-  plans: {
-    name: string;
-    services?: { name: string };
-  };
+  updated_at: string | null;
+  services?: { name: string; image_url?: string } | null;
 };
 
 type Props = {
   search: string;
   status: string | null;
   startDate: string | null;
-  endDate: string | null;
+  endDate: string | null; // used as "renewal until" filter
 };
 
 const PAGE_SIZE = 10;
@@ -43,7 +35,6 @@ const statusStyles: Record<string, string> = {
   PAST_DUE: 'bg-orange-100 text-orange-700',
   PENDING_FIRST_PAYMENT: 'bg-yellow-100 text-yellow-700',
   REFUNDED: 'bg-pink-100 text-pink-700',
-  CANCEL_AT_PERIOD_END: 'bg-blue-100 text-blue-700',
 };
 
 export const SubscriptionTable = ({ search, status, startDate, endDate }: Props) => {
@@ -53,11 +44,11 @@ export const SubscriptionTable = ({ search, status, startDate, endDate }: Props)
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const load = async () => {
       setLoading(true);
       try {
         const res = await fetch('/api/subscriptions');
-        const data = await res.json();
+        const data: Subscription[] = await res.json();
         setSubscriptions(data);
       } catch (err) {
         console.error('Failed to load subscriptions:', err);
@@ -65,7 +56,7 @@ export const SubscriptionTable = ({ search, status, startDate, endDate }: Props)
         setLoading(false);
       }
     };
-    fetchData();
+    load();
   }, []);
 
   useEffect(() => {
@@ -73,10 +64,9 @@ export const SubscriptionTable = ({ search, status, startDate, endDate }: Props)
 
     if (search) {
       const lower = search.toLowerCase();
-      result = result.filter(
-        (sub) =>
-          sub.users?.username?.toLowerCase().includes(lower) ||
-          sub.subscriptionid.toLowerCase().includes(lower)
+      result = result.filter((sub) =>
+        sub.id.toLowerCase().includes(lower) ||
+        (sub.services?.name?.toLowerCase().includes(lower) ?? false)
       );
     }
 
@@ -88,8 +78,9 @@ export const SubscriptionTable = ({ search, status, startDate, endDate }: Props)
       result = result.filter((sub) => new Date(sub.start_date) >= new Date(startDate));
     }
 
+    // treat endDate prop as "renewal before/at" filter
     if (endDate) {
-      result = result.filter((sub) => new Date(sub.end_date) <= new Date(endDate));
+      result = result.filter((sub) => new Date(sub.renewal_date) <= new Date(endDate));
     }
 
     setFiltered(result);
@@ -109,27 +100,24 @@ export const SubscriptionTable = ({ search, status, startDate, endDate }: Props)
             <TableHeader>
               <TableRow>
                 <TableHead>Subscription ID</TableHead>
-                <TableHead>Username</TableHead>
-                <TableHead>Plan Name</TableHead>
-                <TableHead>Service Name</TableHead>
-                <TableHead>Payment Method</TableHead>
-                <TableHead>Created On</TableHead>
+                <TableHead>Service</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>UWC Held</TableHead>
                 <TableHead>Start Date</TableHead>
-                <TableHead>End Date</TableHead>
+                <TableHead>Renewal Date</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Created On</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginated.map((sub) => (
-                <TableRow key={sub.subscriptionid}>
-                  <TableCell>{sub.subscriptionid}</TableCell>
-                  <TableCell>{sub.users?.username || 'N/A'}</TableCell>
-                  <TableCell>{sub.plans?.name || 'N/A'}</TableCell>
-                  <TableCell>{sub.plans?.services?.name || 'N/A'}</TableCell>
-                  <TableCell>{sub.payment_method || 'N/A'}</TableCell>
-                  <TableCell>{new Date(sub.created_at).toLocaleDateString()}</TableCell>
+                <TableRow key={sub.id}>
+                  <TableCell className="font-mono">{sub.id}</TableCell>
+                  <TableCell>{sub.services?.name ?? '—'}</TableCell>
+                  <TableCell>${Number(sub.price_usd ?? 0).toFixed(2)}/mo</TableCell>
+                  <TableCell>{sub.uwc_held}</TableCell>
                   <TableCell>{new Date(sub.start_date).toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(sub.end_date).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(sub.renewal_date).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <span
                       className={`px-2 py-1 text-xs rounded-full font-medium ${
@@ -139,15 +127,14 @@ export const SubscriptionTable = ({ search, status, startDate, endDate }: Props)
                       {sub.status.replace(/_/g, ' ')}
                     </span>
                   </TableCell>
+                  <TableCell>{new Date(sub.created_at).toLocaleDateString()}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
 
           {filtered.length === 0 && (
-            <p className="text-center text-gray-500 text-sm py-6">
-              No subscriptions found.
-            </p>
+            <p className="text-center text-gray-500 text-sm py-6">No subscriptions found.</p>
           )}
 
           {filtered.length > PAGE_SIZE && (
