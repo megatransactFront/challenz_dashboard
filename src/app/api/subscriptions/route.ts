@@ -4,18 +4,9 @@ import { NextResponse } from 'next/server';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! 
 );
 
-
-
-
-
-
-
-
-
-//GET: list or fetch by userId....
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -24,174 +15,152 @@ export async function GET(request: Request) {
     const query = supabase
       .from('subscriptions')
       .select(`
-        subscriptionid,
-        userid,
-        planid,
+        id,
+        user_id,
+        service_id,
         status,
         start_date,
-        end_date,
-        auto_renew,
-        payment_method,
+        renewal_date,
+        uwc_held,
+        price_usd,
         created_at,
-        users (
+        updated_at,
+        services (
           id,
-          username
-        ),
-        plans (
-          planid,
           name,
-          services (
-            serviceid,
-            name
-          )
+          image_url
         )
       `)
       .order('start_date', { ascending: false });
 
     if (userId) {
-      query.eq('userid', userId);
+      query.eq('user_id', userId);
     }
 
     const { data, error } = await query;
-
     if (error) throw error;
+
     return NextResponse.json(data);
   } catch (error) {
-    console.error('GET Error:', error);
+    console.error('GET /subscriptions error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-
-
-
-
-
-
-
-
-
-//POST: create a new subscription...
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-
     const {
-      subscriptionid,
-      userid,
-      planid,
-      status,
-      start_date,
-      end_date,
-      auto_renew,
-      payment_method
-    } = body;
+      user_id,
+      service_id = null,
+      status = 'ACTIVE',
+      start_date,         
+      renewal_date,        
+      uwc_held = 0,
+      price_usd
+    } = body ?? {};
 
-    if (!subscriptionid || !userid || !planid) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!user_id || price_usd == null) {
+      return NextResponse.json({ error: 'Missing required fields: user_id, price_usd' }, { status: 400 });
     }
 
-    const { data, error } = await supabase.from('subscriptions').insert([
-      {
-        subscriptionid,
-        userid,
-        planid,
-        status: status?.toUpperCase(),
-        start_date,
-        end_date,
-        auto_renew: auto_renew ?? true,
-        payment_method
-      }
-    ]);
+    const now = new Date();
+    const start = start_date ?? now.toISOString().slice(0, 10);
+    const renew = renewal_date ?? (() => {
+      const d = new Date(now);
+      d.setMonth(d.getMonth() + 1);
+      if (d.getDate() !== now.getDate()) d.setDate(0);
+      return d.toISOString().slice(0, 10);
+    })();
+
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .insert([
+        {
+          user_id,
+          service_id,
+          status,
+          start_date: start,
+          renewal_date: renew,
+          uwc_held,
+          price_usd: Number(price_usd),
+        },
+      ])
+      .select('*')
+      .single();
 
     if (error) throw error;
 
-    return NextResponse.json({
-      message: 'Subscription created successfully',
-      data
-    });
+    return NextResponse.json({ message: 'Subscription created', data });
   } catch (error) {
-    console.error('POST Error:', error);
+    console.error('POST /subscriptions error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
 
-
-
-
-
-
-
-
-//PATCH: update subscription(e.g., cancel, change status)..
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
     const {
-      subscriptionid,
-      planid,
+      id,                 
       status,
       start_date,
-      end_date,
-      auto_renew,
-      payment_method
-    } = body;
+      renewal_date,
+      uwc_held,
+      price_usd,
+      service_id,
+    } = body ?? {};
 
-    if (!subscriptionid) {
-      return NextResponse.json({ error: 'Missing subscription ID' }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: 'Missing subscription id' }, { status: 400 });
     }
 
-    const updateData: any = {
-      ...(planid !== undefined && { planid }),
-      ...(status !== undefined && { status: status.toUpperCase() }),
-      ...(start_date !== undefined && { start_date }),
-      ...(end_date !== undefined && { end_date }),
-      ...(auto_renew !== undefined && { auto_renew }),
-      ...(payment_method !== undefined && { payment_method }),
-    };
+    const update: Record<string, any> = {};
+    if (status !== undefined) update.status = status;
+    if (start_date !== undefined) update.start_date = start_date;
+    if (renewal_date !== undefined) update.renewal_date = renewal_date;
+    if (uwc_held !== undefined) update.uwc_held = uwc_held;
+    if (price_usd !== undefined) update.price_usd = Number(price_usd);
+    if (service_id !== undefined) update.service_id = service_id;
 
     const { data, error } = await supabase
       .from('subscriptions')
-      .update(updateData)
-      .eq('subscriptionid', subscriptionid);
+      .update(update)
+      .eq('id', id)
+      .select('*')
+      .single();
 
     if (error) throw error;
 
     return NextResponse.json({ message: 'Subscription updated', data });
   } catch (error) {
-    console.error('PATCH Error:', error);
+    console.error('PATCH /subscriptions error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-
-
-
-
-
-
-
-
-//DELETE: delete subscription(if needed)..
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const subscriptionid = searchParams.get('id');
+    const id = searchParams.get('id');
 
-    if (!subscriptionid) {
-      return NextResponse.json({ error: 'Missing subscription ID' }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: 'Missing subscription id' }, { status: 400 });
     }
 
     const { data, error } = await supabase
       .from('subscriptions')
       .delete()
-      .eq('subscriptionid', subscriptionid);
+      .eq('id', id)
+      .select('id')
+      .single();
 
     if (error) throw error;
+
     return NextResponse.json({ message: 'Subscription deleted', data });
   } catch (error) {
-    console.error('DELETE Error:', error);
+    console.error('DELETE /subscriptions error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

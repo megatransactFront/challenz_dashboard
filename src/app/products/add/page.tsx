@@ -36,6 +36,12 @@ export default function AddServicePage() {
     setSuccess(null)
     setLoading(true)
 
+    if (!['edible', 'non-edible', 'branded'].includes(formData.type)) {
+      setError("Type must be 'edible' or 'non-edible'")
+      setLoading(false)
+      return
+    }
+
     try {
       const res = await fetch('/api/services_ID', {
         method: 'POST',
@@ -69,35 +75,127 @@ export default function AddServicePage() {
         <CardContent className="p-8">
           <h1 className="text-2xl font-semibold mb-1 text-center">Add a New Service</h1>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <Input name="name" value={formData.name} placeholder="Service Name" onChange={handleChange} required />
-            <Textarea name="description" value={formData.description} placeholder="Description" onChange={handleChange} required />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Input name="standardPrice" value={formData.standardPrice} placeholder="Standard Price (USD)" onChange={handleChange} type="number" min={0} step="0.01" required />
-              <Input name="discountedPrice" value={formData.discountedPrice} placeholder="Discounted Price (optional)" onChange={handleChange} type="number" min={0} step="0.01" />
-              <Input name="duration_months" value={formData.duration_months} placeholder="Duration (months)" onChange={handleChange} type="number" min={0} />
-              <Input name="uwaciCoinsRequired" value={formData.uwaciCoinsRequired} placeholder="UWC Coins Required" onChange={handleChange} type="number" min={0} />
-              <Input name="minimum_term" value={formData.minimum_term} placeholder="Minimum Term (months)" onChange={handleChange} type="number" min={0} />
-              <select name="region" value={formData.region} onChange={handleChange} required className="w-full p-2 border rounded">
-                <option value="">Select Country</option>
-                <option value="NZ">NZ</option>
-                <option value="AU">AU</option>
-                <option value="US">US</option>
-              </select>
+          <form onSubmit={handleSubmit} className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
+              Product Name <span className="text-red-500">*</span>
+            </label>
+            <Input
+              name="name"
+              value={formData.name}
+              placeholder="Product Name"
+              onChange={handleChange}
+              required
+              className="w-full"
+            />
+            <label className="block text-sm font-medium text-gray-700">
+              Description <span className="text-red-500">*</span>
+              </label>
+            <Textarea
+              name="description"
+              value={formData.description}
+              placeholder="Description"
+              onChange={handleChange}
+              required
+              className="w-full"
+            />
+            <label className="block text-sm font-medium text-gray-700">
+              Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="type"
+              value={formData.type}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded"
+            >
+              <option value="">Select Type</option>
+              <option value="edible">Edible</option>
+              <option value="branded">Branded</option>
+              <option value="non-edible">Non-edible</option>
+            </select>
+            <label className="block text-sm font-medium text-gray-700">
+              Price (USD) <span className="text-red-500">*</span>
+            </label>
+            <Input
+              name="price_usd"
+              value={formData.price_usd}
+              placeholder="Price (USD)"
+              onChange={handleChange}
+              type="number"
+              min={0}
+              step="0.01"   
+              required
+              className="w-full"
+            />
+            <label className="block text-sm font-medium text-gray-700">
+              Stock <span className="text-red-500">*</span>
+            </label>
+            <Input
+              name="stock"
+              value={formData.stock}
+              placeholder="Stock"
+              onChange={handleChange}
+              type="number"
+              min={0}
+              required
+              className="w-full"
+            />
+            <label className="block text-sm font-medium text-gray-700">
+              Country <span className="text-red-500">*</span>
+            </label>
+            <select
+            name="region"
+            value={formData.region}
+            onChange={handleChange}
+            required
+            className="w-full p-2 border rounded"
+            >
+              <option value="">Select Country</option>
+              <option value="NZ">NZ</option>
+              <option value="AU">AU</option>
+              <option value="US">US</option>
+            </select>
+            <Input
+              name="image_url"
+              value={formData.image_url}
+              placeholder="Image URL"
+              onChange={handleChange}
+              className="w-full"
+            />
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                name="uwc_discount_enabled"
+                checked={formData.uwc_discount_enabled}
+                onChange={handleChange}
+                id="uwc_discount_enabled"
+              />
+              <label htmlFor="uwc_discount_enabled" className="text-sm">
+                Enable UWC Discount
+              </label>
             </div>
 
-            <div className="flex items-center gap-2 pt-1">
-              <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleChange} id="is_active" />
-              <label htmlFor="is_active" className="text-sm">Active</label>
-            </div>
-
-            {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-            {success && <div className="text-green-600 text-sm text-center">{success}</div>}
-
-            <div className="flex justify-center">
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : 'Submit'}
+            {error && (
+              <div className="text-red-500 text-sm text-center">{error}</div>
+            )}
+            {success && (
+              <div className="text-green-600 text-sm text-center">{success}</div>
+            )}
+            
+            <div className="flex justify-center gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push('/products')}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+                >
+                  {loading ? 'Saving...' : 'Submit'}
               </Button>
             </div>
           </form>

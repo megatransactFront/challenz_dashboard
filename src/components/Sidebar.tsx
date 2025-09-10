@@ -137,6 +137,13 @@ const mainMenuItems: MenuItemType[] = [
     icon: Box,
     path: "/products",
   },
+  {
+    title: "Flash Sales",
+    prevIcon: ChevronRight,
+    icon: Box,
+    path: "/sales",
+
+  }
 
   {
     title: "Services",

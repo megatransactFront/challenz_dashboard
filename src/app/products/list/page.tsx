@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { SimpleSwitch } from "@/components/ui/simple-switch"
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { supabase } from "@/lib/supabase/client"
 
 type Service = {
   id: string
@@ -20,6 +21,8 @@ type Service = {
   minimum_term: number
   is_active: boolean | null
   created_at: string
+  region: string
+  _updating?: boolean
 }
 
 type PaginationData = {
@@ -48,19 +51,36 @@ export default function Page({ region }: { region: string }) {
     itemsPerPage: 10
   })
 
-  const fetchServices = useCallback(async () => {
+  const [formData, setFormData] = useState<Partial<Product>>({})
+  const [saving, setSaving] = useState(false)
+  const [editMode, setEditMode] = useState(false)
+  
+  // Manufacturer selection states
+  const [isManufacturerListOpen, setIsManufacturerListOpen] = useState<boolean>(false)
+  const [allManufacturers, setAllManufacturers] = useState<any[]>([])
+  const [selectedManufacturers, setSelectedManufacturers] = useState<Set<string>>(new Set())
+  const [currentProductId, setCurrentProductId] = useState<string>("")
+  const [manufacturerLoading, setManufacturerLoading] = useState(false)
+  
+  // Product manufacturers view states
+  const [isViewManufacturersOpen, setIsViewManufacturersOpen] = useState<boolean>(false)
+  const [productManufacturers, setProductManufacturers] = useState<any[]>([])
+  const [productManufacturerCounts, setProductManufacturerCounts] = useState<{[key: string]: number}>({})
+  const [viewManufacturersLoading, setViewManufacturersLoading] = useState(false)
+
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true)
       const params = new URLSearchParams({ page: page.toString(), limit: '10' })
-      if (region) params.append('region', region)
-      const res = await fetch(`/api/services_ID?${params}`)
-      if (!res.ok) throw new Error('Failed to fetch services')
-      const data = await res.json()
-      setServices((data.services || []).map((s: any) => ({
-        ...s,
-        is_active: s.is_active ?? true,
-      })))
-      setPagination(data.pagination ?? { currentPage: 1, totalPages: 1, totalItems: (data.services || []).length, itemsPerPage: 10 })
+      if (region) params.append('region', region) 
+      const response = await fetch(`/api/products?${params}`)
+      if (!response.ok) throw new Error('Failed to fetch products')
+      const data = await response.json()
+      setProducts(data.products || [])
+      setPagination(data.pagination)
+      
+      // Fetch manufacturer counts for all products
+      await fetchManufacturerCounts(data.products || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -86,37 +106,30 @@ export default function Page({ region }: { region: string }) {
     }
   }
 
-  const handleSave = async () => {
-    if (!selected) return
-    setSaving(true)
-    try {
-      const body = {
-        ...formData,
-        standardPrice: Number(formData.standardPrice ?? 0),
-        discountedPrice:
-          formData.discountedPrice === null || formData.discountedPrice === undefined || formData.discountedPrice === ('' as any)
-            ? null
-            : Number(formData.discountedPrice),
-        duration_months: Number(formData.duration_months ?? 0),
-        uwaciCoinsRequired: Number(formData.uwaciCoinsRequired ?? 0),
-        minimum_term: Number(formData.minimum_term ?? 0),
-      }
-      const res = await fetch(`/api/services_ID/${selected.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      if (!res.ok) throw new Error('Failed to update service')
-      await fetchServices()
-      setSelected(null)
-      setEditMode(false)
-    } catch (e) {
-      console.error(e)
-      alert('Update failed.')
-    } finally {
-      setSaving(false)
-    }
+const handleSave = async () => {
+  if (!selectedProduct) return
+  if (!['edible', 'non-edible', 'branded'].includes(formData.type || '')) {
+    alert("Type must be either 'edible' or 'non-edible'")
+    return
   }
+  setSaving(true)
+  try {
+    const response = await fetch(`/api/products/${selectedProduct.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+    if (!response.ok) throw new Error('Failed to update product')
+    await fetchProducts()
+    setSelectedProduct(null)
+    setEditMode(false)
+  } catch (err) {
+    console.error(err)
+    alert('Update failed.')
+  } finally {
+    setSaving(false)
+  }
+}
 
   const handleDelete = async () => {
     if (!selected) return
@@ -131,6 +144,151 @@ export default function Page({ region }: { region: string }) {
       alert('Delete failed.')
     }
   }
+};
+
+// Fetch all manufacturers for selection
+const fetchAllManufacturers = async () => {
+  try {
+    setManufacturerLoading(true)
+    const { data, error } = await supabase.rpc('get_all_manufacturers')
+    if (error) throw error
+    setAllManufacturers(data || [])
+  } catch (error: any) {
+    console.error('Error fetching manufacturers:', error)
+    alert('Error fetching manufacturers: ' + error.message)
+  } finally {
+    setManufacturerLoading(false)
+  }
+}
+
+// Fetch manufacturer counts for products
+const fetchManufacturerCounts = async (products: Product[]) => {
+  try {
+    const counts: {[key: string]: number} = {}
+    
+    // Fetch count for each product
+    for (const product of products) {
+      const { data, error } = await supabase
+        .rpc('get_product_manufacturers', { p_product_id: product.id })
+      
+      if (error) {
+        console.error('Error fetching manufacturer count for product', product.id, error)
+        counts[product.id] = 0
+      } else {
+        counts[product.id] = data?.length || 0    
+      }
+    }
+    
+    setProductManufacturerCounts(counts)
+  } catch (error: any) {
+    console.error('Error fetching manufacturer counts:', error)
+  }
+}
+
+// Fetch manufacturers for a specific product
+const fetchProductManufacturers = async (productId: string) => {
+  try {
+    setViewManufacturersLoading(true)
+    const { data, error } = await supabase
+      .rpc('get_product_manufacturers', { p_product_id: productId })
+    
+    if (error) throw error
+    setProductManufacturers(data || [])
+  } catch (error: any) {
+    console.error('Error fetching product manufacturers:', error)
+    alert('Error fetching product manufacturers: ' + error.message)
+  } finally {
+    setViewManufacturersLoading(false)
+  }
+}
+
+// Open view manufacturers modal
+const openViewManufacturers = (productId: string) => {
+  setCurrentProductId(productId)
+  fetchProductManufacturers(productId)
+  setIsViewManufacturersOpen(true)
+}
+
+// Handle manufacturer selection
+const handleManufacturerSelect = (manufacturerId: string) => {
+  const newSelected = new Set(selectedManufacturers)
+  if (newSelected.has(manufacturerId)) {
+    newSelected.delete(manufacturerId)
+  } else {
+    newSelected.add(manufacturerId)
+  }
+  setSelectedManufacturers(newSelected)
+}
+
+// Open manufacturer selection modal
+const openManufacturerList = (productId: string) => {
+  setCurrentProductId(productId)
+  setSelectedManufacturers(new Set())
+  fetchAllManufacturers()
+  setIsManufacturerListOpen(true)
+}
+
+// Save selected manufacturers to product
+const saveSelectedManufacturers = async () => {
+  console.log('Function called - saveSelectedManufacturers')
+  console.log('Current Product ID:', currentProductId)
+  console.log('Selected Manufacturers:', Array.from(selectedManufacturers))
+  
+  if (!currentProductId || selectedManufacturers.size === 0) {
+    console.log('Early return - missing product ID or no manufacturers selected')
+    alert('Please select at least one manufacturer')
+    return
+  }
+  
+  try {
+    console.log('Sending data to API:', {
+      product_id: currentProductId,
+      manufacturer_ids: Array.from(selectedManufacturers)
+    })
+
+    const response = await fetch('https://masswgndvgtpdabpknsx.supabase.co/functions/v1/add-product-manufacturers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({
+        product_id: currentProductId,
+        manufacturer_ids: Array.from(selectedManufacturers)
+      })
+    })
+
+    console.log('Response status:', response.status)
+    console.log('Response headers:', response.headers)
+
+    const result = await response.json()
+    console.log('API Response:', result)
+
+    if (!response.ok) {
+      throw new Error(result.error || result.details || `HTTP ${response.status}: Failed to save manufacturers`)
+    }
+
+    // Check if the API returned partial success (status 207)
+    if (result.errors && result.errors.length > 0) {
+      console.warn('Some manufacturers failed to save:', result.errors)
+      alert(`Warning: ${result.total_inserted} manufacturers saved successfully, but ${result.total_failed} failed. Check console for details.`)
+    } else {
+      alert(`${result.total_inserted} manufacturers successfully added to product`)
+    }
+    
+    setIsManufacturerListOpen(false)
+    setSelectedManufacturers(new Set())
+    setCurrentProductId("")
+    
+    // Refresh the products list and manufacturer counts
+    await fetchProducts()
+  } catch (error: any) {
+    console.error('Error saving manufacturers:', error)
+    alert('Error saving manufacturers: ' + error.message)
+  }
+}
+
+
 
   useEffect(() => {
     fetchServices()
@@ -163,6 +321,7 @@ export default function Page({ region }: { region: string }) {
                       <th className="text-left py-4 px-4 font-semibold">PRICE (USD)</th>
                       <th className="text-left py-4 px-4 font-semibold">DURATION</th>
                       <th className="text-left py-4 px-4 font-semibold">DISCOUNT</th>
+                      <th className="text-left py-4 px-4 font-semibold">MANUFACTURERS</th>
                       <th className="text-left py-4 px-4 font-semibold">ACTIONS</th>
                       <th className="text-left py-4 px-4 font-semibold">STATUS</th>
                     </tr>
@@ -194,7 +353,28 @@ export default function Page({ region }: { region: string }) {
                           )}
                         </td>
                         <td className="py-4 px-4">
-                          <Button variant="outline" onClick={() => fetchServiceDetails(svc.id)}>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => openViewManufacturers(product.id)}
+                              className="text-blue-600 hover:text-blue-800 text-sm font-medium underline"
+                            >
+                              {productManufacturerCounts[product.id] || 0} Manufacturers
+                            </button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openManufacturerList(product.id)}
+                              className="text-xs px-2 py-1 h-6"
+                            >
+                              Add Manufacturers
+                            </Button>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Button
+                            variant="outline"
+                            onClick={() => fetchProductDetails(product.id)}
+                          >
                             Edit / Delete
                           </Button>
                         </td>
@@ -284,21 +464,23 @@ export default function Page({ region }: { region: string }) {
                   ) : <p className="p-2 bg-gray-100 rounded">{formData.description}</p>}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Standard Price (USD)</label>
-                    {editMode ? (
-                      <Input type="number" value={String(formData.standardPrice ?? '')}
-                        onChange={(e) => setFormData({ ...formData, standardPrice: parseFloat(e.target.value) || 0 })} />
-                    ) : <p className="p-2 bg-gray-100 rounded">${Number(formData.standardPrice ?? 0).toFixed(2)}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Discounted Price</label>
-                    {editMode ? (
-                      <Input type="number" value={formData.discountedPrice as any ?? ''}
-                        onChange={(e) => setFormData({ ...formData, discountedPrice: e.target.value === '' ? null : (parseFloat(e.target.value) || 0) })} />
-                    ) : <p className="p-2 bg-gray-100 rounded">{formData.discountedPrice == null ? '-' : `$${Number(formData.discountedPrice).toFixed(2)}`}</p>}
-                  </div>
+                {/* Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Type</label>
+                  {editMode ? (
+                    <select
+                      value={formData.type || ''}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="border p-2 rounded w-full"
+                    >
+                      <option value="">Select Type</option>
+                      <option value="edible">Edible</option>
+                      <option value="non-edible">Non-edible</option>
+                      <option value="branded">Branded</option>
+                    </select>
+                  ) : (
+                    <p className="p-2 bg-gray-100 rounded">{formData.type}</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -385,6 +567,168 @@ export default function Page({ region }: { region: string }) {
               </div>
             </>
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      {/* Manufacturer Selection Modal */}
+      <Dialog open={isManufacturerListOpen} onOpenChange={setIsManufacturerListOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Select Manufacturers for Product</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto">
+            {manufacturerLoading ? (
+              <div className="flex justify-center items-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-2">Loading manufacturers...</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {allManufacturers.length > 0 ? (
+                  allManufacturers.map((manufacturer) => (
+                    <div 
+                      key={manufacturer.manufacturer_id} 
+                      className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                      onClick={() => handleManufacturerSelect(manufacturer.manufacturer_id)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedManufacturers.has(manufacturer.manufacturer_id)}
+                        onChange={() => handleManufacturerSelect(manufacturer.manufacturer_id)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center">
+                          <h3 className="font-medium text-gray-900">{manufacturer.name}</h3>
+                          <span className="text-sm text-gray-500">{manufacturer.country || 'N/A'}</span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          {[manufacturer.city, manufacturer.state].filter(Boolean).join(', ') || 'Location not specified'}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {manufacturer.contact_email || manufacturer.phone_number || 'No contact info'}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center p-8 text-gray-500">
+                    No manufacturers found
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex justify-between items-center pt-4 border-t">
+            <p className="text-sm text-gray-600">
+              {selectedManufacturers.size} manufacturer(s) selected
+            </p>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsManufacturerListOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={saveSelectedManufacturers}
+                disabled={selectedManufacturers.size === 0}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Save Selection
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Product Manufacturers Modal */}
+      <Dialog open={isViewManufacturersOpen} onOpenChange={setIsViewManufacturersOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Product Manufacturers</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto">
+            {viewManufacturersLoading ? (
+              <div className="flex justify-center items-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-2">Loading manufacturers...</span>
+              </div>
+            ) : (
+              <div>
+                {productManufacturers.length === 0 ? (
+                  <div className="text-center p-8 text-gray-500">
+                    No manufacturers found for this product
+                  </div>
+                ) : (
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    {productManufacturers.map((manufacturer) => (
+                      <div 
+                        key={manufacturer.manufacturer_id} 
+                        className="border p-4 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <h3 className="font-bold text-lg text-gray-900 mb-2">
+                          {manufacturer.name}
+                        </h3>
+                        
+                        {manufacturer.contact_email && (
+                          <div className="mb-2">
+                            <span className="text-sm font-medium text-gray-600">Email: </span>
+                            <span className="text-sm text-gray-800">{manufacturer.contact_email}</span>
+                          </div>
+                        )}
+                        
+                        {manufacturer.phone_number && (
+                          <div className="mb-2">
+                            <span className="text-sm font-medium text-gray-600">Phone: </span>
+                            <span className="text-sm text-gray-800">{manufacturer.phone_number}</span>
+                          </div>
+                        )}
+                        
+                        {manufacturer.country && (
+                          <div className="mb-2">
+                            <span className="text-sm font-medium text-gray-600">Country: </span>
+                            <span className="text-sm text-gray-800">{manufacturer.country}</span>
+                          </div>
+                        )}
+                        
+                        {(manufacturer.city || manufacturer.state) && (
+                          <div className="mb-2">
+                            <span className="text-sm font-medium text-gray-600">Location: </span>
+                            <span className="text-sm text-gray-800">
+                              {[manufacturer.city, manufacturer.state].filter(Boolean).join(', ')}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {manufacturer.street && (
+                          <div className="mb-2">
+                            <span className="text-sm font-medium text-gray-600">Address: </span>
+                            <span className="text-sm text-gray-800">{manufacturer.street}</span>
+                          </div>
+                        )}
+                        
+                        {manufacturer.postcode && (
+                          <div className="mb-2">
+                            <span className="text-sm font-medium text-gray-600">Postcode: </span>
+                            <span className="text-sm text-gray-800">{manufacturer.postcode}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end pt-4 border-t">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsViewManufacturersOpen(false)}
+            >
+              Close
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
