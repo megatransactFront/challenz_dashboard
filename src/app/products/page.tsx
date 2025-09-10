@@ -12,7 +12,7 @@ const regionOptions = [
   { value: "US", label: "United States" }
 ]
 
-export default function ServicesPage() {
+export default function ProductsPage() {
   const router = useRouter()
   const [region, setRegion] = useState("")
 

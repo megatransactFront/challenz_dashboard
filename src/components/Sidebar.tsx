@@ -143,8 +143,7 @@ const mainMenuItems: MenuItemType[] = [
     icon: Box,
     path: "/sales",
 
-  }
-
+  },
   {
     title: "Services",
     prevIcon: ChevronRight,

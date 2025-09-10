@@ -7,28 +7,39 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 
-export default function AddServicePage() {
+export default function AddProductPage() {
   const router = useRouter()
 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    standardPrice: '',
-    discountedPrice: '',
-    duration_months: '',
-    uwaciCoinsRequired: '',
-    minimum_term: '',
+    type: '',
+    price_usd: '',
+    stock: '',
+    image_url: '',
+    uwc_discount_enabled: false,
     is_active: true,
     region: '',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target as HTMLInputElement
-    setFormData(prev => ({ ...prev, [name]: type === "checkbox" ? checked : value }))
+  const { name, value, type, checked } = e.target;
+  if (name === "stock") {
+    if (formData.stock !== undefined && Number(formData.stock) !== 0 && Number(value) === 0) {
+      alert("Stock cannot be set to 0 once set. Please delete the product if it's out of stock.");
+      return;
+    }
   }
+
+  setFormData(prev => ({
+    ...prev,
+    [name]: type === "checkbox" ? checked : value,
+  }));
+};
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,37 +54,39 @@ export default function AddServicePage() {
     }
 
     try {
-      const res = await fetch('/api/services_ID', {
-        method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          standardPrice: parseFloat(formData.standardPrice) || 0,
-          discountedPrice: formData.discountedPrice === '' ? null : (parseFloat(formData.discountedPrice) || 0),
-          duration_months: parseInt(formData.duration_months) || 0,
-          uwaciCoinsRequired: parseInt(formData.uwaciCoinsRequired) || 0,
-          minimum_term: parseInt(formData.minimum_term) || 0,
-        }),
-      })
-      const data = await res.json()
+  const res = await fetch('/api/products', {
+    method: 'POST',
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...formData,
+      price_usd: parseFloat(formData.price_usd) || 0,
+      stock: parseInt(formData.stock) || 0,
+    }),
+  });
+  const data = await res.json();
 
-      if (!res.ok) {
-        setError("Failed to add service: " + (data.error || "Unknown error"))
-      } else {
-        setSuccess("Service added successfully!")
-        setTimeout(() => router.push('/services_ID'), 900)
-      }
-    } catch (err: any) {
-      setError("Failed to add service: " + err.message)
-    }
-    setLoading(false)
+  if (!res.ok) {
+    setError("Failed to add product: " + (data.error || "Unknown error"));
+  } else {
+    setSuccess("Product added successfully!");
+    setTimeout(() => {
+      router.push('/products');
+    }, 900);
+  }
+} catch (err: any) {
+  setError("Failed to add product: " + err.message);
+}
+setLoading(false);
+
   }
 
   return (
     <div className="max-w-2xl mx-auto p-6">
       <Card>
         <CardContent className="p-8">
-          <h1 className="text-2xl font-semibold mb-1 text-center">Add a New Service</h1>
+          <h1 className="text-2xl font-semibold mb-1 text-center">
+            Add a New Product
+            </h1>
 
           <form onSubmit={handleSubmit} className="space-y-1">
             <label className="block text-sm font-medium text-gray-700">
@@ -198,6 +211,7 @@ export default function AddServicePage() {
                   {loading ? 'Saving...' : 'Submit'}
               </Button>
             </div>
+
           </form>
         </CardContent>
       </Card>

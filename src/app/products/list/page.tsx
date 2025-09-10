@@ -9,17 +9,17 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { supabase } from "@/lib/supabase/client"
 
-type Service = {
+type Product = {
   id: string
   name: string
   description: string
-  region: string
-  standardPrice: number
-  discountedPrice: number | null
-  duration_months: number
-  uwaciCoinsRequired: number
-  minimum_term: number
+  type: string
+  price_usd: number
+  stock: number | null
+  uwc_discount_enabled: boolean | null
+  image_url: string | null
   is_active: boolean | null
+  manufacturer_id: string
   created_at: string
   region: string
   _updating?: boolean
@@ -33,17 +33,12 @@ type PaginationData = {
 }
 
 export default function Page({ region }: { region: string }) {
-  const [services, setServices] = useState<Service[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
-
-  const [selected, setSelected] = useState<Service | null>(null)
-  const [detailsLoading, setDetailsLoading] = useState(false)
-  const [formData, setFormData] = useState<Partial<Service>>({})
-  const [saving, setSaving] = useState(false)
-  const [editMode, setEditMode] = useState(false)
-
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [productDetailsLoading, setProductDetailsLoading] = useState(false)
   const [pagination, setPagination] = useState<PaginationData>({
     currentPage: 1,
     totalPages: 1,
@@ -88,21 +83,19 @@ export default function Page({ region }: { region: string }) {
     }
   }, [page, region])
 
-  const fetchServiceDetails = async (id: string) => {
+  const fetchProductDetails = async (productId: string) => {
     try {
-      setDetailsLoading(true)
-      const res = await fetch(`/api/services_ID/${id}`)
-      if (!res.ok) throw new Error('Failed to fetch service details')
-      const data = await res.json()
-      // expect { service: {...} } or raw object
-      const service = data.service ?? data
-      setSelected(service)
-      setFormData(service)
+      setProductDetailsLoading(true)
+      const response = await fetch(`/api/products/${productId}`)
+      if (!response.ok) throw new Error('Failed to fetch product details')
+      const data = await response.json()
+      setSelectedProduct(data)
+      setFormData(data)
       setEditMode(false)
-    } catch (e) {
-      console.error(e)
+    } catch (err) {
+      console.error('Error fetching product details:', err)
     } finally {
-      setDetailsLoading(false)
+      setProductDetailsLoading(false)
     }
   }
 
@@ -131,18 +124,20 @@ const handleSave = async () => {
   }
 }
 
-  const handleDelete = async () => {
-    if (!selected) return
-    if (!confirm("Are you sure you want to delete this service?")) return
-    try {
-      const res = await fetch(`/api/services_ID/${selected.id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to delete service')
-      await fetchServices()
-      setSelected(null)
-    } catch (e) {
-      console.error(e)
-      alert('Delete failed.')
-    }
+const handleDelete = async () => {
+  if (!selectedProduct) return;
+  if (!confirm("Are you sure you want to delete this product?")) return;
+
+  try {
+    const response = await fetch(`/api/products/${selectedProduct.id}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) throw new Error('Failed to delete product');
+    await fetchProducts();
+    setSelectedProduct(null);
+  } catch (err) {
+    alert("Delete failed.");
+    console.error(err);
   }
 };
 
@@ -291,18 +286,14 @@ const saveSelectedManufacturers = async () => {
 
 
   useEffect(() => {
-    fetchServices()
-  }, [fetchServices])
-
-  const money = (n: number | null | undefined) => `$${Number(n ?? 0).toFixed(2)}`
-  const discountEnabled = (s: Service) =>
-    s.discountedPrice != null && Number(s.discountedPrice) < Number(s.standardPrice)
+    fetchProducts()
+  }, [fetchProducts])
 
   return (
     <div className="p-2">
       <Card>
         <CardContent className="p-2">
-          <h2 className="text-xl font-semibold mb-6 text-center">Service List</h2>
+          <h2 className="text-xl font-semibold mb-6 text-center">Product List</h2>
 
           {loading ? (
             <div className="flex justify-center items-center min-h-[400px]">
@@ -316,10 +307,10 @@ const saveSelectedManufacturers = async () => {
                 <table className="min-w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-4 px-4 font-semibold">SERVICE</th>
+                      <th className="text-left py-4 px-4 font-semibold">PRODUCT</th>
                       <th className="text-left py-4 px-4 font-semibold">DESCRIPTION</th>
                       <th className="text-left py-4 px-4 font-semibold">PRICE (USD)</th>
-                      <th className="text-left py-4 px-4 font-semibold">DURATION</th>
+                      <th className="text-left py-4 px-4 font-semibold">STOCK</th>
                       <th className="text-left py-4 px-4 font-semibold">DISCOUNT</th>
                       <th className="text-left py-4 px-4 font-semibold">MANUFACTURERS</th>
                       <th className="text-left py-4 px-4 font-semibold">ACTIONS</th>
@@ -327,29 +318,34 @@ const saveSelectedManufacturers = async () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {services.map((svc) => (
-                      <tr key={svc.id} className="border-b hover:bg-gray-50">
+                    {products.map((product) => (
+                      <tr key={product.id} className="border-b hover:bg-gray-50">
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center text-sm text-gray-600">
-                              SVC
-                            </div>
-                            <span className="font-medium">{svc.name}</span>
+                            {product.image_url ? (
+                              <img
+                                src={product.image_url}
+                                alt={product.name}
+                                className="w-10 h-10 object-cover rounded-md"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center text-sm text-gray-600">
+                                N/A
+                              </div>
+                            )}
+                            <span className="font-medium">{product.name}</span>
                           </div>
                         </td>
-                        <td className="py-4 px-4 text-sm text-gray-700">
-                          <div className="max-w-md">{svc.description}</div>
-                          <div className="text-xs text-gray-400 mt-1">Region: {svc.region}</div>
-                        </td>
-                        <td className="py-4 px-4">{money(svc.discountedPrice ?? svc.standardPrice)}</td>
-                        <td className="py-4 px-4">{svc.duration_months} months</td>
+                        <td className="py-4 px-4 text-sm text-gray-700">{product.description}</td>
+                        <td className="py-4 px-4">${product.price_usd.toFixed(2)}</td>
+                        <td className="py-4 px-4">{product.stock ?? 'N/A'}</td>
                         <td className="py-4 px-4">
-                          {discountEnabled(svc) ? (
+                          {product.uwc_discount_enabled ? (
                             <span className="inline-flex items-center gap-1 text-green-600 text-sm">
                               <BadgePercent className="w-4 h-4" /> Enabled
                             </span>
                           ) : (
-                            <span className="text-gray-400 text-sm">Disabled</span>
+                            <span className="text-gray-400 text-sm"> Disabled</span>
                           )}
                         </td>
                         <td className="py-4 px-4">
@@ -380,28 +376,28 @@ const saveSelectedManufacturers = async () => {
                         </td>
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
-                            <span className={svc.is_active ? "text-green-600 font-medium" : "text-gray-400 font-medium"}>
-                              {svc.is_active ? "Active" : "Inactive"}
+                            <span className={product.is_active ? "text-green-600 font-medium" : "text-gray-400 font-medium"}>
+                              {product.is_active ? "Active" : "Inactive"}
                             </span>
-                            <SimpleSwitch
-                              checked={!!svc.is_active}
-                              onChange={async (checked) => {
-                                setServices(curr => curr.map(p =>
-                                  p.id === svc.id ? { ...p, _updating: true as any } : p
-                                ))
-                                await fetch(`/api/services_ID/${svc.id}/status`, {
-                                  method: "PATCH",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ is_active: checked }),
-                                })
-                                await fetchServices()
-                              }}
-                            />
-                            {(svc as any)._updating && (
-                              <div className="absolute inset-0 bg-black/30 z-10 rounded-lg animate-pulse" />
-                            )}
+                          <SimpleSwitch
+                          checked={!!product.is_active}
+                          onChange={async (checked) => {
+                            setProducts(curr => curr.map(p =>
+                              p.id === product.id ? { ...p, _updating: true } : p
+                            ));
+                            await fetch(`/api/products/${product.id}`, {
+                              method: "PUT",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ is_active: checked }),
+                            });
+                            await fetchProducts();
+                          }}
+                          />
+                         {product._updating && (
+                          <div className="absolute inset-0 bg-black/30 z-10 rounded-lg animate-pulse" />
+                          )}
                           </div>
-                        </td>
+                          </td>
                       </tr>
                     ))}
                   </tbody>
@@ -435,33 +431,46 @@ const saveSelectedManufacturers = async () => {
       </Card>
 
       {/* Edit / View Modal */}
-      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+      <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
         <DialogContent className="sm:max-w-2xl">
-          {detailsLoading ? (
+          {productDetailsLoading ? (
             <div className="flex justify-center items-center min-h-[200px]">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
-          ) : selected ? (
+          ) : selectedProduct ? (
             <>
-              <DialogHeader>
-                <DialogTitle className="text-center">
-                  {editMode ? 'Edit Service' : 'Service Details'}
-                </DialogTitle>
-              </DialogHeader>
+            <DialogHeader>
+              <DialogTitle className="text-center">
+                {editMode ? 'Edit Product' : 'Product Details'}
+              </DialogTitle>
+            </DialogHeader>
 
-              <div className="space-y-2 mt-2">
+
+              <div className="space-y-1 mt-2">
+                {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Name</label>
                   {editMode ? (
-                    <Input value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                  ) : <p className="p-2 bg-gray-100 rounded">{formData.name}</p>}
+                    <Input
+                      value={formData.name || ''}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    />
+                  ) : (
+                    <p className="p-2 bg-gray-100 rounded">{formData.name}</p>
+                  )}
                 </div>
 
+                {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Description</label>
                   {editMode ? (
-                    <Input value={formData.description || ''} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
-                  ) : <p className="p-2 bg-gray-100 rounded">{formData.description}</p>}
+                    <Input
+                      value={formData.description || ''}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    />
+                  ) : (
+                    <p className="p-2 bg-gray-100 rounded">{formData.description}</p>
+                  )}
                 </div>
 
                 {/* Type */}
@@ -483,56 +492,88 @@ const saveSelectedManufacturers = async () => {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Duration (months)</label>
-                    {editMode ? (
-                      <Input type="number" value={String(formData.duration_months ?? '')}
-                        onChange={(e) => setFormData({ ...formData, duration_months: parseInt(e.target.value) || 0 })} />
-                    ) : <p className="p-2 bg-gray-100 rounded">{formData.duration_months}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">UWC Coins</label>
-                    {editMode ? (
-                      <Input type="number" value={String(formData.uwaciCoinsRequired ?? '')}
-                        onChange={(e) => setFormData({ ...formData, uwaciCoinsRequired: parseInt(e.target.value) || 0 })} />
-                    ) : <p className="p-2 bg-gray-100 rounded">{formData.uwaciCoinsRequired}</p>}
-                  </div>
+                {/* Price */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Price (USD)</label>
+                  {editMode ? (
+                    <Input
+                      type="number"
+                      value={formData.price_usd || ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, price_usd: parseFloat(e.target.value) || 0 })
+                      }
+                    />
+                  ) : (
+                    <p className="p-2 bg-gray-100 rounded">${formData.price_usd?.toFixed(2)}</p>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Minimum Term</label>
-                    {editMode ? (
-                      <Input type="number" value={String(formData.minimum_term ?? '')}
-                        onChange={(e) => setFormData({ ...formData, minimum_term: parseInt(e.target.value) || 0 })} />
-                    ) : <p className="p-2 bg-gray-100 rounded">{formData.minimum_term}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Country</label>
-                    {editMode ? (
-                      <select
-                        value={formData.region || ''}
-                        onChange={e => setFormData({ ...formData, region: e.target.value })}
-                        className="border p-2 rounded w-full"
-                        required
-                      >
-                        <option value="">Select Country</option>
-                        <option value="NZ">New Zealand</option>
-                        <option value="AU">Australia</option>
-                        <option value="US">United States</option>
-                      </select>
-                    ) : (
-                      <p className="p-2 bg-gray-100 rounded">
-                        {formData.region === 'NZ' ? 'New Zealand'
-                          : formData.region === 'AU' ? 'Australia'
-                          : formData.region === 'US' ? 'United States' : '-'}
-                      </p>
-                    )}
-                  </div>
+                {/* Stock */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Stock</label>
+                  {editMode ? (
+                    <Input
+                      type="number"
+                      value={formData.stock ?? ''}
+                      onChange={(e) =>
+                        setFormData({ ...formData, stock: parseInt(e.target.value) || null })
+                      }
+                    />
+                  ) : (
+                    <p className="p-2 bg-gray-100 rounded">{formData.stock ?? 'N/A'}</p>
+                  )}
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Country</label>
+                  {editMode ? (
+                    <select
+                    value={formData.region || ''}
+                    onChange={e => setFormData({ ...formData, region: e.target.value })}
+                    className="border p-2 rounded w-full"
+                    required
+                    >
+                      <option value="">Select Country</option>
+                      <option value="NZ">New Zealand</option>
+                      <option value="AU">Australia</option>
+                      <option value="US">United States</option>
+                    </select>
+                  ) : (
+                  <p className="p-2 bg-gray-100 rounded">
+                    {
+                    formData.region === 'NZ' ? 'New Zealand'
+                    : formData.region === 'AU' ? 'Australia'
+                    : formData.region === 'US' ? 'United States'
+                    : '-'
+                    }
+                  </p>
+              )}
+              </div>
+
+                {/* Discount */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Discount</label>
+                  {editMode ? (
+                    <select
+                      value={formData.uwc_discount_enabled ? 'true' : 'false'}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          uwc_discount_enabled: e.target.value === 'true'
+                        })
+                      }
+                      className="border p-2 rounded w-full"
+                    >
+                      <option value="false">Disabled</option>
+                      <option value="true">Enabled</option>
+                    </select>
+                  ) : (
+                    <p className="p-2 bg-gray-100 rounded">
+                      {formData.uwc_discount_enabled ? 'Enabled' : 'Disabled'}
+                    </p>
+                  )}
+                </div>
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <div className="flex items-center gap-4">
@@ -541,29 +582,39 @@ const saveSelectedManufacturers = async () => {
                     </span>
                     {editMode ? (
                       <SimpleSwitch
-                        checked={!!formData.is_active}
-                        onChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                      checked={!!formData.is_active}
+                      onChange={(checked) => setFormData({ ...formData, is_active: checked })}
                       />
-                    ) : null}
+                      ) : null}
                   </div>
                 </div>
+
               </div>
 
               <div className="mt-6 flex justify-end gap-4">
                 {editMode ? (
                   <>
-                    <Button variant="outline" onClick={() => { setEditMode(false); setFormData(selected) }}>
+                  <Button variant="outline" onClick={() => {
+                    setEditMode(false);
+                    setFormData(selectedProduct); 
+                    }}>
                       Cancel
-                    </Button>
-                    <Button onClick={handleSave} disabled={saving}>
-                      {saving ? 'Saving...' : 'Save'}
-                    </Button>
+                  </Button>
+                  <Button onClick={handleSave} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save'}
+                  </Button>
                   </>
-                ) : (
-                  <Button onClick={() => setEditMode(true)}>Edit</Button>
+                  ) : (
+                  <Button onClick={() => setEditMode(true)}>
+                    Edit
+                  </Button>
                 )}
-                <Button variant="destructive" onClick={handleDelete}>Delete</Button>
-                <Button variant="ghost" onClick={() => setSelected(null)}>Close</Button>
+                 <Button variant="destructive" onClick={handleDelete}>
+                    Delete
+                 </Button>
+                 <Button variant="ghost" onClick={() => setSelectedProduct(null)}>
+                    Close
+                 </Button>
               </div>
             </>
           ) : null}
