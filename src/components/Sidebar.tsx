@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { BarChart3, Layout, Users, Settings, ChevronRight, Building2, ShoppingCart, BadgeDollarSign, Box } from "lucide-react";
+import { BarChart3, Layout, Users, Settings, ChevronRight, Building2, ShoppingCart, BadgeDollarSign, Box, WrenchIcon, ClipboardList, Boxes } from "lucide-react";
 
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -143,7 +143,13 @@ const mainMenuItems: MenuItemType[] = [
     icon: Box,
     path: "/sales",
 
-  }
+  },
+  {
+    title: "Services",
+    prevIcon: ChevronRight,
+    icon: ClipboardList,
+    path: "/services_ID",
+  },
 ];
 
 const otherMenuItems: MenuItemType[] = [
