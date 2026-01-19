@@ -72,7 +72,7 @@ const menuItems: MenuItemType[] = [
     path: "/dashboard",
     subItems: [
       {
-        title: "Dashboad",
+        title: "Dashboard",
         path: "/dashboard",
       },
       {
