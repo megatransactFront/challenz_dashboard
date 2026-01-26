@@ -53,6 +53,11 @@ export default function DashboardLayout({
         </div>
       ),
     },
+    "/dashboard/loop-health": {
+      title: "",
+      description: "",
+      footer: null,
+    },
   };
 
   const resolvePageDetails = (path: string) => {

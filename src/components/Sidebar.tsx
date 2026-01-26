@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { BarChart3, Layout, Users, Settings, ChevronRight, Building2, ShoppingCart, BadgeDollarSign, Box, WrenchIcon, ClipboardList, Boxes } from "lucide-react";
+import { BarChart3, Layout, Users, Settings, ChevronRight, Building2, ShoppingCart, BadgeDollarSign, Box, ClipboardList } from "lucide-react";
 
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -79,6 +79,10 @@ const menuItems: MenuItemType[] = [
         title: "Coins",
         path: "/dashboard/coins",
       },
+      {
+        title: "Loop Health",
+        path: "/dashboard/loop-health",
+      },
     ],
   },
 ];
@@ -122,13 +126,13 @@ const mainMenuItems: MenuItemType[] = [
   {
     title: "Orders",
     prevIcon: ChevronRight,
-    icon: ShoppingCart, 
+    icon: ShoppingCart,
     path: "/orders",
   },
   {
     title: "Subscriptions",
     prevIcon: ChevronRight,
-    icon: BadgeDollarSign, 
+    icon: BadgeDollarSign,
     path: "/subscriptions",
   },
   {
