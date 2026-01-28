@@ -83,6 +83,10 @@ const menuItems: MenuItemType[] = [
         title: "Loop Health",
         path: "/dashboard/loop-health",
       },
+      {
+        title: "Onboarding Summary",
+        path: "/dashboard/onboarding-summary",
+      }
     ],
   },
 ];

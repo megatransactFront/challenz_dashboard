@@ -58,6 +58,11 @@ export default function DashboardLayout({
       description: "",
       footer: null,
     },
+    "/dashboard/onboarding-summary": {
+      title: "",
+      description: "",
+      footer: null,
+    },
   };
 
   const resolvePageDetails = (path: string) => {
