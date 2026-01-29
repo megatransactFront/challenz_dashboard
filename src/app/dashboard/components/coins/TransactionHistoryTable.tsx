@@ -1,5 +1,7 @@
 "use client";
-import React, { useState } from 'react';
+import { downloadCSV } from '@/app/api/dashboard/coins/helpers';
+import { CoinTransaction } from '@/app/types';
+import { Button } from '@/components/ui/button';
 import {
     Table,
     TableBody,
@@ -8,47 +10,43 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Button } from '@/components/ui/button';
+import { formatDate } from '@/helpers/formater';
 import { Download } from 'lucide-react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-};
-export function TransactionHistoryTable({ transactions }: { transactions: any }) {
-    const itemsPerPage = 8;
-    const [timeframe, setTimeFrame] = useState('');
-    const handleTimeFrameChange = (value: string) => {
-        setTimeFrame(value);
-    };
+type TransactionHistoryTableProps = {
+    transactions: CoinTransaction[];
+    page: number;
+    itemsPerPage: number;
+    filename: string
+}
+
+export function TransactionHistoryTable({ transactions, page, itemsPerPage, filename }: TransactionHistoryTableProps) {
     // No data state
-    if (!transactions) {
-        return null;
+    if (!transactions.length) {
+        return <div className="flex justify-center items-center min-h-[400px] text-gray-500 p-4">
+            No transactions found for the selected.
+        </div>;
     }
     return (
         <>
             {/* Transactions Table */}
             <div className="bg-white p-1 rounded-lg shadow-sm mb-6">
                 <div className="flex mx-6 justify-between gap-3 items-center my-3">
-                    <Select onValueChange={handleTimeFrameChange} defaultValue={timeframe}>
-                        <SelectTrigger className="max-w-[200px] min-h-[20px] rounded-[30px]" >
-                            <SelectValue placeholder="Filter" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value="daily">Daily</SelectItem>
-                                <SelectItem value="weekly">Weekly</SelectItem>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                                <SelectItem value="yearly">YearKy</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <Button className="max-w-[200px] min-h-[20px] rounded-[30px] bg-[#E45664] font-medium">
-                        <Download className='w-8 h-8' />
+                    <Button className="ml-auto max-w-[200px] min-h-[20px] rounded-[30px] bg-[#E45664] font-medium"
+                        onClick={() => {
+                            // Handle download logic here
+                            const headers = ['Transaction Date', 'Transaction Type', 'Amount'];
+                            downloadCSV(
+                                transactions.map(t => ({
+                                    created_at: formatDate(t.created_at),
+                                    type: t.type,
+                                    amount: t.amount
+                                })),
+                                headers,
+                                filename
+                            );
+                        }}>
+                        < Download className='w-8 h-8' />
                         Download
                     </Button>
                 </div>
@@ -57,25 +55,26 @@ export function TransactionHistoryTable({ transactions }: { transactions: any })
                     <TableHeader >
                         <TableRow>
                             <TableHead className="bg-[#F7F9FC] text-center text-black">TRANSACTION DATE</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center text-black">PARTNER SHOP</TableHead>
-                            <TableHead className="bg-[#F7F9FC] text-center text-black">UWC SPENT</TableHead>
+                            <TableHead className="bg-[#F7F9FC] text-center text-black">TRANSACTION TYPE</TableHead>
+                            <TableHead className="bg-[#F7F9FC] text-center text-black">AMOUNT</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {transactions.slice(0, itemsPerPage)
-                            .map((transaction: any, index: any) => (
+                        {transactions.slice((page - 1) * itemsPerPage, page * itemsPerPage)
+                            .map((transaction: CoinTransaction, index: any) => (
                                 <TableRow key={index}>
-                                    <TableCell className="text-center">{formatDate(transaction.date)}</TableCell>
-                                    <TableCell className="text-center">{transaction.partnerShop}</TableCell>
-                                    <TableCell className="text-center">${transaction.uwcSpent}</TableCell>
+                                    <TableCell className="text-center">{formatDate(transaction.created_at)}</TableCell>
+                                    <TableCell
+                                        className={`text-center ${transaction.type === 'credit' ? 'text-red-500' : 'text-green-500'}`}
+                                    >
+                                        {transaction.type}
+                                    </TableCell>
+                                    <TableCell className="text-center">${transaction.amount}</TableCell>
                                 </TableRow>
                             ))}
                     </TableBody>
                 </Table>
-            </div>
-
-            {/* Pagination */}
-            {/* <ChallenzPagination items={transactions} itemsPerPage={itemsPerPage} setCurrentItems={setCurrentItems} /> */}
+            </div >
         </>
     );
 }

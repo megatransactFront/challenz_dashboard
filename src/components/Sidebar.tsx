@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { BarChart3, CircleDollarSign, Settings, ChartLine, ChevronRight } from "lucide-react";
+import { BarChart3, Layout, Users, Settings, ChevronRight, Building2, ShoppingCart, BadgeDollarSign, Box, ClipboardList, CircleDollarSign, Settings, ChartLine } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import { MenuItem as MenuItemType } from "./types";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/contexts/AppContext";
@@ -69,13 +70,21 @@ const menuItems: MenuItemType[] = [
     path: "/dashboard",
     subItems: [
       {
-        title: "Dashboad",
+        title: "Dashboard",
         path: "/dashboard",
       },
       {
         title: "Coins",
         path: "/dashboard/coins",
       },
+      {
+        title: "Loop Health",
+        path: "/dashboard/loop-health",
+      },
+      {
+        title: "Onboarding Summary",
+        path: "/dashboard/onboarding-summary",
+      }
     ],
   },
 ];
@@ -99,10 +108,53 @@ const mainMenuItems: MenuItemType[] = [
     path: "/report",
   },
   {
+    title: "Business",
+    prevIcon: ChevronRight,
+    icon: Building2,
+    path: "/business-users",
+  },
+  {
     title: "PC",
     prevIcon: ChevronRight,
-    icon: ChartLine,
-    path: "/discounts",
+    icon: Building2,
+    path: "/Parental-Control",
+  },
+  {
+    title: "Partner Sales",
+    prevIcon: ChevronRight,
+    icon: Building2,
+    path: "/Partner_sales",
+  },
+  {
+    title: "Orders",
+    prevIcon: ChevronRight,
+    icon: ShoppingCart,
+    path: "/orders",
+  },
+  {
+    title: "Subscriptions",
+    prevIcon: ChevronRight,
+    icon: BadgeDollarSign,
+    path: "/subscriptions",
+  },
+  {
+    title: "Products",
+    prevIcon: ChevronRight,
+    icon: Box,
+    path: "/products",
+  },
+  {
+    title: "Flash Sales",
+    prevIcon: ChevronRight,
+    icon: Box,
+    path: "/sales",
+
+  },
+  {
+    title: "Services",
+    prevIcon: ChevronRight,
+    icon: ClipboardList,
+    path: "/services_ID",
   },
 ];
 
@@ -135,9 +187,11 @@ const Sidebar = () => {
           {/* Profile Section */}
           <div className="flex items-center gap-4 px-6 mb-8">
             <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden">
-              <img
+              <Image
                 src="https://xsgames.co/randomusers/avatar.php?g=male"
                 alt="Profile"
+                width={40}
+                height={40}
                 className="w-full h-full object-cover"
               />
             </div>

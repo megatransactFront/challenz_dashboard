@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
     Table,
     TableBody,
@@ -26,7 +26,7 @@ export default function VideosTab() {
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState<Pagination>();
     const [videosData, setVideosData] = useState<VideoReport[]>([]);
-    const fetchVideos = async () => {
+    const fetchVideos = useCallback(async () => {
         try {
             setIsLoading(true);
             const params = new URLSearchParams({
@@ -48,7 +48,7 @@ export default function VideosTab() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [page, itemsPerPage]);
     const handleViewVideo = (video: Video | undefined) => {
         if (!video) return;
         setVideo(video);
@@ -56,7 +56,7 @@ export default function VideosTab() {
     };
     useEffect(() => {
         fetchVideos();
-    }, [page]);
+    }, [page, fetchVideos]);
 
     if (error) {
         return (

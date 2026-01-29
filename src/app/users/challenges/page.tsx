@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Loader2, Video } from 'lucide-react'
+import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { formatDate } from '@/helpers/formaters'
@@ -131,9 +132,11 @@ export default function UsersPage() {
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
                             {user.profile_picture_url ? (
-                              <img
+                              <Image
                                 src={user.profile_picture_url}
                                 alt={user.username}
+                                width={40}
+                                height={40}
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             ) : (
@@ -243,9 +246,11 @@ export default function UsersPage() {
                 {/* User Basic Info */}
                 <div className="flex items-start gap-4">
                   {selectedUser.profile_picture_url ? (
-                    <img
+                    <Image
                       src={selectedUser.profile_picture_url}
                       alt={selectedUser.username}
+                      width={96}
+                      height={96}
                       className="w-24 h-24 rounded-full object-cover"
                     />
                   ) : (
