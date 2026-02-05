@@ -11,9 +11,10 @@ export async function PUT(
   {
     params,
   }: {
-    params: { flashSaleId: string; flashsaleproductid: string };
+    params: Promise<{ flashSaleId: string; flashsaleproductid: string }>;
   }
 ) {
+  const { flashsaleproductid } = await params;
   const { bonus_promo_discount } = await req.json();
 
   const { data, error } = await supabase
@@ -21,7 +22,7 @@ export async function PUT(
     .update({
       bonus_promo_discount,
     })
-    .eq("flashsaleproductsid", params.flashsaleproductid)
+    .eq("flashsaleproductsid", flashsaleproductid)
     .select();
 
   if (error) {
@@ -33,9 +34,9 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { flashsaleproductid: string } }
+  { params }: { params: Promise<{ flashsaleproductid: string }> }
 ) {
-  const id = params.flashsaleproductid;
+  const { flashsaleproductid: id } = await params;
   const { error } = await supabase
     .from("flashsaleproducts")
     .delete()

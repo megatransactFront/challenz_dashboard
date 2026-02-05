@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import clsx from 'clsx';
@@ -195,9 +196,11 @@ export default function ShipmentDetailPage() {
               {order.order_items.map((it) => (
                 <div key={it.id} className="py-4 flex items-start gap-4">
                   {it.product?.image_url ? (
-                    <img
+                    <Image
                       src={it.product.image_url}
                       alt=""
+                      width={64}
+                      height={64}
                       className="h-16 w-16 rounded-lg object-cover border border-slate-200"
                     />
                   ) : (

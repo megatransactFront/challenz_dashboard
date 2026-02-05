@@ -22,9 +22,9 @@ const ALLOWED_STATUSES = new Set([
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const orderId = params.id;
+  const { id: orderId } = await params;
   if (!orderId) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 
   const { data, error } = await supabase
@@ -62,9 +62,9 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const orderId = params.id;
+  const { id: orderId } = await params;
   const body = await req.json().catch(() => ({}));
   const { status } = body || {};
 

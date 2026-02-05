@@ -34,7 +34,7 @@ import { Input } from "@/components/ui/input"
 
 import { ChevronDown } from 'lucide-react';
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase/client";
 
 const BusinessUserPage = () => {
@@ -65,7 +65,7 @@ const BusinessUserPage = () => {
   const city = ['Sydney', 'Melbourne', 'Wellington', 'Auckland', 'Brooklyn', 'Atlanta', 'Adelaide', 'Dunedin', 'Brisbane']
   const country = ['Australia', 'AUS', 'Singapore', 'America', 'USA', 'New Zealand', 'NZ']
   const businessTypes = ['Physical Stores', 'Challenz Exclusives', 'E-commerce Business', 'Branded Merchandise']
-  const users = [
+  const users = useMemo(() => [
     {
       "id": "1",
       "registration_date": "1/10/2024",
@@ -166,7 +166,7 @@ const BusinessUserPage = () => {
       "status": "Active",
       "date_deregistered": "-"
     }
-  ]
+  ], [])
 
   // Function to fetch manufacturers from Supabase
   const fetchManufacturers = async () => {
@@ -317,7 +317,7 @@ const BusinessUserPage = () => {
     try {
       setIsSubmitting(true)
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('manufacturers')
         .insert([manufacturerForm])
         .select()
@@ -349,13 +349,13 @@ const BusinessUserPage = () => {
       setDisplayData(filtered)
       setAllData(users)
     }
-  }, [manufacturers, selectedBusinessType, selectedCity, selectedCountry])
+  }, [manufacturers, users, selectedBusinessType, selectedCity, selectedCountry])
 
   // Initialize with hardcoded data
   useEffect(() => {
     setAllData(users)
     setDisplayData(users)
-  }, [])
+  }, [users])
 
   const handleBusinessDetails = (businessId: string) => {
     router.push(`business-users/${businessId}`)

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -266,9 +267,11 @@ export default function AdminReturnsPage() {
                                           className="flex items-center gap-3 p-2 border rounded-md"
                                         >
                                           {it.product?.image_url ? (
-                                            <img
+                                            <Image
                                               src={it.product.image_url}
                                               alt={String(it.product?.name ?? 'Item')}
+                                              width={48}
+                                              height={48}
                                               className="w-12 h-12 rounded object-cover"
                                             />
                                           ) : (
@@ -308,10 +311,12 @@ export default function AdminReturnsPage() {
                                     {selected.photos.length ? (
                                       <div className="grid grid-cols-3 gap-2">
                                         {selected.photos.map((p) => (
-                                          <img
+                                          <Image
                                             key={p.id}
                                             src={p.url}
                                             alt="Return photo"
+                                            width={120}
+                                            height={120}
                                             className="w-full aspect-square object-cover rounded-md border"
                                           />
                                         ))}

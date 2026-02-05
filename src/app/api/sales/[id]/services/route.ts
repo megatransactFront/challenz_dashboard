@@ -8,9 +8,9 @@ const supabase = createClient(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
 
   const { data, error } = await supabase
     .from("flashsaleservices")
@@ -25,14 +25,15 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const body = await req.json();
   const { service_id, region, bonus_promo_discount } = body;
 
   const { data, error } = await supabase.from("flashsaleservices").insert([
     {
-      flashsalesid: params.id,
+      flashsalesid: id,
       service_id,
       region,
       bonus_promo_discount,

@@ -26,7 +26,7 @@ export default function ServicesPage() {
           Add Service
         </Button>
       </div>
-      <ServiceListPage region={region} />
+      <ServiceListPage searchParams={Promise.resolve({ region })} />
     </div>
   );
 }

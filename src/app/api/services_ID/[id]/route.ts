@@ -7,7 +7,8 @@ const supabase = createClient(
 );
 
 // READ ONE — /api/services_ID/:id
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const { data, error } = await supabase
     .from('services')
     .select(`
@@ -24,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       is_active,
       created_at
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (error || !data) {
@@ -34,8 +35,9 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 }
 
 // UPDATE — /api/services_ID/:id
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const body = await req.json();
 
     const toNum = (v: any, fallback = 0) => {
@@ -65,20 +67,21 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const { data, error } = await supabase
       .from('services')
       .update(updateData)
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
     return NextResponse.json({ service: data });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to update service' }, { status: 400 });
   }
 }
 
 // DELETE — /api/services_ID/:id
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const { error } = await supabase.from('services').delete().eq('id', params.id);
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { error } = await supabase.from('services').delete().eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ success: true });
 }

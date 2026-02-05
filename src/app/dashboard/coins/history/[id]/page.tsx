@@ -86,6 +86,9 @@ const TransactionHistory = () => {
                     ))}
                 </div>
             </div>
+            {error && (
+                <p className="text-destructive text-sm mb-2">{error}</p>
+            )}
             {isLoading ?
                 <div className="flex justify-center items-center min-h-[400px]">
                     <Loader2 className="h-8 w-8 animate-spin" />

@@ -113,9 +113,8 @@ export default function FlashSalesPage() {
       <h1 className="text-2xl font-bold mb-4">Flash Sales</h1>
       <ul className="space-y-4">
         {flashSales.map((sale) => (
-          <Card>
+          <Card key={sale.flashsalesid}>
             <li
-              key={sale.flashsalesid}
               className="border p-4 rounded shadow hover:bg-gray-100 transition"
             >
               <div className="flex justify-between items-center">

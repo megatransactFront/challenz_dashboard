@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { BarChart3, Layout, Users, Settings, ChevronRight, Building2, ShoppingCart, BadgeDollarSign, Box, ClipboardList, CircleDollarSign, Settings, ChartLine } from "lucide-react";
+import { BarChart3, Settings, ChevronRight, Building2, ShoppingCart, BadgeDollarSign, Box, ClipboardList, CircleDollarSign, ChartLine } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { MenuItem as MenuItemType } from "./types";

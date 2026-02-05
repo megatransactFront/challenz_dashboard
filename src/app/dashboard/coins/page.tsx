@@ -17,6 +17,7 @@ export default function CoinsPage() {
     const [coinData, setCoinData] = useState<CoinData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [keyword, setKeyword] = useState('');
     const router = useRouter();
 
     useEffect(() => {
@@ -111,11 +112,19 @@ export default function CoinsPage() {
         return null;
     }
 
+    const filteredUserMetrics = coinData?.userMetrics?.filter((u) =>
+        u.name?.toLowerCase().includes(keyword.toLowerCase())
+    ) ?? [];
+
     return (
         <div className="space-y-6">
             {/* Stat Cards */}
             <CoinsMetrics metrics={coinData?.metrics} />
-            <CoinTransactionTable usersMetrics={coinData?.userMetrics} />
+            <CoinTransactionTable
+                usersMetrics={filteredUserMetrics}
+                keyword={keyword}
+                handleKeywordChange={setKeyword}
+            />
         </div>
     );
 }

@@ -48,7 +48,7 @@ export default function ProductsPage() {
           </Button>
         </div>
       </div>
-      <Page region={region} />
+      <Page searchParams={Promise.resolve({ region })} />
     </div>
   )
 }

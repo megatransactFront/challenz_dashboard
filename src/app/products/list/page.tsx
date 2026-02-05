@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState, useCallback } from 'react'
 import { Loader2, BadgePercent } from 'lucide-react'
 import { Card, CardContent } from "@/components/ui/card"
@@ -32,11 +33,17 @@ type PaginationData = {
   itemsPerPage: number
 }
 
-export default function Page({ region }: { region: string }) {
+export default function Page({ searchParams }: { searchParams?: Promise<{ region?: string }> }) {
+  const [region, setRegion] = useState('')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    if (!searchParams) return
+    searchParams.then((p) => setRegion(p?.region ?? ''))
+  }, [searchParams])
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [productDetailsLoading, setProductDetailsLoading] = useState(false)
   const [pagination, setPagination] = useState<PaginationData>({
@@ -323,9 +330,11 @@ const saveSelectedManufacturers = async () => {
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
                             {product.image_url ? (
-                              <img
+                              <Image
                                 src={product.image_url}
                                 alt={product.name}
+                                width={40}
+                                height={40}
                                 className="w-10 h-10 object-cover rounded-md"
                               />
                             ) : (

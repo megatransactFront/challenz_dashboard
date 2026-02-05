@@ -6,8 +6,8 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
 
   const { data, error } = await supabase
     .from('flashsaleproducts')
@@ -19,13 +19,14 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json({ data });
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = await req.json();
   const { product_id, region, bonus_promo_discount } = body;
 
   const { data, error } = await supabase.from('flashsaleproducts').insert([
     {
-      flashsalesid: params.id,
+      flashsalesid: id,
       product_id,
       region,
       bonus_promo_discount,

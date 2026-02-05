@@ -20,10 +20,16 @@ type Service = {
   is_active: boolean
 }
 
-export default function ServiceListPage({ region }: { region: string }) {
+export default function ServiceListPage({ searchParams }: { searchParams?: Promise<{ region?: string }> }) {
   const router = useRouter()
+  const [region, setRegion] = useState('')
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!searchParams) return
+    searchParams.then((p) => setRegion(p?.region ?? ''))
+  }, [searchParams])
 
   const money = (n: number | null | undefined) =>
     `$${(Number(n ?? 0)).toFixed(2)}`
@@ -70,7 +76,7 @@ export default function ServiceListPage({ region }: { region: string }) {
         body: JSON.stringify({ is_active: next }),
       })
       if (!res.ok) throw new Error('toggle failed')
-    } catch (e) {
+    } catch {
       updateLocal(id, { is_active: !!prev }) // rollback
       alert('Could not update status. Please try again.')
     }
@@ -84,7 +90,7 @@ export default function ServiceListPage({ region }: { region: string }) {
       const res = await fetch(`/api/services_ID/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('delete failed')
       setServices(prev.filter(s => s.id !== id))
-    } catch (e) {
+    } catch {
       setServices(prev) // rollback list
       alert('Could not delete. Please try again.')
     }

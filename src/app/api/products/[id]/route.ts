@@ -9,9 +9,9 @@ const supabase = createClient(
 
 export async function GET(
   req: NextRequest, 
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params
+  const { id } = await params
 
   const { data, error } = await supabase
     .from('products')
@@ -29,9 +29,9 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest, 
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params
+  const { id } = await params
   const body = await req.json()
 
   const { data, error } = await supabase
@@ -49,8 +49,8 @@ export async function PUT(
   return NextResponse.json(data)
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const { error } = await supabase
     .from('products')
     .delete()

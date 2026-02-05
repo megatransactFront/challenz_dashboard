@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,7 @@ const regionOptions = [
   { value: 'US', label: 'United States' },
 ];
 
-export default function StockPage() {
+function StockPageContent() {
   const router = useRouter();
   const params = useSearchParams();
   const [region, setRegion] = useState<string>(params.get('region') || '');
@@ -113,11 +114,12 @@ export default function StockPage() {
       if (!res.ok) throw new Error('Update failed');
       setProducts(cur => cur.map(p => (p.id === id ? { ...p, stock: value } as Product : p)));
       setEdits(prev => {
-        const { [id]: _, ...rest } = prev;
+        const rest = { ...prev };
+        delete rest[id];
         return rest;
       });
        alert("Stock updated successfully ✅");
-    } catch (e) {
+    } catch {
       alert('Save failed. Please try again.');
     } finally {
       setSaving(false);
@@ -138,7 +140,7 @@ export default function StockPage() {
       await fetchProducts();
       setEdits({});
       alert("All stock changes saved successfully ✅");
-    } catch (e) {
+    } catch {
       alert('Bulk save failed.');
     } finally {
       setSaving(false);
@@ -256,7 +258,7 @@ export default function StockPage() {
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-3">
                               {p.image_url ? (
-                                <img src={p.image_url} alt={p.name} className="w-10 h-10 rounded object-cover" />
+                                <Image src={p.image_url} alt={p.name} width={40} height={40} className="w-10 h-10 rounded object-cover" />
                               ) : (
                                 <div className="w-10 h-10 rounded bg-gray-200" />
                               )}
@@ -340,5 +342,17 @@ export default function StockPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function StockPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    }>
+      <StockPageContent />
+    </Suspense>
   );
 }

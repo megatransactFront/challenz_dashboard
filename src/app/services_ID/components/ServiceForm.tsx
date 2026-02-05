@@ -6,22 +6,37 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
+type ServiceFormData = {
+  name: string
+  region: string
+  description: string
+  standardPrice: string
+  discountedPrice: string
+  duration_months: string
+  uwaciCoinsRequired: string
+  cancellationPolicy: string
+  minimum_term: string
+  is_active: boolean
+}
+
+const defaultFormData: ServiceFormData = {
+  name: '', region: '', description: '',
+  standardPrice: '', discountedPrice: '',
+  duration_months: '', uwaciCoinsRequired: '',
+  cancellationPolicy: '', minimum_term: '',
+  is_active: true,
+}
+
 export default function ServiceForm({
   initialData,
   onSuccess,
   isEdit = false,
 }: {
-  initialData?: any
+  initialData?: Partial<ServiceFormData>
   onSuccess: () => void
   isEdit?: boolean
 }) {
-  const [formData, setFormData] = useState(initialData || {
-    name: '', region: '', description: '',
-    standardPrice: '', discountedPrice: '',
-    duration_months: '', uwaciCoinsRequired: '',
-    cancellationPolicy: '', minimum_term: '',
-    is_active: true,                    // ⬅️ NEW
-  })
+  const [formData, setFormData] = useState<ServiceFormData>(initialData ? { ...defaultFormData, ...initialData } : defaultFormData)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 

@@ -9,6 +9,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 
 const UWC_PER_DOLLAR = 2;
@@ -219,9 +220,11 @@ export function OrderTable({
                             className="flex items-start gap-3 border-b border-gray-100 pb-3 last:border-b-0 last:pb-0"
                           >
                             {it.img ? (
-                              <img
+                              <Image
                                 src={it.img}
                                 alt=""
+                                width={48}
+                                height={48}
                                 className="h-12 w-12 flex-shrink-0 rounded-lg object-cover ring-1 ring-gray-200"
                               />
                             ) : (

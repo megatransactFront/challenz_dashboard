@@ -26,7 +26,8 @@ export default function AddProductPage() {
   const [success, setSuccess] = useState<string | null>(null)
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-  const { name, value, type, checked } = e.target;
+  const { name, value, type } = e.target;
+  const checked = e.target instanceof HTMLInputElement ? e.target.checked : undefined;
   if (name === "stock") {
     if (formData.stock !== undefined && Number(formData.stock) !== 0 && Number(value) === 0) {
       alert("Stock cannot be set to 0 once set. Please delete the product if it's out of stock.");

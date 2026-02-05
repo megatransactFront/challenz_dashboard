@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -109,6 +110,7 @@ export default function FlashSaleDetailPage() {
     fetchFlashSaleServices();
     fetchAllServices();
     fetchFlashSaleDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch functions are stable; re-run when id changes only
   }, [id]);
 
   const fixDiscount = (value: number, min: number, max: number) =>
@@ -219,7 +221,7 @@ export default function FlashSaleDetailPage() {
       setEditingProduct(null);
       fetchFlashSaleProducts();
       setSuccess("Product updated!");
-    } catch (err) {
+    } catch {
       setError("Failed to update product.");
     }
   };
@@ -245,7 +247,7 @@ export default function FlashSaleDetailPage() {
       setEditServiceModalOpen(false);
       fetchFlashSaleServices();
       setSuccess("Service deleted!");
-    } catch (err) {
+    } catch {
       setError("Failed to delete service.");
     }
   };
@@ -269,7 +271,7 @@ export default function FlashSaleDetailPage() {
       setEditingService(null);
       fetchFlashSaleServices();
       setSuccess("Service updated!");
-    } catch (err) {
+    } catch {
       setError("Failed to update service.");
     }
   };
@@ -453,11 +455,17 @@ export default function FlashSaleDetailPage() {
                   onClick={() => handleEdit(item)}
                 >
                   <div className="flex justify-between items-center gap-4">
-                    <img
-                      src={item.products?.image_url ?? undefined}
-                      alt={item.products?.name || "Product image"}
-                      className="h-20 w-20 object-cover rounded"
-                    />
+                    {item.products?.image_url ? (
+                      <Image
+                        src={item.products.image_url}
+                        alt={item.products?.name || "Product image"}
+                        width={80}
+                        height={80}
+                        className="h-20 w-20 object-cover rounded"
+                      />
+                    ) : (
+                      <div className="h-20 w-20 rounded bg-gray-100 flex-shrink-0" />
+                    )}
                     <div className="flex-1">
                       <p>
                         <strong>{item.products?.name}</strong>
@@ -484,17 +492,23 @@ export default function FlashSaleDetailPage() {
       ) : (
         <ul className="space-y-2">
           {services.map((item) => (
-            <Card key={item.flashsaleservicesid}>
+            <Card key={item.flashsaleserviceid}>
               <li
                 className="border p-4 rounded cursor-pointer hover:bg-gray-200"
                 onClick={() => handleEditService(item)}
               >
                 <div className="flex justify-between items-center gap-4">
-                  <img
-                    src={item.services?.image_url ?? undefined}
-                    alt={item.services?.name || "Service image"}
-                    className="h-20 w-20 object-cover rounded"
-                  />
+                  {item.services?.image_url ? (
+                    <Image
+                      src={item.services.image_url}
+                      alt={item.services?.name || "Service image"}
+                      width={80}
+                      height={80}
+                      className="h-20 w-20 object-cover rounded"
+                    />
+                  ) : (
+                    <div className="h-20 w-20 rounded bg-gray-100 flex-shrink-0" />
+                  )}
                   <div className="flex-1">
                     <p>
                       <strong>{item.services?.name}</strong>
