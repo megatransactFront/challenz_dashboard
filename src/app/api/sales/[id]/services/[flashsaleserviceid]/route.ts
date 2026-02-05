@@ -11,7 +11,7 @@ export async function PUT(
   {
     params,
   }: {
-    params: Promise<{ flashSaleId: string; flashsaleserviceid: string }>;
+    params: Promise<{ id: string; flashsaleserviceid: string }>;
   }
 ) {
   const { flashsaleserviceid } = await params;
@@ -34,13 +34,13 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ flashsaleserviceid: string }> }
+  { params }: { params: Promise<{ id: string; flashsaleserviceid: string }> }
 ) {
-  const { flashsaleserviceid: id } = await params;
+  const { flashsaleserviceid } = await params;
   const { error } = await supabase
     .from("flashsaleservices")
     .delete()
-    .eq("flashsaleserviceid", id);
+    .eq("flashsaleserviceid", flashsaleserviceid);
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
