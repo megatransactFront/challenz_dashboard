@@ -1,8 +1,24 @@
 // src/app/types/onboarding-summary.ts
 
+export interface DailyAgg {
+  date: string;              // 'YYYY-MM-DD'
+  newUsers: number;
+  newMerchants: number;
+  stage2LoopsClosed: number;
+}
+
+export type LocationGroup = {
+  date: string;       // 'YYYY-MM-DD'
+  country: string;
+  countryCode: string;
+  city: string;
+  newUsers: number;
+  newMerchants: number
+};
+
 export interface SummaryMetric {
   value: number;
-  change: number; 
+  change: number;
   trend: 'up' | 'down';
 }
 

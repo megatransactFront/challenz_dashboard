@@ -32,12 +32,19 @@ export default function OnboardingSummaryPage() {
   const [countries, setCountries] = useState<string[]>(['All Countries']);
   const [cities, setCities] = useState<string[]>(['All Cities']);
 
-  // Fetch data when page loads
+  // Fetch data when page loads or period changes
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/dashboard/onboarding-summary');
+        const periodParam =
+          selectedPeriod === 'Weekly'
+            ? 'weekly'
+            : selectedPeriod === 'Fortnightly'
+              ? 'fortnightly'
+              : 'monthly';
+
+        const response = await fetch(`/api/dashboard/onboarding-summary?period=${periodParam}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch data');
@@ -62,7 +69,7 @@ export default function OnboardingSummaryPage() {
     };
 
     fetchData();
-  }, []);
+  }, [selectedPeriod]);
 
   // Generate date ranges dynamically based on data and selected period
   const dateRanges = useMemo(() => {
@@ -153,6 +160,112 @@ export default function OnboardingSummaryPage() {
 
     return countryMatch && cityMatch && dateMatch;
   }) || [];
+
+  // Compute summary cards aligned with selected period and date range
+  const computedCards = useMemo(() => {
+    if (!data || !selectedDateRange) return data?.cards;
+
+    const [startDateStr, endDateStr] = selectedDateRange.split(' - ');
+    const startDate = parseDate(startDateStr);
+    const endDate = parseDate(endDateStr);
+
+    // Determine window size from selected period
+    const daysPerPeriod =
+      selectedPeriod === 'Weekly'
+        ? 7
+        : selectedPeriod === 'Fortnightly'
+          ? 14
+          : 30;
+
+    const prevEnd = new Date(startDate);
+    prevEnd.setDate(prevEnd.getDate() - 1);
+    const prevStart = new Date(prevEnd);
+    prevStart.setDate(prevStart.getDate() - (daysPerPeriod - 1));
+
+    const baseRows = data.tableData.filter(row => {
+      const countryMatch = selectedCountry === 'All Countries' || row.country === selectedCountry;
+      const cityMatch = selectedCity === 'All Cities' || row.city === selectedCity;
+      return countryMatch && cityMatch;
+    });
+
+    const inRange = (date: Date, rangeStart: Date, rangeEnd: Date) =>
+      date >= rangeStart && date <= rangeEnd;
+
+    const sumForRange = (
+      key: 'newUsers' | 'newMerchants' | 'stage2LoopsClosed',
+      rangeStart: Date,
+      rangeEnd: Date,
+    ) => {
+      return baseRows.reduce((sum, row) => {
+        const d = parseDate(row.date);
+        if (!inRange(d, rangeStart, rangeEnd)) return sum;
+        return sum + row[key];
+      }, 0);
+    };
+
+    const buildMetric = (current: number, previous: number) => {
+      if (previous <= 0) {
+        return {
+          value: current,
+          change: current > 0 ? 100 : 0,
+          trend: current > 0 ? ('up' as const) : ('down' as const),
+        };
+      }
+      const pct = ((current - previous) / previous) * 100;
+      return {
+        value: current,
+        change: Number(pct.toFixed(1)),
+        trend: current >= previous ? ('up' as const) : ('down' as const),
+      };
+    };
+
+    const aggregateChartData = (
+      key: 'newUsers' | 'newMerchants' | 'stage2LoopsClosed',
+      rangeStart: Date,
+      rangeEnd: Date,
+    ) => {
+      const byDate = new Map<string, number>();
+
+      baseRows.forEach(row => {
+        const d = parseDate(row.date);
+        if (!inRange(d, rangeStart, rangeEnd)) return;
+        const existing = byDate.get(row.date) ?? 0;
+        byDate.set(row.date, existing + row[key]);
+      });
+
+      return Array.from(byDate.entries())
+        .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+        .map(([date, value]) => ({
+          date,
+          value,
+        }));
+    };
+
+    const newUsersCurr = sumForRange('newUsers', startDate, endDate);
+    const newUsersPrev = sumForRange('newUsers', prevStart, prevEnd);
+    const merchantsCurr = sumForRange('newMerchants', startDate, endDate);
+    const merchantsPrev = sumForRange('newMerchants', prevStart, prevEnd);
+    const loopsCurr = sumForRange('stage2LoopsClosed', startDate, endDate);
+    const loopsPrev = sumForRange('stage2LoopsClosed', prevStart, prevEnd);
+
+    return {
+      newUsers: {
+        title: 'New Users',
+        metric: buildMetric(newUsersCurr, newUsersPrev),
+        chartData: aggregateChartData('newUsers', startDate, endDate),
+      },
+      newMerchants: {
+        title: 'New Merchants',
+        metric: buildMetric(merchantsCurr, merchantsPrev),
+        chartData: aggregateChartData('newMerchants', startDate, endDate),
+      },
+      stage2LoopsClosed: {
+        title: 'Stage 2 Loops Closed',
+        metric: buildMetric(loopsCurr, loopsPrev),
+        chartData: aggregateChartData('stage2LoopsClosed', startDate, endDate),
+      },
+    };
+  }, [data, selectedCountry, selectedCity, selectedPeriod, selectedDateRange]);
 
   if (isLoading) {
     return (
@@ -318,132 +431,139 @@ export default function OnboardingSummaryPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* New Users Card */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-black mb-3 pb-2 border-b border-gray-300">New Users</h3>
-          <div className="flex items-baseline gap-2 mb-1">
-            <p className="text-3xl font-bold text-gray-900 ml-2">{data.cards.newUsers.metric.value.toLocaleString()}</p>
-            <div className={`flex items-center gap-1 text-sm ${data.cards.newUsers.metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-              {data.cards.newUsers.metric.trend === 'up' ? (
-                <TrendingUp className="w-4 h-4" />
-              ) : (
-                <TrendingDown className="w-4 h-4" />
-              )}
-              <span>
-                {data.cards.newUsers.metric.trend === 'up' ? '+' : ''}{data.cards.newUsers.metric.change}%<span className="text-gray-700"> vs prev.</span>
-              </span>
-            </div>
-          </div>
+        {(() => {
+          const cards = computedCards || data.cards;
+          return (
+            <>
+              {/* New Users Card */}
+              <div className="bg-white p-6 rounded-lg shadow border">
+                <h3 className="text-lg font-semibold text-black mb-3 pb-2 border-b border-gray-300">New Users</h3>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <p className="text-3xl font-bold text-gray-900 ml-2">{cards.newUsers.metric.value.toLocaleString()}</p>
+                  <div className={`flex items-center gap-1 text-sm ${cards.newUsers.metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                    {cards.newUsers.metric.trend === 'up' ? (
+                      <TrendingUp className="w-4 h-4" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4" />
+                    )}
+                    <span>
+                      {cards.newUsers.metric.trend === 'up' ? '+' : ''}{cards.newUsers.metric.change}%<span className="text-gray-700"> vs prev.</span>
+                    </span>
+                  </div>
+                </div>
 
-          <ResponsiveContainer width="100%" height={60}>
-            <AreaChart data={data.cards.newUsers.chartData}>
-              <defs>
-                <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#93c5fd" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#93c5fd" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <Area type="monotone" dataKey="value" stroke="#3b82f6" fillOpacity={1} fill="url(#colorUsers)" />
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-white px-3 py-2 border border-gray-300 rounded-lg shadow-lg">
-                        <p className="text-xs text-gray-600">Date: <span className="text-xs font-semibold text-gray-800">{payload[0].payload.date} </span></p>
-                        <p className="text-xs text-gray-600">Users: <span className="font-bold text-blue-600">{payload[0].value}</span></p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+                <ResponsiveContainer width="100%" height={60}>
+                  <AreaChart data={cards.newUsers.chartData}>
+                    <defs>
+                      <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#93c5fd" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#93c5fd" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <Area type="monotone" dataKey="value" stroke="#3b82f6" fillOpacity={1} fill="url(#colorUsers)" />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-white px-3 py-2 border border-gray-300 rounded-lg shadow-lg">
+                              <p className="text-xs text-gray-600">Date: <span className="text-xs font-semibold text-gray-800">{payload[0].payload.date} </span></p>
+                              <p className="text-xs text-gray-600">Users: <span className="font-bold text-blue-600">{payload[0].value}</span></p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
 
-        {/* New Merchants Card */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-black mb-3 pb-2 border-b border-gray-300">New Merchants</h3>
-          <div className="flex items-baseline gap-2 mb-1">
-            <p className="text-3xl font-bold text-gray-900 ml-2">{data.cards.newMerchants.metric.value.toLocaleString()}</p>
-            <div className={`flex items-center gap-1 text-sm ${data.cards.newMerchants.metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-              {data.cards.newMerchants.metric.trend === 'up' ? (
-                <TrendingUp className="w-4 h-4" />
-              ) : (
-                <TrendingDown className="w-4 h-4" />
-              )}
-              <span>
-                {data.cards.newMerchants.metric.trend === 'up' ? '+' : ''}{data.cards.newMerchants.metric.change}%<span className="text-gray-700"> vs prev.</span>
-              </span>
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={60}>
-            <AreaChart data={data.cards.newMerchants.chartData}>
-              <defs>
-                <linearGradient id="colorMerchants" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#fca5a5" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#fca5a5" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <Area type="monotone" dataKey="value" stroke="#ef4444" fillOpacity={1} fill="url(#colorMerchants)" />
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-white px-3 py-2 border border-gray-300 rounded-lg shadow-lg">
-                        <p className="text-xs text-gray-600">Date: <span className="text-xs font-semibold text-gray-800">{payload[0].payload.date} </span></p>
-                        <p className="text-xs text-gray-600">Merchants: <span className="font-bold text-red-600">{payload[0].value}</span></p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+              {/* New Merchants Card */}
+              <div className="bg-white p-6 rounded-lg shadow border">
+                <h3 className="text-lg font-semibold text-black mb-3 pb-2 border-b border-gray-300">New Merchants</h3>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <p className="text-3xl font-bold text-gray-900 ml-2">{cards.newMerchants.metric.value.toLocaleString()}</p>
+                  <div className={`flex items-center gap-1 text-sm ${cards.newMerchants.metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                    {cards.newMerchants.metric.trend === 'up' ? (
+                      <TrendingUp className="w-4 h-4" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4" />
+                    )}
+                    <span>
+                      {cards.newMerchants.metric.trend === 'up' ? '+' : ''}{cards.newMerchants.metric.change}%<span className="text-gray-700"> vs prev.</span>
+                    </span>
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={60}>
+                  <AreaChart data={cards.newMerchants.chartData}>
+                    <defs>
+                      <linearGradient id="colorMerchants" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#fca5a5" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#fca5a5" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <Area type="monotone" dataKey="value" stroke="#ef4444" fillOpacity={1} fill="url(#colorMerchants)" />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-white px-3 py-2 border border-gray-300 rounded-lg shadow-lg">
+                              <p className="text-xs text-gray-600">Date: <span className="text-xs font-semibold text-gray-800">{payload[0].payload.date} </span></p>
+                              <p className="text-xs text-gray-600">Merchants: <span className="font-bold text-red-600">{payload[0].value}</span></p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
 
-        {/* Stage 2 Loops Closed Card */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-black mb-3 pb-2 border-b border-gray-300">Stage 2 Loops Closed</h3>
-          <div className="flex items-baseline gap-2 mb-1">
-            <p className="text-3xl font-bold text-gray-900 ml-2">{data.cards.stage2LoopsClosed.metric.value.toLocaleString()}</p>
-            <div className={`flex items-center gap-1 text-sm ${data.cards.stage2LoopsClosed.metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-              {data.cards.stage2LoopsClosed.metric.trend === 'up' ? (
-                <TrendingUp className="w-4 h-4" />
-              ) : (
-                <TrendingDown className="w-4 h-4" />
-              )}
-              <span>
-                {data.cards.stage2LoopsClosed.metric.trend === 'up' ? '+' : ''}{data.cards.stage2LoopsClosed.metric.change}%<span className="text-gray-700"> vs prev.</span>
-              </span>
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={60}>
-            <AreaChart data={data.cards.stage2LoopsClosed.chartData}>
-              <defs>
-                <linearGradient id="colorLoops" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#86efac" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#86efac" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <Area type="monotone" dataKey="value" stroke="#22c55e" fillOpacity={1} fill="url(#colorLoops)" />
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-white px-3 py-2 border border-gray-300 rounded-lg shadow-lg">
-                        <p className="text-xs text-gray-600">Date: <span className="text-xs font-semibold text-gray-800">{payload[0].payload.date} </span></p>
-                        <p className="text-xs text-gray-600">Loops: <span className="font-bold text-green-600">{payload[0].value}</span></p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+              {/* Stage 2 Loops Closed Card */}
+              <div className="bg-white p-6 rounded-lg shadow border">
+                <h3 className="text-lg font-semibold text-black mb-3 pb-2 border-b border-gray-300">Stage 2 Loops Closed</h3>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <p className="text-3xl font-bold text-gray-900 ml-2">{cards.stage2LoopsClosed.metric.value.toLocaleString()}</p>
+                  <div className={`flex items-center gap-1 text-sm ${cards.stage2LoopsClosed.metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+                    {cards.stage2LoopsClosed.metric.trend === 'up' ? (
+                      <TrendingUp className="w-4 h-4" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4" />
+                    )}
+                    <span>
+                      {cards.stage2LoopsClosed.metric.trend === 'up' ? '+' : ''}{cards.stage2LoopsClosed.metric.change}%<span className="text-gray-700"> vs prev.</span>
+                    </span>
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={60}>
+                  <AreaChart data={cards.stage2LoopsClosed.chartData}>
+                    <defs>
+                      <linearGradient id="colorLoops" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#86efac" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#86efac" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <Area type="monotone" dataKey="value" stroke="#22c55e" fillOpacity={1} fill="url(#colorLoops)" />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-white px-3 py-2 border border-gray-300 rounded-lg shadow-lg">
+                              <p className="text-xs text-gray-600">Date: <span className="text-xs font-semibold text-gray-800">{payload[0].payload.date} </span></p>
+                              <p className="text-xs text-gray-600">Loops: <span className="font-bold text-green-600">{payload[0].value}</span></p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          );
+        })()}
       </div>
 
       {/* Data Table */}
