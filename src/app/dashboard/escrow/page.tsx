@@ -29,6 +29,7 @@ export default function EscrowDashboardPage() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        await fetch('/api/dashboard/escrow', { method: 'POST' });
         const response = await fetch("/api/dashboard/escrow");
         if (!response.ok) throw new Error("Failed to fetch escrow data");
         const json = await response.json();
@@ -228,11 +229,6 @@ export default function EscrowDashboardPage() {
                         <span className="text-gray-800 font-medium truncate max-w-[120px]" title={row.phone}>
                           {row.phone}
                         </span>
-                        {row.phoneBadge != null && (
-                          <span className="inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1.5 rounded bg-blue-100 text-blue-600 text-xs font-medium shrink-0">
-                            {row.phoneBadge}
-                          </span>
-                        )}
                       </div>
                     </td>
 
@@ -255,6 +251,11 @@ export default function EscrowDashboardPage() {
                           <p className="flex items-center justify-center gap-1.5 text-red-600 font-medium">
                             <AlertCircle size={14} className="shrink-0" />
                             {formatCurrency(row.missedPayoutAmount, row.currency)}
+                            {row.missedPayoutCount > 1 && (
+                              <span className="text-sm text-red-500">
+                                ({row.missedPayoutCount})
+                              </span>
+                            )}
                           </p>
                           {row.missedPayoutWasSupposed && (
                             <p className="text-sm text-red-500 font-medium mt-0.5 truncate" title={row.missedPayoutWasSupposed}>
