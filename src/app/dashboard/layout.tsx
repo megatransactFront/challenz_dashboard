@@ -63,6 +63,11 @@ export default function DashboardLayout({
       description: "",
       footer: null,
     },
+    "/dashboard/escrow": {
+      title: "",
+      description: "",
+      footer: null,
+    },
   };
 
   const resolvePageDetails = (path: string) => {
