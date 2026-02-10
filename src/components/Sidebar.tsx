@@ -84,6 +84,10 @@ const menuItems: MenuItemType[] = [
       {
         title: "Onboarding Summary",
         path: "/dashboard/onboarding-summary",
+      },
+      {
+        title: "Escrow Dashboard",
+        path: "/dashboard/escrow",
       }
     ],
   },
